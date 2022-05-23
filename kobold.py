@@ -134,11 +134,12 @@ def has_item(self, item_name, quantity=1):
     """
     if item_name[0] == "*":
         item_category = item_name.replace("*", "")
+        check_for_item = lambda _name: _name in item_cats[item_category]
     else:
-        item_category = None
+        check_for_item = lambda _name: _name == item_name
 
     for item in self.items:
-        if (item_category and item.name in item_cats[item_category]) or (not item_category and item.name == item_name):
+        if check_for_item(item.name):
             if item.num >= quantity:
                 return item
 
