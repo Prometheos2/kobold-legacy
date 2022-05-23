@@ -78,21 +78,19 @@ def kobold_name():
     return "".join(firstname).capitalize()
 
 def tribe_name():
-  try: f = open('data/tribe_names.txt')
-  except:
-    console_print('ERROR: Cannot find tribe name list')
-    return "Erroneously-named Tribe"
-  temp_names = []
-  for line in f:
-    nam = line.strip('\n')
-    nam = nam.capitalize()
-    temp_names.append(nam)
-  n=choice(temp_names)+" "+choice(temp_names)
-  f.close()
-  return n
-  
-#def alpha_str(str):
-  
+    try:
+        f = open('data/tribe_names.txt')
+    except BaseException:
+        console_print('ERROR: Cannot find tribe name list')
+        return "Erroneously-named Tribe"
+    temp_names = []
+    for line in f:
+        nam = line.strip('\n')
+        nam = nam.capitalize()
+        temp_names.append(nam)
+    n = choice(temp_names) + " " + choice(temp_names)
+    f.close()
+    return n  
   
 def choice(ch):
   if len(ch)==0: return None
