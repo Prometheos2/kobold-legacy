@@ -146,13 +146,20 @@ def has_item(self, item_name, quantity=1):
             quantity -= item.num
     return None
   
-def consume_item(self,name,q=1):
-  while q>0:
-    i=self.has_item(name)
-    qq=q
-    q-=i.num
-    i.num-=qq
-    if i.num<=0: i.destroy("Consumed")
+def consume_item(self, item_name, quantity=1):
+    while quantity > 0:
+        item = self.has_item(item_name)
+        _consumed_quantity = quantity
+
+        try:
+            quantity -= item.num
+            item.num -= _consumed_quantity
+            if item.num <= 0:
+                item.destroy("Consumed")
+
+        except AttributeError:
+            # Failsafe if there is no found item
+            return
     
 def check_req(self,req,k=None):
   good="good"
