@@ -30,10 +30,12 @@ ROLENAMES={"brown":"Mudscale","red":"Bloodscale","yellow":"Goldscale","green":"J
 QUALITY_DESCRIPTIONS=["Abysmal","Awful","Crude","Poor","Normal","Decent","Good","Excellent","Masterwork","Legendary"]
 
 def describe_quality(quality_rate):
-  quality_rate+=4
-  if quality_rate>9: return "Divine"
-  elif quality_rate<0: return "Broken"
-  return QUALITY_DESCRIPTIONS[quality_rate]
+    quality_rate += 4
+    if quality_rate > 9:
+        return "Divine"
+    elif quality_rate < 0:
+        return "Broken"
+    return QUALITY_DESCRIPTIONS[quality_rate]
  
 def kobold_name():
   vowels = ['a','i','o','u','e']
