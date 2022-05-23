@@ -12,6 +12,8 @@ import discord
 import asyncio
 from dotenv import load_dotenv
 
+from src.dummy_message import DummyMessage
+
 STATS = ["str","dex","con","int","wis","cha"]
 STAT_COLOR = {"str":"red","dex":"white","con":"black","int":"blue","wis":"green","cha":"yellow"}
 COLOR_STAT = {"red":"str","white":"dex","black":"con","blue":"int","green":"wis","yellow":"cha"}
@@ -9426,16 +9428,6 @@ async def on_member_remove(member):
     if k.d_user_id==member.id: cmd_quit([],k,None,force=True)
   newchan = discord.utils.get(member.guild.channels,name="general")
   await newchan.send(member.name+" suffered an identity crisis and left this world.")
-
-
-class DummyMessage:
-    def __init__(self, channel, author, content, w=None, k=None):
-        self.channel = channel
-        self.author = author
-        self.content = content
-        self.world = w if w else world
-        self.k = k
-
 
 @clive.event
 async def on_message(message):
