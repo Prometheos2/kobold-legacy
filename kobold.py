@@ -27,12 +27,13 @@ GENOME = {"red":[False,False],
 ROLENAMES={"brown":"Mudscale","red":"Bloodscale","yellow":"Goldscale","green":"Jadescale","blue":"Silkscale","white":"Marblescale","black":"Coalscale","orange":"Copperscale","purple":"Violetscale","silver":"Silverscale"}
 #ADVANCE_TOTALS=[4,8,12,16,20,24]
 
+QUALITY_DESCRIPTIONS=["Abysmal","Awful","Crude","Poor","Normal","Decent","Good","Excellent","Masterwork","Legendary"]
+
 def describe_quality(quality_rate):
   quality_rate+=4
   if quality_rate>9: return "Divine"
   elif quality_rate<0: return "Broken"
-  quality_descriptions=["Abysmal","Awful","Crude","Poor","Normal","Decent","Good","Excellent","Masterwork","Legendary"]
-  return quality_descriptions[quality_rate]
+  return QUALITY_DESCRIPTIONS[quality_rate]
  
 def kobold_name():
   vowels = ['a','i','o','u','e']
