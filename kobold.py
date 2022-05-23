@@ -161,71 +161,95 @@ def consume_item(self, item_name, quantity=1):
             # Failsafe if there is no found item
             return
     
-def check_req(self,req,k=None):
-  good="good"
-  if k: place=k.get_place()
-  else: place=self
-  for q in req:
-    if q[0]=="research":
-      if isinstance(self,Tribe) and q[1] in self.research: 
-        #console_print("research req good because in tribe research")
-        continue
-      #console_print(k.get_name()+" fam with "+q[1]+" = "+str(k.familiar(q[1])))
-      if k and k.familiar(q[1])>0: 
-        #console_print("research req good because initiator is familiar")
-        continue
-      fam=False
-      if k:
-        for l in k.world.kobold_list:
-          if l.get_place()==place and l.familiar(q[1])>=2:
-            fam=True
-            break
-      if fam: 
-        #console_print("research req good because kobold with familiarity here")
-        continue
-      if place==self: good="Research missing: "+q[1]
-      else: good="Unfamiliar research: "+q[1]
-    elif q[0]=="item":
-      g="Item missing: "+q[1]
-      if place.has_item(q[1]): g="good"
-      if k and k.has_item(q[1]): g="good"
-      good=g
-    elif q[0]=="tool":
-      g="Tool missing: "+q[1]
-      for i in place.items:
-        if i.tool==q[1]: g="good"
-      if k:
-        for i in k.items:
-          if i.tool==q[1]: g="good"
-      if good=="good": good=g
-    elif q[0]=="building":
-      if not isinstance(place,Tribe): good="Can't be done in the overworld."
-      elif not place.has_building(q[1]): good="Building missing: "+q[1]
-    elif q[0]=="landmark":
-      if isinstance(place,Tribe): tile=place.world.get_tile(place.x,place.y,place.z)
-      else: tile=place
-      if q[1] not in tile.special: good="Landmark missing: "+q[1]
-    elif q[0]=="minlevel":
-      if k: z=k.z
-      else: z=self.z
-      if q[1]>z: good="Must be done at level "+str(q[1])+" or lower."
-    elif q[0]=="maxlevel":
-      if k: z=k.z
-      else: z=self.z
-      if q[1]<z: good="Must be done at level "+str(q[1])+" or lower."
-    elif q[0]=="tribe":
-      if isinstance(place,Tribe): t=place
-      else: t=place.get_tribe()
-      if t and not q[1]: good="You cannot do that in a tile with a den."
-      if not t and q[1]: good="Must be done in a tile with a den."
-    elif q[0]=="liquid":
-      if isinstance(place,Tribe): tile=place.world.get_tile(place.x,place.y,place.z)
-      else: tile=place
-      g="Liquid source missing: "+q[1]
-      for l in tile.special:
-        if landmark_data[l].get("liquid_source","none")==q[1]: g="good"
-      if good=="good": good=g
-  return good
+def check_req(self, req, k=None):
+    good = "good"
+    if k:
+        place = k.get_place()
+    else:
+        place = self
+    for q in req:
+        if q[0] == "research":
+            if isinstance(self, Tribe) and q[1] in self.research:
+                continue
+            if k and k.familiar(q[1]) > 0:
+                continue
+            fam = False
+            if k:
+                for l in k.world.kobold_list:
+                    if l.get_place() == place and l.familiar(q[1]) >= 2:
+                        fam = True
+                        break
+            if fam:
+                continue
+            if place == self:
+                good = "Research missing: " + q[1]
+            else:
+                good = "Unfamiliar research: " + q[1]
+        elif q[0] == "item":
+            g = "Item missing: " + q[1]
+            if place.has_item(q[1]):
+                g = "good"
+            if k and k.has_item(q[1]):
+                g = "good"
+            good = g
+        elif q[0] == "tool":
+            g = "Tool missing: " + q[1]
+            for i in place.items:
+                if i.tool == q[1]:
+                    g = "good"
+            if k:
+                for i in k.items:
+                    if i.tool == q[1]:
+                        g = "good"
+            if good == "good":
+                good = g
+        elif q[0] == "building":
+            if not isinstance(place, Tribe):
+                good = "Can't be done in the overworld."
+            elif not place.has_building(q[1]):
+                good = "Building missing: " + q[1]
+        elif q[0] == "landmark":
+            if isinstance(place, Tribe):
+                tile = place.world.get_tile(place.x, place.y, place.z)
+            else:
+                tile = place
+            if q[1] not in tile.special:
+                good = "Landmark missing: " + q[1]
+        elif q[0] == "minlevel":
+            if k:
+                z = k.z
+            else:
+                z = self.z
+            if q[1] > z:
+                good = "Must be done at level " + str(q[1]) + " or lower."
+        elif q[0] == "maxlevel":
+            if k:
+                z = k.z
+            else:
+                z = self.z
+            if q[1] < z:
+                good = "Must be done at level " + str(q[1]) + " or lower."
+        elif q[0] == "tribe":
+            if isinstance(place, Tribe):
+                t = place
+            else:
+                t = place.get_tribe()
+            if t and not q[1]:
+                good = "You cannot do that in a tile with a den."
+            if not t and q[1]:
+                good = "Must be done in a tile with a den."
+        elif q[0] == "liquid":
+            if isinstance(place, Tribe):
+                tile = place.world.get_tile(place.x, place.y, place.z)
+            else:
+                tile = place
+            g = "Liquid source missing: " + q[1]
+            for l in tile.special:
+                if landmark_data[l].get("liquid_source", "none") == q[1]:
+                    g = "good"
+            if good == "good":
+                good = g
+    return good
 
 def get_tri_distance(x1,y1,x2,y2):
   xdist=abs(x1-x2)
