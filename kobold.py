@@ -92,40 +92,58 @@ def tribe_name():
     f.close()
     return n  
   
-def choice(ch):
-  if len(ch)==0: return None
-  else: return random.choice(ch)
+def choice(possible_choices):
+    if len(possible_choices) == 0:
+        return None
 
-def chance(ch):
-  if ch<=0: return False
-  c=random.randint(1,100)
-  console_print("CHANCE: looking for "+str(ch)+" or less, got "+str(c))
-  if c<=abs(ch): return True
-  else: return False
+    return random.choice(possible_choices)
+
+def chance(success_chance):
+    if success_chance <= 0:
+        return False
+
+    luck = random.randint(1, 100)
+    console_print(f"CHANCE: looking for {str(success_chance)} or less, got {str(luck)}")
+    return luck <= abs(success_chance)
   
-def get_json(fname):
-  try:
-    f = open(fname)
-    stuff = json.load(f)
-    f.close()
-  except IOError as e:
-    console_print('There was a problem loading '+fname+':\n'+e.args[0])
-    return None
-  except ValueError as e:
-    console_print('There was a problem parsing '+fname+':\n'+e.args[0])
-    return None
-  return stuff
+def get_json(filename):
+    try:
+        with open(filename) as f:
+            stuff = json.load(f)
+        return stuff
 
-def has_item(self,name,q=1):
-  #console_print("has item for "+name)
-  if name[0]=="*": cat=name.replace("*","")
-  else: cat=None
-  for i in self.items:
-    if (cat and i.name in item_cats[cat]) or (not cat and i.name==name):
-      #console_print(i.name+" fits the bill")
-      if i.num>=q: return i
-      else: q-=i.num
-  return None
+    except IOError as e:
+        console_print(f'There was a problem loading {filename}:\n{e.args[0]}')
+        return None
+    except ValueError as e:
+        console_print(f'There was a problem parsing {filename}:\n{e.args[0]}')
+        return None
+
+def has_item(self, item_name, quantity=1):
+    """Check whether `self` has a given item.
+
+    Arguments:
+        self -- entity that 'holds' items (Kobold, Tile, Tribe)
+        item_name -- Name of the queried item.
+
+    Keyword Arguments:
+        quantity -- Queried quantity? (default: {1})
+
+    Returns:
+        Item if found.
+    """
+    if item_name[0] == "*":
+        item_category = item_name.replace("*", "")
+    else:
+        item_category = None
+
+    for item in self.items:
+        if (item_category and item.name in item_cats[item_category]) or (not item_category and item.name == item_name):
+            if item.num >= quantity:
+                return item
+
+            quantity -= item.num
+    return None
   
 def consume_item(self,name,q=1):
   while q>0:
