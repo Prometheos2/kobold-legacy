@@ -251,19 +251,24 @@ def check_req(self, req, k=None):
                 good = g
     return good
 
-def get_tri_distance(x1,y1,x2,y2):
-  xdist=abs(x1-x2)
-  ydist=abs(y1-y2)
-  return (min(xdist,ydist)*1.4)+abs(xdist-ydist)
-  
-def get_dir(ct,k):
-  if abs(ct.x-k.x)>abs(ct.y-k.y):
-    if ct.x<k.x: return "west"
-    elif ct.x>k.x: return "east"
-  else:
-    if ct.y<k.y: return "north"
-    elif ct.y>k.y: return "south"
-    else: return "same"
+def get_tri_distance(x1, y1, x2, y2):
+    xdist = abs(x1 - x2)
+    ydist = abs(y1 - y2)
+    return (min(xdist, ydist) * 1.4) + abs(xdist - ydist)
+
+def get_dir(ct, k):
+    if abs(ct.x - k.x) > abs(ct.y - k.y):
+        if ct.x < k.x:
+            return "west"
+        elif ct.x > k.x:
+            return "east"
+    else:
+        if ct.y < k.y:
+            return "north"
+        elif ct.y > k.y:
+            return "south"
+        else:
+            return "same"
   
 class World:
   def __init__(self):
