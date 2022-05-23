@@ -44,33 +44,34 @@ def kobold_name():
     cluster = ['b', 'd', 'l', 'f', 'g', 'k', 'p', 'n', 'm', 's', 'v']
     fincluster = ['m','r','ng','b','rb','mb','g','lg','l','lb','lm','rg','k','rk','lk','rv','v']
     finsyl = ['is', 'us', 'ex1', 'ex2', 'al', 'a', 'ex3']
-    first = 1
+
+    is_first_iter = True
     syl = random.randint(0, 2) + 1
-    firstname = ""
+    firstname = []
     vowel = choice(vowels)
     while syl > 0:
         if syl == 1:
             vowel = choice(penvowels)
-        if first == 1 or syl == 1:
-            firstname = firstname + choice(frontcluster)
-            first = 0
+        if is_first_iter or syl == 1:
+            firstname.append(choice(frontcluster))
+            is_first_iter = False
         else:
-            firstname = firstname + choice(cluster)
-        firstname = firstname + vowel
+            firstname.append(choice(cluster))
+        firstname.append(vowel)
         syl = syl - 1
-    firstname = firstname + choice(fincluster)
+
+    firstname.append(choice(fincluster))
     fin = choice(finsyl)
     if vowel in ['o', 'ay', 'u', 'a']:
         if fin == 'ex1':
-            fin = choice(['er', 'ar'])
+            firstname.append(choice(['er', 'ar']))
         elif fin == 'ex2':
-            fin = choice(['in', 'an'])
+            firstname.append(choice(['in', 'an']))
         elif fin == 'ex3':
-            fin = 'i'
+            firstname.append('i')
     elif 'ex' in fin:
-        fin = choice(['is', 'us', 'al', 'a'])
-    firstname = firstname + fin
-    return firstname.capitalize()
+        firstname.append(choice(['is', 'us', 'al', 'a']))
+    return "".join(firstname).capitalize()
   
 def tribe_name():
   try: f = open('data/tribe_names.txt')
