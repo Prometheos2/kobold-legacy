@@ -50,9 +50,9 @@ def kobold_name():
     firstname = []
     vowel = choice(vowels)
     while syl > 0:
-        if syl == 1:
-            vowel = choice(penvowels)
         if is_first_iter or syl == 1:
+            if syl == 1:
+                vowel = choice(penvowels)
             firstname.append(choice(frontcluster))
             is_first_iter = False
         else:
@@ -62,6 +62,9 @@ def kobold_name():
 
     firstname.append(choice(fincluster))
     fin = choice(finsyl)
+    if 'ex' not in fin:
+        return "".join(firstname).capitalize()
+
     if vowel in ['o', 'ay', 'u', 'a']:
         if fin == 'ex1':
             firstname.append(choice(['er', 'ar']))
@@ -69,10 +72,11 @@ def kobold_name():
             firstname.append(choice(['in', 'an']))
         elif fin == 'ex3':
             firstname.append('i')
-    elif 'ex' in fin:
+    else:
         firstname.append(choice(['is', 'us', 'al', 'a']))
+
     return "".join(firstname).capitalize()
-  
+
 def tribe_name():
   try: f = open('data/tribe_names.txt')
   except:
