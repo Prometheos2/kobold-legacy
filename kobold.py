@@ -269,7 +269,7 @@ def get_dir(ct, k):
             return "south"
         else:
             return "same"
-  
+
 class World:
   def __init__(self):
     self.tribes=[]
@@ -9426,18 +9426,16 @@ async def on_member_remove(member):
     if k.d_user_id==member.id: cmd_quit([],k,None,force=True)
   newchan = discord.utils.get(member.guild.channels,name="general")
   await newchan.send(member.name+" suffered an identity crisis and left this world.")
-  
+
+
 class DummyMessage:
-  def __init__(self,channel,author,content,w=None,k=None):
-    self.channel=channel
-    self.author=author
-    self.content=content
-    if not w: self.world=world
-    else: self.world=w
-    self.k=k
-    
-  def delete(self):
-    pass
+    def __init__(self, channel, author, content, w=None, k=None):
+        self.channel = channel
+        self.author = author
+        self.content = content
+        self.world = w if w else world
+        self.k = k
+
 
 @clive.event
 async def on_message(message):
