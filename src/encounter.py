@@ -30,7 +30,7 @@ class Encounter:
                 a = random.randint(2, 5)
             else:
                 a = 1
-            for b in range(a):
+            for _ in range(a):
                 k = Kobold(world.tribes[0])
                 k.tribe = None
                 k.encounter = self
@@ -40,7 +40,7 @@ class Encounter:
                     k.random_stats()
                     for st in k.s:
                         k.s[st] = 0
-                    for x in range(k.age):
+                    for _ in range(k.age):
                         k.age_up()
                     k.hp = k.max_hp
                 else:
@@ -123,55 +123,54 @@ class Encounter:
 
     def end(self):
         if self in self.world.encounters:
-            self.world.encounters.remove(self)
+          self.world.encounters.remove(self)
         for p in self.engaged:
-            game_print("The battle is won!", p.get_chan())
+          game_print("The battle is won!", p.get_chan())
         self.disengage_all()
-        if self.special == "Goblin Boss":
-            if self.place.dungeon:
-                d = self.place.dungeon
-                ow = self.world.get_tile(d.x, d.y, d.z)
-                if "Goblin Camp" in ow.special:
-                    ow.special.remove("Goblin Camp")
-                game_print(
-                    "With their boss defeated, the remaining goblins scramble to flee the camp. The goblins won't be planning a counter-attack any time soon, but you can bet they won't forget this.",
-                    p.get_chan())
-                if p.owner.tribe:
-                    p.owner.tribe.heat_faction["Goblin"] = int(
-                        p.owner.tribe.heat_faction["Goblin"] / -2)
-                    p.owner.tribe.shc_faction["Goblin"] += 50
-        elif self.special == "Ant Queen":
-            if self.place.dungeon:
-                d = self.place.dungeon
-                ow = self.world.get_tile(d.x, d.y, d.z)
-                if "Ant Nest" in ow.special:
-                    ow.special.remove("Ant Nest")
-                if "Abandoned Ant Nest" not in ow.special:
-                    ow.special.append("Abandoned Ant Nest")
-                game_print(
-                    "The Ant Queen and her subjects fall, leaving behind the heavy stench of alarm pheromones. The nest rumbles as ants scramble to evacuate. These ants surely won't bother the tribe anytime soon.",
-                    p.get_chan())
-                tiles = []
-                for m in d.map:
-                    tiles.append(d.map[m])
-                re = []
-                for e in self.world.encounters:
-                    if e.place in tiles:
-                        e.disengage_all()
-                        re.append(e)
-                for e in re:
-                    self.world.encounters.remove(e)
-                ts = []
-                for m in p.k_members:
-                    if m.tribe and m.tribe not in ts:
-                        ts.append(m.tribe)
-                for t in ts:
-                    t.heat_faction["Ant"] = 0
-                game_print(
-                    "This has been an enlightening experience for everyone.",
-                    p.get_chan())
-                for m in p.k_members:
-                    m.get_familiar("Verticality", 600)
+        if self.place.dungeon:
+          if self.special == "Goblin Boss":
+              d = self.place.dungeon
+              ow = self.world.get_tile(d.x, d.y, d.z)
+              if "Goblin Camp" in ow.special:
+                  ow.special.remove("Goblin Camp")
+              game_print(
+                  "With their boss defeated, the remaining goblins scramble to flee the camp. The goblins won't be planning a counter-attack any time soon, but you can bet they won't forget this.",
+                  p.get_chan())
+              if p.owner.tribe:
+                  p.owner.tribe.heat_faction["Goblin"] = int(
+                      p.owner.tribe.heat_faction["Goblin"] / -2)
+                  p.owner.tribe.shc_faction["Goblin"] += 50
+          elif self.special == "Ant Queen":
+              d = self.place.dungeon
+              ow = self.world.get_tile(d.x, d.y, d.z)
+              if "Ant Nest" in ow.special:
+                  ow.special.remove("Ant Nest")
+              if "Abandoned Ant Nest" not in ow.special:
+                  ow.special.append("Abandoned Ant Nest")
+              game_print(
+                  "The Ant Queen and her subjects fall, leaving behind the heavy stench of alarm pheromones. The nest rumbles as ants scramble to evacuate. These ants surely won't bother the tribe anytime soon.",
+                  p.get_chan())
+              tiles = []
+              for m in d.map:
+                  tiles.append(d.map[m])
+              re = []
+              for e in self.world.encounters:
+                  if e.place in tiles:
+                      e.disengage_all()
+                      re.append(e)
+              for e in re:
+                  self.world.encounters.remove(e)
+              ts = []
+              for m in p.k_members:
+                  if m.tribe and m.tribe not in ts:
+                      ts.append(m.tribe)
+              for t in ts:
+                  t.heat_faction["Ant"] = 0
+              game_print(
+                  "This has been an enlightening experience for everyone.",
+                  p.get_chan())
+              for m in p.k_members:
+                  m.get_familiar("Verticality", 600)
 
     def disengage(self, party):
         for k in party.members:
@@ -293,8 +292,7 @@ class Encounter:
                 k.p("[n] stumbles around in a daze...")
                 k.attack(target)
                 k.didturn = True
-            if isinstance(
-                    k, Creature) and "combat" not in k.training and "guard" not in k.training:
+            if isinstance(k, Creature) and "combat" not in k.training and "guard" not in k.training:
                 k.didturn = True
 
     def get_party(self):
@@ -307,29 +305,19 @@ class Encounter:
 def turn_traits(fighter):
     trs = list(fighter.traits)
     for t in trs:
-        if trait_data[t].get("turn_block", False):
+        trait_t_data = trait_data[t]
+        if trait_t_data.get("turn_block", False):
             fighter.didturn = True
-            if trait_data[t].get("visible", False):
-                fighter.p(
-                    "[n] is " +
-                    trait_data[t].get(
-                        "display",
-                        t) +
-                    " and cannot act this round.")
-        if trait_data[t].get("dmg_combat", 0) > 0:
+            if trait_t_data.get("visible", False):
+                fighter.p(f"[n] is {trait_t_data.get('display',t)} and cannot act this round.")
+
+        if trait_t_data.get("dmg_combat", 0) > 0:
             fighter.hp_tax(
-                trait_data[t]["dmg_combat"],
-                trait_data[t].get(
-                    "display",
-                    t),
+                trait_t_data["dmg_combat"],
+                trait_t_data.get("display",t),
                 dmgtype="poison")
-        if trait_data[t].get("turn_save_to_cure", False):
-            if fighter.save(trait_data[t]["save_stat"]
-                            ) >= trait_data[t]["save"]:
+
+        if trait_t_data.get("turn_save_to_cure", False):
+            if fighter.save(trait_t_data["save_stat"]) >= trait_t_data["save"]:
                 fighter.del_trait(t)
-                fighter.p(
-                    "[n] has overcome their " +
-                    trait_data[t].get(
-                        "display",
-                        t) +
-                    " condition.")
+                fighter.p(f"[n] has overcome their {trait_t_data.get('display',t)} condition.")
