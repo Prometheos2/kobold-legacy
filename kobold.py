@@ -27,12 +27,12 @@ GENOME = {"red":[False,False],
 ROLENAMES={"brown":"Mudscale","red":"Bloodscale","yellow":"Goldscale","green":"Jadescale","blue":"Silkscale","white":"Marblescale","black":"Coalscale","orange":"Copperscale","purple":"Violetscale","silver":"Silverscale"}
 #ADVANCE_TOTALS=[4,8,12,16,20,24]
 
-def get_q_desc(q):
-  qs=["Abysmal","Awful","Crude","Poor","Normal","Decent","Good","Excellent","Masterwork","Legendary"]
-  q+=4
-  if q>9: return "Divine"
-  if q<0: return "Broken"
-  return qs[q]
+def describe_quality(quality_rate):
+  quality_rate+=4
+  if quality_rate>9: return "Divine"
+  elif quality_rate<0: return "Broken"
+  quality_descriptions=["Abysmal","Awful","Crude","Poor","Normal","Decent","Good","Excellent","Masterwork","Legendary"]
+  return quality_descriptions[quality_rate]
  
 def kobold_name():
   vowels = ['a','i','o','u','e']
@@ -2877,7 +2877,7 @@ class Item:
     elif self.kobold:
       d+="\nEgg color: "+self.kobold.color+"\n"
     else: 
-      d+="\nQuality: "+get_q_desc(self.quality)
+      d+="\nQuality: "+describe_quality(self.quality)
       if self.quality>0: d+=" (+"+str(self.quality)+")\n"
       else: d+=" ("+str(self.quality)+")\n"
     if self.durability>0: d+="Durability: "+str(self.durability)+"/"+str(self.max_durability)+"\n"
@@ -4294,7 +4294,7 @@ def spell_enchant(spell,words,me,target):
   else:
     me.p("[n]'s Sorcery isn't strong enough to increase the quality any further.")
     return False
-  me.p("[n]'s magic has enhanced the "+target.display()+" to "+get_q_desc(target.quality)+" quality.")
+  me.p("[n]'s magic has enhanced the "+target.display()+" to "+describe_quality(target.quality)+" quality.")
   return True
 
 def spell_hotfix(spell,words,me,target):
@@ -6993,7 +6993,7 @@ def cmd_craft(words,me,target):
           if not c.get("ignore_quality",False) and am==1: newcraft.set_quality(q)
           if am>1: amstr=str(am)+"x"
           else: amstr="a"
-        me.p("[n] has successfully crafted "+amstr+" "+get_q_desc(q)+"-quality "+c["result"]+".")
+        me.p("[n] has successfully crafted "+amstr+" "+describe_quality(q)+"-quality "+c["result"]+".")
         if c.get("mana",0)>0: exp=int((max(2,q+5)/2)*10*c["mana"])
         else: exp=int((max(2,q+5)/2)*10*c["work"])
         me.gain_xp(sk,exp)
