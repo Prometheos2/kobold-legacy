@@ -1,4 +1,3 @@
-
 class DummyMessage:
     def __init__(self, channel, author, content, w, k=None):
         self.channel = channel
