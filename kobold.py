@@ -1,15 +1,15 @@
-import math
-import random
-import traceback
-import os
-import time
+import asyncio
 import json
-import shelve
+import math
 import operator
+import os
+import random
 import re
+import shelve
+import time
+import traceback
 
 import discord
-import asyncio
 from dotenv import load_dotenv
 
 STATS = ["str", "dex", "con", "int", "wis", "cha"]
