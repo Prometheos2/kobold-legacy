@@ -4,10 +4,11 @@ import time
 
 import discord
 
+from creature import Creature
 from kobold import Kobold
 from tribe import Tribe
 
-from ..kobold import (Creature, action_queue, chance, game_print, guild,
+from ..kobold import (action_queue, chance, game_print, guild,
                       landmark_data, liquid_data, sandbox, trait_data)
 
 
