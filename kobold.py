@@ -4054,25 +4054,44 @@ def droll(nbDices, diceMaxValue, adv=0):
     return min(rolls)
 
 
-def spawn_item(name,place,num=1,force=False,quality=None):
-  i=None
-  while num>0:
-    i=Item(name,num)
-    if isinstance(place,Kobold) or isinstance(place,Creature):
-      bag=False
-      if i.inv_size>0:
-        for h in place.items:
-          if h.inv_size>0: bag=True
-      if (bag or len(place.items)>=place.inv_size) and not force: 
-        place.p("[n]'s inventory is full. Some items were dropped.")
-        place=place.get_place() #inventory full
-      elif isinstance(place,Creature) and "haul" not in place.training:
-        place.p("[n] doesn't have haul training, so it dropped the item.")
-        place=place.get_place() #inventory full
-    num-=i.num
-    i.move(place)
-    console_print("Spawned: "+name+" x "+str(i.num))
-  return i
+def spawn_item(name, place, num=1, force=False, quality=None):
+    """Spawn items
+
+    Arguments:
+        name -- Name of the item
+        place -- Place (Tile/Den) or Entity (Creature/Kobold)
+
+    Keyword Arguments:
+        num -- Number of items to create (default: {1})
+        force -- Whether to disregard kobolds' inventories (default: {False})
+        quality -- Quality [unused] (default: {None})
+
+    Returns:
+        The spawned item
+    """
+    item = None
+    while num > 0:
+        item = Item(name, num)
+        if isinstance(place, (Kobold, Creature)):
+            bag = False
+            if item.inv_size > 0:
+                for h in place.items:
+                    if h.inv_size > 0:
+                        bag = True
+                        break
+
+            if (bag or len(place.items) >= place.inv_size) and not force:
+                place.p("[n]'s inventory is full. Some items were dropped.")
+                place = place.get_place()  # inventory full
+            elif isinstance(place, Creature) and "haul" not in place.training:
+                place.p("[n] doesn't have haul training, so it dropped the item.")
+                place = place.get_place()  # inventory full
+
+        num -= item.num
+        item.move(place)
+        console_print(f"Spawned: {name} x {str(item.num)}")
+
+    return item
 
 def make_baby(male,female):
   baby=Kobold(female.tribe)
