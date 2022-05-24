@@ -2,9 +2,10 @@ import random
 
 import discord
 
+from creature import Creature
 from kobold import Kobold
 
-from ..kobold import (Creature, action_queue, chance, choice,
+from ..kobold import (action_queue, chance, choice,
                       console_print, creature_data, game_print,
                       spawn_item, trait_data, turn_traits)
 
