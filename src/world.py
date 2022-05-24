@@ -2,7 +2,9 @@ import math
 import random
 import time
 
-from ..kobold import (Kobold, Tile, Tribe, chance, choice, console_print,
+from tile import Tile
+
+from ..kobold import (Kobold, Tribe, chance, choice, console_print,
                       find_building, forage, game_print, get_tri_distance,
                       item_cats, item_data, landmark_data, liquid_data,
                       skill_data, spawn_item, trait_data)
