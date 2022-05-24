@@ -4018,27 +4018,38 @@ def attack_roll(self, target, guarding=False, sparring=False):
     return dmg
     
 def turn_traits(fighter):
-  trs=list(fighter.traits)
-  for t in trs:
-    if trait_data[t].get("turn_block",False): 
-      fighter.didturn=True
-      if trait_data[t].get("visible",False): fighter.p("[n] is "+trait_data[t].get("display",t)+" and cannot act this round.")
-    if trait_data[t].get("dmg_combat",0)>0: fighter.hp_tax(trait_data[t]["dmg_combat"],trait_data[t].get("display",t),dmgtype="poison")
-    if trait_data[t].get("turn_save_to_cure",False):
-      if fighter.save(trait_data[t]["save_stat"])>=trait_data[t]["save"]:
-        fighter.del_trait(t)
-        fighter.p("[n] has overcome their "+trait_data[t].get("display",t)+" condition.")
+    traits = list(fighter.traits)
+    for trait in traits:
+        if trait_data[trait].get("turn_block", False):
+            fighter.didturn = True
+            if trait_data[trait].get("visible", False):
+                fighter.p(f"[n] is {trait_data[trait].get('display',trait)} and cannot act this round.")
+
+        if trait_data[trait].get("dmg_combat", 0) > 0:
+            fighter.hp_tax(
+                trait_data[trait]["dmg_combat"],
+                trait_data[trait].get("display", trait), dmgtype="poison")
+
+        if trait_data[trait].get("turn_save_to_cure", False):
+            if fighter.save(trait_data[trait]["save_stat"]) >= trait_data[trait]["save"]:
+                fighter.del_trait(trait)
+                fighter.p(f"[n] has overcome their {trait_data[trait].get('display',trait)} condition.")
     
-def droll(dice,sides,adv=0):
-  roll=[]
-  if adv!=0: rolls=2
-  else: rolls=1
-  for q in range(rolls):
-    r=0
-    for d in range(dice): r+=random.randint(1,sides)
-    roll.append(r)
-  if adv==1: return max(roll)
-  else: return min(roll)
+def droll(dice, sides, adv=0):
+    rolls = []
+    nbRolls = 1
+
+    if adv != 0:
+        nbRolls += 1
+
+    for _ in range(nbRolls):
+        roll = sum([random.randint(1, sides) for _ in range(dice)])
+        rolls.append(roll)
+
+    if adv == 1:
+        return max(rolls)
+    else:
+        return min(rolls)
     
 def spawn_item(name,place,num=1,force=False,quality=None):
   i=None
