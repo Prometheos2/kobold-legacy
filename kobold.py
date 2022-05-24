@@ -3918,76 +3918,115 @@ class Creature:
       guard=True
     return attack_roll(self,target,guarding=guard)
     
-def attack_roll(self,target,bonus=0,guarding=False,sparring=False):
-  chan=target.get_chan()
-  if target.has_trait("protected") and len(target.encounter.creatures)>1 and chance(75):
-    guards=list(target.encounter.creatures)
-    if target in guards: guards.remove(target)
-    ot=target
-    target=choice(guards)
-    game_print(target.display()+" jumps in the way to protect "+ot.display()+"!",chan)
-  game_print(self.display()+" attacks "+target.display()+".",chan)
-  adv=0
-  if self.has_trait("greased"):
-    if self.save("dex")<11:
-      game_print(self.display()+" slips on the grease and falls prone!",chan)
-      return 0
+def attack_roll(self, target, guarding=False, sparring=False):
+    chan = target.get_chan()
+    if target.has_trait("protected") and len(
+            target.encounter.creatures) > 1 and chance(75):
+        guards = list(target.encounter.creatures)
+        if target in guards:
+            guards.remove(target)
+        ot = target
+        target = choice(guards)
+        game_print(f"{target.display()} jumps in the way to protect {ot.display()}!",chan)
+    game_print(f"{self.display()} attacks {target.display()}.", chan)
+    adv = 0
+    if self.has_trait("greased"):
+        if self.save("dex") < 11:
+            game_print(f"{self.display()} slips on the grease and falls prone!",
+                chan)
+            return 0
+
+        game_print(f"{self.display()} manages to work their way out of the grease.", chan)
+        self.del_trait("greased")
+    for t in target.traits:
+        if trait_data[t].get("target_adv", 0) != 0:
+            adv += trait_data[t]["target_adv"]
+    for t in self.traits:
+        if trait_data[t].get("attack_adv", 0) != 0:
+            adv += trait_data[t]["attack_adv"]
+    if self.has_trait("oneeye") and self.equip and self.equip.type == "ranged":
+        adv -= 1
+    if isinstance(self, Kobold) and not self.shaded:
+        adv -= 1
+    roll = droll(1, 20, adv)
+    roll += self.tohit
+    if roll >= target.ac or roll == self.tohit + 20:  # hits, roll damage
+        dmg = self.dmg[2]
+        if roll == self.tohit + 20 and target.ac - self.tohit < 20:
+            game_print("Critical hit!", chan)
+            dmg *= 2
+        for _ in range(self.dmg[0]):
+            dmg += random.randint(1, self.dmg[1])
+        if self.dmgtype not in ["bludgeoning", "piercing",
+                                "slashing"] and self.wearing_nonmage_equipment():
+            dmg = math.ceil(dmg / 2)
+        if guarding and target.save("con") > 13:
+            dmg -= random.randint(1, max(1, target.smod("con") + 1))
+        dmg = max(1, dmg)  # no hitting 0's or negative numbers
+        if not sparring:
+            target.hp_tax(
+                dmg,
+                "Killed by " +
+                self.display(),
+                self,
+                self.dmgtype)
+            if target.has_trait("barrier"):
+                reflect = random.randint(0, math.ceil(dmg / 4))
+                if reflect > 0:
+                    self.hp_tax(
+                        reflect,
+                        "Taste of own medicine",
+                        target,
+                        "force")
+        else:
+            if self.equip and self.equip.type == "ranged":
+                sk = "marksman"
+            elif self.equip and self.equip.type == "magic":
+                sk = "sorcery"
+            else:
+                sk = "melee"
+            if chance((dmg - self.skmod(sk)) * 5):
+                self.p(
+                    "[n] accidentally hits " +
+                    target.display() +
+                    " with more force than intended!")
+                target.hp_tax(
+                    random.randint(
+                        1,
+                        dmg),
+                    "Sparring accident",
+                    dmgtype=self.dmgtype)
+            else:
+                self.p(
+                    "[n] holds back, but would have dealt " +
+                    str(dmg) +
+                    " damage.")
+            target.gain_xp("resilience", dmg * 4)
+        if self.has_trait("poisoner"):
+            if target.save("con") < 11:
+                game_print(target.display() + " has been poisoned!", chan)
+                target.add_trait("poisoned")
+        if self.has_trait("paralyzer"):
+            if target.save("con") < 8:
+                game_print(target.display() + " has been paralyzed!", chan)
+                target.add_trait("paralyzed")
+
+        if dmg > 0:
+            if target.has_trait("corroder"):
+                if self.equip:
+                    self.equip.lower_durability(3)
+                else:
+                    self.hp_tax(1, "Acid burn", dmgtype="acid")
     else:
-      game_print(self.display()+" manages to work their way out of the grease.",chan)
-      self.del_trait("greased")
-  for t in target.traits:
-    if trait_data[t].get("target_adv",0)!=0: adv+=trait_data[t]["target_adv"]
-  for t in self.traits:  
-    if trait_data[t].get("attack_adv",0)!=0: adv+=trait_data[t]["attack_adv"]
-  if self.has_trait("oneeye") and self.equip and self.equip.type=="ranged": adv-=1
-  if isinstance(self,Kobold) and not self.shaded: adv-=1
-  roll=droll(1,20,adv)
-  roll+=self.tohit
-  if roll>=target.ac or roll==self.tohit+20: #hits, roll damage
-    dmg=self.dmg[2]
-    if roll==self.tohit+20 and target.ac-self.tohit<20:
-      game_print("Critical hit!",chan)
-      dmg*=2
-    for x in range(self.dmg[0]):
-      dmg+=random.randint(1,self.dmg[1])
-    if self.dmgtype not in ["bludgeoning","piercing","slashing"] and self.wearing_nonmage_equipment(): dmg=math.ceil(dmg/2)
-    if guarding and target.save("con")>13: dmg-=random.randint(1,max(1,target.smod("con")+1))
-    dmg=max(1,dmg) #no hitting 0's or negative numbers
-    if not sparring: 
-      target.hp_tax(dmg,"Killed by "+self.display(),self,self.dmgtype)
-      if target.has_trait("barrier"):
-        reflect=random.randint(0,math.ceil(dmg/4))
-        if reflect>0: self.hp_tax(reflect,"Taste of own medicine",target,"force")
-    else: 
-      if self.equip and self.equip.type=="ranged": sk="marksman"
-      elif self.equip and self.equip.type=="magic": sk="sorcery"
-      else: sk="melee"
-      if chance((dmg-self.skmod(sk))*5): 
-        self.p("[n] accidentally hits "+target.display()+" with more force than intended!")
-        target.hp_tax(random.randint(1,dmg),"Sparring accident",dmgtype=self.dmgtype)
-      else:
-        self.p("[n] holds back, but would have dealt "+str(dmg)+" damage.")
-      target.gain_xp("resilience",dmg*4)
-    if self.has_trait("poisoner"):
-      if target.save("con")<11:
-        game_print(target.display()+" has been poisoned!",chan)
-        target.add_trait("poisoned")
-    if self.has_trait("paralyzer"):
-      if target.save("con")<8:
-        game_print(target.display()+" has been paralyzed!",chan)
-        target.add_trait("paralyzed")
-  else:
-    game_print("The attack missed.",chan)
-    if sparring: target.gain_xp("resilience",roll+10)
-    dmg=0
-  if dmg>0:
-    if target.has_trait("corroder"):
-      if self.equip: self.equip.lower_durability(3)
-      else: self.hp_tax(1,"Acid burn",dmgtype="acid")
-  trs=list(self.traits)
-  for t in trs:
-    if trait_data[t].get("attack_reset",False): self.del_trait(t)
-  return dmg
+        game_print("The attack missed.", chan)
+        if sparring:
+            target.gain_xp("resilience", roll + 10)
+        dmg = 0
+    trs = list(self.traits)
+    for t in trs:
+        if trait_data[t].get("attack_reset", False):
+            self.del_trait(t)
+    return dmg
     
 def turn_traits(fighter):
   trs=list(fighter.traits)
