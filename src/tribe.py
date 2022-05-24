@@ -6,7 +6,7 @@ import discord
 
 from tile import Tile
 
-from ..kobold import (COLOR_STAT, DIR_FULL, OPP_DIR, Creature, Kobold, building_data,
+from ..kobold import (COLOR_STAT, DIR_FULL, OPP_DIR, Creature, building_data,
                       check_req, choice, console_print, consume_item,
                       find_building, find_research, game_print,
                       has_item, research_data, spawn_item, tribe_name)
