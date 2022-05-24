@@ -12,6 +12,8 @@ import traceback
 import discord
 from dotenv import load_dotenv
 
+from src.dummy_message import DummyMessage
+
 STATS = ["str", "dex", "con", "int", "wis", "cha"]
 STAT_COLOR = {"str": "red", "dex": "white", "con": "black",
               "int": "blue", "wis": "green", "cha": "yellow"}
@@ -11905,21 +11907,6 @@ async def on_member_remove(member):
             cmd_quit([], k, None, force=True)
     newchan = discord.utils.get(member.guild.channels, name="general")
     await newchan.send(member.name+" suffered an identity crisis and left this world.")
-
-
-class DummyMessage:
-    def __init__(self, channel, author, content, w=None, k=None):
-        self.channel = channel
-        self.author = author
-        self.content = content
-        if not w:
-            self.world = world
-        else:
-            self.world = w
-        self.k = k
-
-    def delete(self):
-        pass
 
 
 @clive.event
