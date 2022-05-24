@@ -4030,26 +4030,29 @@ def turn_traits(fighter):
                 trait_data[trait]["dmg_combat"],
                 trait_data[trait].get("display", trait), dmgtype="poison")
 
-        if trait_data[trait].get("turn_save_to_cure", False):
-            if fighter.save(trait_data[trait]["save_stat"]) >= trait_data[trait]["save"]:
-                fighter.del_trait(trait)
-                fighter.p(f"[n] has overcome their {trait_data[trait].get('display',trait)} condition.")
+        is_save_success = fighter.save(trait_data[trait]["save_stat"]) >= trait_data[trait]["save"]
+        if trait_data[trait].get("turn_save_to_cure", False) and is_save_success:
+            fighter.del_trait(trait)
+            fighter.p(f"[n] has overcome their {trait_data[trait].get('display',trait)} condition.")
 
-def droll(dice, sides, adv=0):
-    rolls = []
-    nbRolls = 1
 
-    if adv != 0:
-        nbRolls += 1
+def _make_a_roll(nbDices, diceMaxValue):
+    return sum([random.randint(1, diceMaxValue) for _ in range(nbDices)])
 
-    for _ in range(nbRolls):
-        roll = sum([random.randint(1, sides) for _ in range(dice)])
-        rolls.append(roll)
+
+def droll(nbDices, diceMaxValue, adv=0):
+    roll = _make_a_roll(nbDices, diceMaxValue)
+
+    if adv == 0:
+        return roll
+
+    rolls = (roll, _make_a_roll(nbDices, diceMaxValue))
 
     if adv == 1:
         return max(rolls)
-    else:
-        return min(rolls)
+
+    return min(rolls)
+
 
 def spawn_item(name,place,num=1,force=False,quality=None):
   i=None
