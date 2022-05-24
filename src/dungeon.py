@@ -1,9 +1,10 @@
 import math
 import random
 
+from encounter import Encounter
 from tile import Tile
 
-from ..kobold import (OPP_DIR, Encounter, chance, choice,
+from ..kobold import (OPP_DIR, chance, choice,
                       console_print, dungeon_data, forage, spawn_item)
 
 

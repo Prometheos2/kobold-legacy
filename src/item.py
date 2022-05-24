@@ -3,10 +3,11 @@ import random
 
 import discord
 
+from encounter import Encounter
 from kobold import Kobold
 from tribe import Tribe
 
-from ..kobold import (DIR_FULL, Encounter, action_queue, chance, check_req,
+from ..kobold import (DIR_FULL, action_queue, chance, check_req,
                       choice, console_print, find_research, game_print,
                       get_dir, get_q_desc, get_tri_distance, item_data,
                       landmark_data, liquid_data, spawn_item, spell_data)

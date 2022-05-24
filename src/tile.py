@@ -5,8 +5,9 @@ import time
 import discord
 
 from dungeon import Dungeon
+from encounter import Encounter
 
-from ..kobold import (DIR_FULL, OPP_DIR, Creature, Encounter, action_queue,
+from ..kobold import (DIR_FULL, OPP_DIR, Creature, action_queue,
                       building_data, chance, check_req, choice, console_print,
                       consume_item, dungeon_data, game_print, get_dir,
                       has_item, item_data, landmark_data, spawn_item)
