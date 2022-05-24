@@ -4,10 +4,12 @@ import time
 
 import discord
 
-from ..kobold import (DIR_FULL, OPP_DIR, Creature, Dungeon, Encounter,
-                      action_queue, building_data, chance, check_req, choice,
-                      console_print, consume_item, dungeon_data, game_print,
-                      get_dir, has_item, item_data, landmark_data, spawn_item)
+from dungeon import Dungeon
+
+from ..kobold import (DIR_FULL, OPP_DIR, Creature, Encounter, action_queue,
+                      building_data, chance, check_req, choice, console_print,
+                      consume_item, dungeon_data, game_print, get_dir,
+                      has_item, item_data, landmark_data, spawn_item)
 
 
 class Tile:
