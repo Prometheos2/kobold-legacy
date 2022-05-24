@@ -36,7 +36,7 @@ def describe_quality(quality_rate):
     elif quality_rate < 0:
         return "Broken"
     return QUALITY_DESCRIPTIONS[quality_rate]
- 
+
 def kobold_name():
     vowels = ['a', 'i', 'o', 'u', 'e']
     penvowels = ['a', 'o', 'u', 'ay', 'ee', 'i']
@@ -91,7 +91,7 @@ def tribe_name():
     n = choice(temp_names) + " " + choice(temp_names)
     f.close()
     return n  
-  
+
 def choice(possible_choices):
     if len(possible_choices) == 0:
         return None
@@ -105,7 +105,7 @@ def chance(success_chance):
     luck = random.randint(1, 100)
     console_print(f"CHANCE: looking for {str(success_chance)} or less, got {str(luck)}")
     return luck <= abs(success_chance)
-  
+
 def get_json(filename):
     try:
         with open(filename) as f:
@@ -145,7 +145,7 @@ def has_item(self, item_name, quantity=1):
 
             quantity -= item.num
     return None
-  
+
 def consume_item(self, item_name, quantity=1):
     while quantity > 0:
         item = self.has_item(item_name)
@@ -160,7 +160,7 @@ def consume_item(self, item_name, quantity=1):
         except AttributeError:
             # Failsafe if there is no found item
             return
-    
+
 def check_req(self, req, k=None):
     good = "good"
     if k:
@@ -284,7 +284,7 @@ class World:
     self.dungeons=[]
     t = time.gmtime()
     self.next_mc_time=time.time()-(t[5]+(t[4]*60)+((t[3]%24)*3600))+86400
-    
+
   def get_tile(self,x,y,z,gen=True):
     c=",".join([str(x),str(y),str(z)])
     if c in self.map: return self.map[c]
@@ -292,7 +292,7 @@ class World:
       self.map[c]=Tile(self,x,y,z)
       return self.map[c]
     return None
-    
+
   def find_distant_tile(self,dist=10,z=1):
     edges={"lowx":0,"lowy":0,"highx":0,"highy":0}
     for t in self.tribes:
@@ -323,7 +323,7 @@ class World:
     console_print("distant tile found: "+maploc)
     if maploc not in self.map: self.map[maploc]=Tile(self,x,y,z)
     return self.map[maploc]
-    
+
   def find_tile_feature(self,dist,place,thing,feature,gen=False):
     closest=dist
     ct=None
@@ -350,7 +350,7 @@ class World:
     if ct: console_print("Found a "+str(thing)+" at "+str((ct.x,ct.y,ct.z)))
     else: console_print("No "+str(thing)+" found within "+str(dist)+" tiles")
     return ct
-    
+
   def scan(self,origin,dist,gen):
     global console_crosspost
     console_print("Scanning from "+str((origin.x,origin.y))+" with distance "+str(dist))
@@ -365,7 +365,7 @@ class World:
         if t: coords.append(str(x)+","+str(y)+","+str(origin.z))
     if not nope: console_crosspost=True
     return coords
-    
+
   def month_change(self):
     global console_crosspost
     eggs=[]
@@ -618,7 +618,7 @@ class World:
         t.destroy()
       else: console_print("Tribe "+str(t.id)+" has "+str(tribolds[str(t.id)])+" left in the world")
     self.month+=1
-    
+
 class Tile:
   def __init__(self,world,x,y,z,dungeon=None):
     self.x=x
@@ -655,7 +655,7 @@ class Tile:
         else: t=self.world.get_tile(borders[x][0],borders[x][1],borders[x][2],False)
         if t: self.blocked[dirs[x]]=t.blocked[OPP_DIR[dirs[x]]]
         elif dungeon or chance(50): self.blocked[dirs[x]]=True
-    
+
   @property
   def space_in_use(self):
     bolds=[]
@@ -668,7 +668,7 @@ class Tile:
     sp=len(bolds)
     sp+=math.floor(csp/2)
     return sp
-  
+
   def minerals(self):
     possible={}
     for i in item_data:
@@ -684,7 +684,7 @@ class Tile:
         self.mined[d]=random.randint(0,4)-4
         self.resources[d]=reses.pop(0)
         if self.resources[d] and chance(20): spawn_item(self.resources[d],self)
-    
+
   def landmarks(self):
     wt=0
     ls=[]
@@ -697,7 +697,7 @@ class Tile:
       l=ls.pop(0)
       r-=landmark_data[l]["weight"]
     self.special.append(l)
-  
+
   def get_dungeon(self):
     for t in self.world.dungeons:
       if (t.x,t.y,t.z)==(self.x,self.y,self.z):
@@ -706,14 +706,14 @@ class Tile:
       if landmark_data[x].get("dungeon",None):
         return Dungeon(landmark_data[x]["dungeon"],self.world,self.x,self.y,self.z)
     return None
-  
+
   def get_tribe(self):
     if self.get_dungeon(): return None
     for t in self.world.tribes:
       if (t.x,t.y,t.z)==(self.x,self.y,self.z):
         return t
     return None
-    
+
   def cave_in(self,me,dir=None):
     if dir and self.blocked[dir]: return
     if dir: ch=100-self.stability-(me.skmod("mining")*5)
@@ -741,7 +741,7 @@ class Tile:
         self.blocked[dir]=True
         self.get_border(dir).blocked[OPP_DIR[dir]]=True
       self.stability+=50
-    
+
   def invasion(t):
     bolds=[]
     neut=True
@@ -849,7 +849,7 @@ class Tile:
       if "Farm Fencing" in t.special and chance(50-(t.farm_cap/10)):
         if chan: game_print("The Farm Fencing was destroyed!",chan)
         t.special.remove("Farm Fencing")  
-    
+
   def spawn_encounter(self,force=None,n=0):
     for e in self.world.encounters:
       if e.place==self: return
@@ -874,26 +874,26 @@ class Tile:
       else: n=random.randint(self.z*3,self.z*8)
       if "Warding Lantern" in self.special: n=math.floor(n/2)
     e=Encounter(self.world,self,random.randint(n,int(n*1.5)+2),self.z,force)
-    
+
   def get_party(self):
     partieshere=[]
     for k in self.world.kobold_list:
       if k.party and k.get_place()==self and k.party not in partieshere:
         partieshere.append(k.party)
     return partieshere
-    
+
   def get_border(self,d):
     borders={"e":(self.x+1,self.y,self.z),"w":(self.x-1,self.y,self.z),"s":(self.x,self.y+1,self.z),"n":(self.x,self.y-1,self.z)}
     t=self.world.get_tile(borders[d][0],borders[d][1],borders[d][2])
     return t
-    
+
   def item_quantities(self):
     q={}
     for i in self.items:
       if i.name not in q: q[i.name]=i.num
       else: q[i.name]+=i.num
     return q
-    
+
   def get_available_builds(self,k=None):
     ar=[]
     for r in building_data:
@@ -919,7 +919,7 @@ class Tile:
           if g!="good": good=False
       if good: ar.append(r["name"])
     return ar
-    
+
   def do_building(self,k,res):
     prog=(k.smod("str")+(k.skmod("construction")*3))+10
     prog+=k.equip_bonus("construction")
@@ -943,7 +943,7 @@ class Tile:
       exp+=min(prog*4,res["work"]/4)
     k.gain_xp("construction",exp)
     k.gain_fam(res.get("req",[]),prog)
-    
+
   def finish_building(self,res,k):
     self.special.append(res["name"])
     self.building_prog[res["name"]]=0
@@ -976,29 +976,29 @@ class Tile:
     if res["name"]=="Quarry":
       spawn_item("Stone Chunk",self,10)
       self.minerals()
-      
+
   def unfinish_building(self,res):
     self.special.remove(res["name"])
-    
+
   def has_item(self,name,q=1):
     return has_item(self,name,q)
-  
+
   def consume_item(self,name,q=1):
     return consume_item(self,name,q)
-    
+
   def item_quantities(self):
     q={}
     for i in self.items:
       if i.name not in q: q[i.name]=i.num
       else: q[i.name]+=i.num
     return q
-    
+
   def get_chan(self):
     tribe=self.get_tribe()
     if tribe: return tribe.get_chan()
     for k in self.world.kobold_list:
       if k.get_place()==self: return k.get_chan()
-      
+
   def examine(self,me):
     dgn=me.dungeon
     if dgn: title=dungeon_data[dgn.d]["name"]+", level "+str(self.z)
@@ -1068,7 +1068,7 @@ class Tile:
       msg+="\nWatchmen (+"+str(wdef)+" Defense):\n"+", ".join(watch)
     action_queue.append(["embed",me.get_chan(),discord.Embed(type="rich",title=title,description=msg)])
     return msg
-    
+
 class Dungeon:
   def __init__(self,type,world,x,y,z):
     self.world=world
@@ -1081,7 +1081,7 @@ class Dungeon:
     self.d=type
     world.dungeons.append(self)
     self.generate()
-    
+
   def get_tile(self,x,y,z,gen=True):
     if x<0: return None
     elif x>dungeon_data[self.d]["dimensions"][0]: return None
@@ -1110,7 +1110,7 @@ class Dungeon:
             if not done: spawn_item("Dungeon Key",self.map[kr])
       return self.map[m]
     else: return None
-    
+
   def expand(self,gpos):
     ot=self.get_tile(gpos[0],gpos[1],gpos[2])
     dirs=["n","e","w","s","u","d"]
@@ -1140,7 +1140,7 @@ class Dungeon:
       ot.blocked[dir]=False
       nt.blocked[OPP_DIR[dir]]=False
     return npos
-    
+
   def generate(self):
     self.entry=(random.randint(0,dungeon_data[self.d]["dimensions"][0]),random.randint(0,dungeon_data[self.d]["dimensions"][1]),random.randint(0,dungeon_data[self.d]["dimensions"][2]))
     firstile=self.get_tile(self.entry[0],self.entry[1],self.entry[2])
@@ -1251,7 +1251,7 @@ class Tribe:
       if e.place.x==self.x and e.place.y==self.y and e.place.z==self.z:
         toremove.append(e)
     for e in toremove: world.encounters.remove(e)
-  
+
   @property
   def space_in_use(self):
     sp=len(self.kobolds)
@@ -1262,7 +1262,7 @@ class Tribe:
     for c in self.kennel: csp+=c.corpse["size"]
     sp+=math.floor(csp/2)
     return sp
-    
+
   @property
   def defense(self):
     d=0
@@ -1271,7 +1271,7 @@ class Tribe:
       if res.get("defense",0)>0: 
         if b not in self.building_health or self.building_health[b]>=50: d+=res["defense"]
     return d
-    
+
   def building_damage(self,build,dmg):
     if build not in self.building_health: self.building_health[build]=100
     if self.building_health[build]-dmg<0:
@@ -1283,7 +1283,7 @@ class Tribe:
     else:
       game_print(build+" took "+str(dmg)+"% damage.",self.get_chan())
     self.building_health[build]-=dmg
-    
+
   def has_building(self,build):
     has=False
     for b in self.buildings:
@@ -1291,7 +1291,7 @@ class Tribe:
         if b==build: has=True
         elif find_building(b).get("counts_as","none")==build: has=True
     return has
-    
+
   def get_population(self):
     p=0
     l=0
@@ -1302,13 +1302,13 @@ class Tribe:
         if k.has_trait("locked"): l+=1
         if k.nick: n+=1
     return (p,l,n)
-      
+
   def get_chan(self):
     return "tribe-"+str(self.id)+"-log"
-    
+
   def add_bold(self,k):
     if isinstance(k,Kobold) and k not in self.kobolds: self.kobolds.append(k)
-    
+
   def examine(self,me):
     title=self.name+", Month "+str(self.month)
     msg="Time until month change: "
@@ -1362,7 +1362,7 @@ class Tribe:
     msg+="\n\nMining progress: "+", ".join(nirs)
     action_queue.append(["embed",me.get_chan(),discord.Embed(type="rich",title=title,description=msg)])
     return msg
-    
+
   def destroy(self):
     tile=self.world.get_tile(self.x,self.y,self.z)
     console_print("Tribe "+str(self.id)+" destroyed.")
@@ -1374,7 +1374,7 @@ class Tribe:
     self.world.tribes.remove(self)
     action_queue.append(["delchan","tribe-"+str(self.id)+"-log",time.time()+600])
     action_queue.append(["delchan","tribe-"+str(self.id)+"-chat",time.time()+600])
-      
+
   def get_available_research(self,k=None):
     ar=[]
     for r in research_data:
@@ -1385,7 +1385,7 @@ class Tribe:
         if g!="good": good=False
       if good: ar.append(r["name"])
     return ar
-    
+
   def get_available_builds(self,k=None):
     ar=[]
     for r in building_data:
@@ -1407,7 +1407,7 @@ class Tribe:
         if g!="good": good=False
       if good: ar.append(r["name"])
     return ar
-    
+
   def do_research(self,k,res):
     base=(k.smod("int")+(k.skmod("research")*3))+10
     if k.tribe.has_building("Research Lab"): prog=math.floor(base*1.75)
@@ -1436,7 +1436,7 @@ class Tribe:
       exp+=min(prog*4,diff/4)
     k.gain_xp("research",exp)
     k.get_familiar(r,exp)
-    
+
   def do_building(self,k,res):
     prog=(k.smod("str")+(k.skmod("construction")*3))+10
     prog+=k.equip_bonus("construction")
@@ -1460,7 +1460,7 @@ class Tribe:
       exp+=min(prog*4,res["work"]/4)
     k.gain_xp("construction",exp)
     k.gain_fam(res.get("req",[]),prog)
-    
+
   def finish_research(self,res):
     self.research.append(res["name"])
     self.justbuilt=res["name"]
@@ -1469,7 +1469,7 @@ class Tribe:
         if f in self.heat_faction and self.heat_faction[f]>0: 
           self.heat_faction[f]=max(1,self.heat_faction[f]-(5+self.research.count(res["name"])))
     del self.research_prog[res["name"]]
-  
+
   def finish_building(self,res):
     self.buildings.append(res["name"])
     self.justbuilt=res["name"]
@@ -1494,7 +1494,7 @@ class Tribe:
     if " Farm" in res["name"]: #silly but effective fix for "farm fencing" resetting cap
       t=self.world.get_tile(self.x,self.y,self.z)
       t.farm_cap=200
-      
+
   def unfinish_building(self,res):
     if res["name"] in self.buildings: self.buildings.remove(res["name"])
     if res["name"] in self.building_health: del self.building_health[res["name"]]
@@ -1505,7 +1505,7 @@ class Tribe:
     if res["name"]=="Reservoir": 
       self.water_max-=25
       if self.water>self.water_max: self.water=self.water_max
-    
+
   def community_effort(self):
     celist=self.get_available_research()+self.get_available_builds()
     tally={}
@@ -1555,7 +1555,7 @@ class Tribe:
         if thing["name"] not in self.building_prog: self.building_prog[thing["name"]]=0
         self.building_prog[thing["name"]]+=prog
         if self.building_prog[thing["name"]]>=thing["work"]: self.finish_building(thing)
-  
+
   def election(t):
     tally={}
     for k in t.kobolds:
@@ -1583,20 +1583,20 @@ class Tribe:
           t.chieftain=k
           action_queue.append(["addrole","Chieftain",k.d_user_id])
           if t.overseer==k: t.overseer=None
-    
+
   def has_item(self,name,q=1):
     return has_item(self,name,q)
-  
+
   def consume_item(self,name,q=1):
     return consume_item(self,name,q)
-    
+
   def item_quantities(self):
     q={}
     for i in self.items:
       if i.name not in q: q[i.name]=i.num
       else: q[i.name]+=i.num
     return q
-    
+
   def gain_heat(self,h,faction=None):
     if not faction: fs=["Goblin","Human","Elf","Dwarf"]
     else: fs=[faction]
@@ -1615,12 +1615,12 @@ class Tribe:
         self.heat_faction[f]=self.shc_faction[f]
       self.heat_faction[f]+=h/5
       #console_print("Adding capped heat now "+str(self.heat_faction[faction]))
-      
+
   def violate_truce(self,k,f):
     k.p("This violates the tribe's truce with the "+f+" faction. This betrayal will not easily be forgotten.")
     self.shc_faction[f]=abs(self.shc_faction[f])
     self.heat_faction[f]=max(self.heat_faction[f],int(self.shc_faction[f]/2))
-    
+
   def invasion(t,faction="Goblin"):
     invasion=int(t.heat_faction[faction]*random.randint(80,120)/100)
     game_print("A raid consisting of "+str(invasion)+" "+faction+" invaders attacks!",t.get_chan())
@@ -1708,7 +1708,7 @@ class Tribe:
     else: t.gain_heat(((len(t.kobolds)/2)+(t.month*2))*(1.1**near),faction)
     if t.has_building("Marble Statues") and faction in ["Goblin","Human","Elf","Dwarf"] and t.heat_faction[faction]>5: t.heat_faction[faction]-=5
     t.shc_faction[faction]*=2
-    
+
 class Kobold:
   def __init__(self,tribe=None):
     self.name=kobold_name()
@@ -1780,25 +1780,25 @@ class Kobold:
     self.cp=self.max_cp
     self.movement=0
     self.dungeon=None
-    
+
   @property
   def max_hp(self):
     st=0
     for sk in self.skill: st+=self.skill[sk]
     return max(1,self.s["con"]+self.skmod("resilience")+math.floor(st/5))
-    
+
   @property
   def max_mp(self):
     if len(self.spells)>0: return self.s["int"]+self.skmod("arcana")+self.skmod("sorcery")
     else: return 0
-    
+
   @property
   def max_ap(self):
     ap=min(self.age*2,10)
     for t in self.traits:
       if trait_data[t].get("max_ap",0)!=0: ap+=trait_data[t]["max_ap"]
     return max(0,ap)
-    
+
   @property
   def max_cp(self):
     cp=self.s["cha"]+self.skmod("command")
@@ -1807,7 +1807,7 @@ class Kobold:
       p=self.tribe.get_population()
       if p[2]<=1: cp*=2
     return max(0,cp)
-    
+
   @property
   def inv_size(self):
     if self.has_trait("trader"): return 10
@@ -1816,7 +1816,7 @@ class Kobold:
     for i in self.items: inv+=i.inv_size
     if self.carry: inv-=1
     return inv
-    
+
   @property
   def ac(self):
     ac=self.smod("dex")+10
@@ -1826,7 +1826,7 @@ class Kobold:
       else: ac+=self.worns[w].ac
     for t in self.traits: ac+=trait_data[t].get("ac",0)
     return ac
-    
+
   @property
   def shaded(self):
     if self.z!=0 or self.dungeon: return True
@@ -1837,24 +1837,24 @@ class Kobold:
       p=self.get_place()
       if isinstance(p,Tribe) and "Thatched Roof" in p.buildings: return True
       else: return False
-    
+
   @property
   def stealth(self):
     st=self.smod("dex")+self.skmod("stealth")
     if self.has_trait("invisible"): st+=10
     elif self.has_trait("notrace"): st+=10
     return st
-    
+
   def wearing_nonmage_equipment(self):
     if self.worns["body"] and not self.worns["body"].magic: return True
     return False
-    
+
   def worn_items(self):
     i=[]
     for w in self.worns:
       if self.worns[w]: i.append(self.worns[w])
     return i
-    
+
   def familiar(self,r):
     res=find_research(r)
     if r in self.familiarity:
@@ -1862,7 +1862,7 @@ class Kobold:
       #console_print(self.get_name()+" familiar with "+r+" = "+str(fam))
       return fam
     return 0
-    
+
   def get_familiar(self,r,n):
     if r not in self.familiarity: self.familiarity[r]=0
     oldfam=self.familiar(r)
@@ -1874,12 +1874,12 @@ class Kobold:
     if newfam>oldfam:
       if newfam>=2: self.p("[n] has become very familiar with "+r+"!")
       else: self.p("[n] has become familiar with "+r+"!")
-  
+
   def ap_gain(self,n,pr=True):
     self.ap+=n
     if self.ap>self.max_ap: self.ap=self.max_ap
     if pr: self.p("[n] has gained "+str(n)+" AP.")
-  
+
   def ap_tax(self,n):
     if n==0: return True
     if self.ap>=n:
@@ -1890,7 +1890,7 @@ class Kobold:
       return True
     else: self.p("[n] doesn't have enough AP. (need "+str(n)+", have "+str(self.ap)+")")
     return False
-      
+
   def stat_str(self,stat):
     st=self.s[stat]
     if st>16 and (self.has_trait("inactive") or not self.nick): st=16
@@ -1900,13 +1900,13 @@ class Kobold:
     ret=str(st)
     if st!=self.s[stat]: ret=str(self.s[stat])+" ["+ret+"]"
     return ret
-    
+
   def skill_str(self,skill):
     st=self.skmod(skill)
     ret=str(st)
     if st!=self.skill[skill]: ret=str(self.skill[skill])+" ["+ret+"]"
     return ret
-  
+
   def skmod(self,sk,rand=True): #this is the KOBOLD skmod
     if sk not in self.skill: return 0
     ret=self.skill[sk]
@@ -1915,7 +1915,7 @@ class Kobold:
     for w in self.worn_items():
       if sk in w.skill_boost: ret+=w.skill_boost[sk]
     return ret
-  
+
   def smod(self,stat,rand=True): #this is the KOBOLD smod
     st=self.s[stat]
     if st>16 and (self.has_trait("inactive") or not self.nick): st=16
@@ -1927,7 +1927,7 @@ class Kobold:
     if rand: st+=random.randint(0,1)
     if not self.shaded: st=min(st,10)
     return math.floor((st-10)/2)
-    
+
   def save(self,stat):
     s=droll(1,20)+self.smod(stat)
     if stat in ["str","dex","con"]: 
@@ -1938,7 +1938,7 @@ class Kobold:
       s+=random.randint(0,self.skmod("willpower"))
     console_print(self.get_name()+" rolls a "+stat+" save and gets "+str(s))
     return s
-  
+
   def get_place(self):
     if hasattr(self,"dungeon") and self.dungeon: tile=self.dungeon.get_tile(self.x,self.y,self.z)
     else: tile=self.world.get_tile(self.x,self.y,self.z)
@@ -1952,7 +1952,7 @@ class Kobold:
     if tribe and (self in tribe.kobolds or self in tribe.tavern): t=tribe
     else: t=tile
     return t
-    
+
   def show_wares(self,multi,sale=False):
     wares=[]
     for i in self.items:
@@ -1961,7 +1961,7 @@ class Kobold:
       if i.realvalue*multi>0: wares.append(i.display()+" - <:marblecoin:933132540926111814>"+str(val))
     if sale: return self.display()+"'s items (sell price):\n"+", ".join(wares)
     else: return self.display()+"'s items (buy price):\n"+", ".join(wares)
-    
+
   def get_wares(self,worth=100):
     wares={}
     for i in item_data:
@@ -1979,7 +1979,7 @@ class Kobold:
             if not liquid_data[l].get("foreign",False): liqs.append(l)
           item.liquid=choice(liqs)
       worth-=item.realvalue
-  
+
   def get_chan(self):
     if self.encounter: 
       try: return self.encounter.get_party().get_chan()
@@ -1989,17 +1989,17 @@ class Kobold:
     elif self.party: return self.party.chan
     elif self.commandedby and self.commandedby.get_place()==place: return self.commandedby.get_chan()
     else: return "exception-log"
-      
+
   def get_name(self):
     if self.nick: return self.nick
     else: return self.name
-    
+
   def has_item(self,name,q=1):
     return has_item(self,name,q)
-  
+
   def consume_item(self,name,q=1):
     return consume_item(self,name,q)
-    
+
   def auto_eat(k):
     area=list(k.items)+list(k.get_place().items)
     food=None
@@ -2018,7 +2018,7 @@ class Kobold:
       food.use(k)
       return True
     return False
-    
+
   def drink(self,liquid):
     if liquid in liquid_data: l=liquid_data[liquid]
     else:
@@ -2054,7 +2054,7 @@ class Kobold:
           self.add_trait(t)
           self.p("[n] is now "+t+".")
     return True
-    
+
   def watch_strength(k):
     defense=0
     if k.equip:
@@ -2065,7 +2065,7 @@ class Kobold:
       else: defense+=k.smod("dex",False)+k.skmod("marksman")
     else: defense+=max(1,k.smod("str",False)+k.skmod("melee"))
     return defense
-    
+
   def watch_damage(k,dmg,dmgto):
     defense=k.watch_strength()
     if k.equip and k.equip.type=="ranged": k.gain_xp("marksman",(dmg+10)*1.5)
@@ -2075,12 +2075,12 @@ class Kobold:
       k.hp_tax(dmgto[str(k.id)],"Killed in action",dmgtype=choice(["bludgeoning","slashing","piercing"]))
       if k.save("wis")<12: k.add_trait("stressed")
     return defense
-    
+
   def spell_strength(self,spell):
     s=int(spell["strength"]*(1+((self.smod("int")+self.skmod("sorcery"))/5)))
     if self.wearing_nonmage_equipment(): s=math.ceil(s/2)
     return s
-    
+
   def age_up(k):
     console_print("aging up "+k.name)
     oldmax=k.max_hp
@@ -2101,7 +2101,7 @@ class Kobold:
         points-=1
       stch.remove(st)
     k.hp+=k.max_hp-oldmax
-    
+
   def random_stats(self,color=None):
     points=24
     for st in STATS:
@@ -2133,7 +2133,7 @@ class Kobold:
             self.s[b]-=1
             self.s[COLOR_STAT[color]]+=1
     self.random_genomes()
-        
+
   def get_color_for_stats(self):
     orange=self.s["str"]+self.s["dex"]+self.s["con"]
     purple=self.s["int"]+self.s["wis"]+self.s["cha"]
@@ -2142,10 +2142,10 @@ class Kobold:
     m = sorted(self.s.items(), key=lambda kv: kv[1])
     if m[4][1]==m[5][1]: return "brown"
     else: return STAT_COLOR[m[5][0]]
-        
+
   def random_skills(self):
     pass
-    
+
   def random_genomes(self):
     while True:
       recount=[]
@@ -2172,7 +2172,7 @@ class Kobold:
     for g in self.genome:
       pr+=g+":["+str(self.genome[g][0])+","+str(self.genome[g][1])+"]; "
     console_print(self.color+"="+pr)
-    
+
   def attack(self,target):
     bestdmg=0
     besti=None
@@ -2207,7 +2207,7 @@ class Kobold:
         if not self.equip: self.p("[n] unequips their weapon.")
         else: self.p("[n] equips their "+besti.display()+".")
     if doattack: cmd_attack(["!attack"],self,target) #do the attack
-    
+
   def display(self):
     d=self.get_name()
     p=self.get_place()
@@ -2240,7 +2240,7 @@ class Kobold:
     if self.nick: d="**"+d+"**"
     if self.age<6: d="*"+d+"*"
     return d
-    
+
   def char_info(self,k,pr=True):
     title="Kobold info: "+self.display()
     msg="Birth name: "+self.name+"\n"
@@ -2298,7 +2298,7 @@ class Kobold:
     else: msg+="No skills yet..."
     if pr: action_queue.append(["embed",k.get_chan(),discord.Embed(type="rich",title=title,description=msg)])
     return msg
-    
+
   def p(self,msg,party=False):
     msg=msg.replace("[n]",self.display())
     if party and self.party: game_print(msg,self.party.get_chan())
@@ -2306,7 +2306,7 @@ class Kobold:
       chan=self.get_chan()
       if chan=="exception-log": self.broadcast(msg)
       else: game_print(msg,chan)
-    
+
   def broadcast(self,msg):
     p=self.get_place()
     if isinstance(p,Tribe): 
@@ -2317,19 +2317,19 @@ class Kobold:
       if k.get_place()==p and k.party and k.party!=self.party and k.party not in parties: parties.append(k.party)
     for a in parties:
       game_print(msg,a.get_chan())
-    
+
   def accident(self,ch,n=2):
     if chance(ch):
       if self.worns["body"] and self.worns["body"].name=="Work Gear": n=math.ceil(n/2)
       self.hp_tax(n,"Accident")
       return True
     else: return False
-    
+
   def mp_gain(self,n):
     self.mp+=n
     if self.mp>self.max_mp: self.mp=self.max_mp
     self.p("[n] has gained "+str(n)+" mana.")
-    
+
   def mp_tax(self,n):
     if n==0: return True
     if self.mp>=n:
@@ -2338,14 +2338,14 @@ class Kobold:
       return True
     else: self.p("[n] doesn't have enough mana. (need "+str(n)+", have "+str(self.mp)+")")
     return False
-  
+
   def hp_gain(self,n):
     if self.hp==self.max_hp: return
     self.hp+=n
     self.p("[n] gained "+str(n)+" HP.")
     if self.hp>=self.max_hp:
       self.hp=self.max_hp
-  
+
   def hp_tax(self,n,cause,killer=None,dmgtype="bludgeoning"):
     if dmgtype=="fire" and self.has_trait("greased"): n*=2
     self.hp-=n
@@ -2378,7 +2378,7 @@ class Kobold:
         p.tavern.remove(self)
         if self in self.world.kobold_list: self.world.kobold_list.remove(self)
       self.gain_xp("resilience",n*5)
-    
+
   def get_soul_points(self,cause="General incompetence"):
     msg="Soul point breakdown:\n\n"
     months=int(self.monthsnamed*((self.monthsnamed+1)/2))
@@ -2400,7 +2400,7 @@ class Kobold:
     msg+="\n**Total SP gained: "+str(sp)+".** You now have "+str(playerdata[str(self.d_user_id)]["sp"])+" Soul Points."
     embed=discord.Embed(type="rich",title=":skull_crossbones: **You are dead!** Cause: "+cause,description=msg)
     return embed
-  
+
   def despawn(self):
     if self in self.world.kobold_list: self.world.kobold_list.remove(self)
     if self.encounter:
@@ -2411,7 +2411,7 @@ class Kobold:
       if self in t.kobolds: t.kobolds.remove(self)
       if self in t.tavern: t.tavern.remove(self)
       if self in t.prison: t.prison.remove(self)
-  
+
   def die(self,cause="General incompetence",killer=None):
     if self.has_trait("dead"): return
     self.add_trait("dead")
@@ -2453,7 +2453,7 @@ class Kobold:
       if self in self.encounter.creatures: self.encounter.creatures.remove(self)
       if len(self.encounter.creatures)==0:
         self.encounter.end()
-    
+
   def add_trait(self,t):
     trs=list(self.traits)
     for u in trs:
@@ -2469,20 +2469,20 @@ class Kobold:
         self.del_trait(u)
         self.del_trait(t)
         self.add_trait(trait_data[u]["combine_into"])
-    
+
   def del_trait(self,t):
     if t in self.traits: self.traits.remove(t)
     if trait_data[t].get("add_on_remove",None): self.add_trait(trait_data[t]["add_on_remove"])
-    
+
   def has_trait(self,t):
     if t in self.traits: return True
     else: return False
-    
+
   def gain_fam(self,req,exp):
     for r in req:
       if r[0]=="research":
         self.get_familiar(r[1],exp)
-  
+
   def learn_spell(self,lv,c):
     sp=[]
     for s in spell_data:
@@ -2491,7 +2491,7 @@ class Kobold:
     if newspell:
       self.spells.append(newspell)
       self.p("[n] has learned the "+newspell+" spell!")
-  
+
   def gain_xp(self,sk,exp):
     if (self.has_trait("inactive") or not self.nick) and self.skill[sk]>=5: return
     if self.color==STAT_COLOR[skill_data[sk]["stat"]] or self.color=="silver": exp*=1.5
@@ -2520,7 +2520,7 @@ class Kobold:
       elif sk=="druid": self.learn_spell(self.skill["druid"]/2,"druid")
       elif sk=="faith": self.learn_spell(self.skill["faith"]/2,"draconic")
     if self.max_hp>oldmax: self.hp+=self.max_hp-oldmax
-      
+
   def equip_best(self,type):
     best=None
     bestam=0
@@ -2533,7 +2533,7 @@ class Kobold:
           bestam=i.toolpower
         elif i.name=="Silk Parasol" and umb and not best: best=i
     if best and self.equip!=best: cmd_equip([],self,best)
-  
+
   def equip_bonus(self,type):
     p=0
     if self.tribe: 
@@ -2557,7 +2557,7 @@ class Kobold:
       p+=max(1,math.floor(self.equip.toolpower*2*(1+(self.equip.quality/5))))+5
       self.equip.lower_durability()
     return p
-    
+
   def get_drunk(self,liquid,ap):
     if self.has_trait("hungover"):
       self.p("Just the thought of this makes [n] sick to their stomach. Better give them some time.")
@@ -2577,12 +2577,12 @@ class Kobold:
     self.booze_ap+=ap
     self.p("[n] is pleasantly buzzed and gains "+str(ap)+" AP.")
     return True
-    
+
   def best_trader(self):
     best=self.smod("cha",False)+self.skmod("negotiation")
     multi=1-min(0.25,best/50)
     return (multi,best,self)
-    
+
   def breed(self,partner,force=False,pullout=False):
     self.add_trait("breed")
     partner.add_trait("breed")
@@ -2616,7 +2616,7 @@ class Kobold:
     else: self.p("The session between [n] and "+partner.display()+" didn't exactly go as planned... but each one's vitality has increased a little.")
     self.gain_xp("vitality",exp)
     partner.gain_xp("vitality",exp)
-        
+
 class Party:
   def __init__(self,owner):
     self.owner=owner
@@ -2632,11 +2632,11 @@ class Party:
     action_queue.append(["addmember",self.chan,owner.d_user_id])
     game_print(owner.display()+" has formed the party.",self.chan)
     self.owner.party=self
-    
+
   def __iter__(self):
     self.member_index=0
     return self
-    
+
   def __next__(self):
     if self.member_index<len(self.members):
       result=self.members[self.member_index]
@@ -2644,24 +2644,24 @@ class Party:
       return result
     else:
       raise StopIteration
-    
+
   @property
   def k_members(self):
     m=[]
     for k in self.members:
       if isinstance(k,Kobold): m.append(k)
     return m
-    
+
   @property
   def c_members(self):
     m=[]
     for k in self.members:
       if not isinstance(k,Kobold): m.append(k)
     return m
-  
+
   def get_chan(self):
     return self.chan
-    
+
   def broadcast(self,msg):
     p=self.owner.get_place()
     if isinstance(p,Tribe): return
@@ -2670,14 +2670,14 @@ class Party:
       if k.get_place()==p and k.party and k.party!=self and k.party not in parties: parties.append(k.party)
     for a in parties:
       game_print(msg,a.get_chan())
-    
+
   def join(self,k):
     if k not in self.members:
       self.members.append(k)
       k.party=self
       if k.nick: action_queue.append(["addmember",self.chan,k.d_user_id])
       game_print(k.display()+" has joined the party.",self.chan)
-    
+
   def leave(self,k,reform=True):
     if k in self.members:
       self.members.remove(k)
@@ -2710,7 +2710,7 @@ class Party:
         if not isinstance(place,Tribe) and reform: #in the overworld
           k.party=Party(k)
     if not isinstance(k,Creature) and len(self.members)<=0: action_queue.append(["delchan",self.chan,time.time()+600])
-          
+
   def stealth_roll(self,encounter,bonus=0,me=None,aps=0):
     if not encounter.hostile: return
     if self.owner.tribe and encounter.creatures[0].faction in self.owner.tribe.shc_faction and self.owner.tribe.shc_faction[encounter.creatures[0].faction]<1:
@@ -2746,7 +2746,7 @@ class Party:
     else:
       for k in self.k_members:
         k.gain_xp("stealth",(exp*(aps+1))-(k.stealthrolls*3))
-      
+
   def best_trader(self):
     best=-5
     nego=None
@@ -2757,7 +2757,7 @@ class Party:
         nego=m
     multi=1-min(0.25,best/50)
     return (multi,best,nego)
-      
+
   def move(self,x,y,z,cost):
     self.broadcast(self.owner.display()+"'s party has left the area.")
     mem=list(self.k_members)
@@ -2838,7 +2838,7 @@ class Party:
           if not passive: self.stealth_roll(e,aps=cost)
           else: e.hostile=False
     self.broadcast(self.owner.display()+"'s party has entered the area.")
-          
+
 class Item:
   def __init__(self,name,num=1):
     for i in item_data:
@@ -2864,11 +2864,11 @@ class Item:
     self.note=""
     self.map={}
     self.sold=False
-    
+
   @property
   def max_durability(self):
     return math.floor(self.base_durability*(1+(self.quality/10)))
-    
+
   @property
   def realvalue(self):
     dura=1
@@ -2876,13 +2876,13 @@ class Item:
     v=int(self.value*dura*self.num/self.dura_loss)
     if self.liquid: v+=self.liquid_units*liquid_data[self.liquid].get("value",0)
     return v
-    
+
   def set_quality(self,q):
     if self.noquality or self.stack>1: return
     self.quality=q
     self.value=int(self.value*(1+(q/5)))
     self.durability=self.max_durability
-    
+
   def spawn_quality(self):
     if self.noquality or self.stack>1: return
     qv=random.randint(1,100)
@@ -2896,7 +2896,7 @@ class Item:
     elif qv>3: q=-3
     else: q=-4
     self.set_quality(q)
-  
+
   def display(self):
     d=self.name
     if isinstance(self.place,Kobold):
@@ -2923,7 +2923,7 @@ class Item:
         d+=" "+str(self.liquid_units)+"/"+str(self.liquid_capacity)
       d+=")"
     return d
-    
+
   def examine(self,me,multi=False):
     title=self.name
     d="Location: "
@@ -2953,7 +2953,7 @@ class Item:
       action_queue.append(["embed",me.get_chan(),discord.Embed(type="rich",title=title,description=d)])
       return d
     else: return discord.Embed(type="rich",title=title,description=d)
-    
+
   def move(self,to,tumble=False):
     if not isinstance(to,Item) and not isinstance(to,list):
       for i in to.items:
@@ -2988,7 +2988,7 @@ class Item:
         to.append(self)
         self.place=None
       else: to.items.append(self)
-    
+
   def destroy(self,cause="Unknown"):
     if self.place: 
       if isinstance(self.place,Item): self.place.contains=None
@@ -3009,7 +3009,7 @@ class Item:
         if len(sgain)>0: skele.gain=sgain
       self.place=None
       console_print(self.display()+" destroyed. Cause: "+cause)
-    
+
   def drink_from(self,k):
     if self.liquid_units<=0 or not self.liquid:
       k.p("The "+self.display()+" is empty.")
@@ -3021,13 +3021,13 @@ class Item:
       self.liquid=None
       k.p("The "+self.display()+" is now empty.")
     return True
-    
+
   def magic_item_use(self,k,msg):
     if chance(max(5,50-((k.skmod("arcana")-self.magic_level)*5))):
       k.p(msg)
       self.inert=True
     if k.skmod("arcana")<self.magic_level: k.gain_xp("arcana",self.magic_level*10)
-    
+
   def use(self,k):
     if k.hp<=0: return False
     if self.inert:
@@ -3232,7 +3232,7 @@ class Item:
       self.magic_item_use(k,"The Crystal Ball suddenly makes a noise like shattering glass and goes dim. It's become inert.")
     else: k.p("The "+self.display()+" cannot be used.")
     return False
-    
+
   def lower_durability(self,am=1):
     self.durability-=am*self.dura_loss
     if self.durability<=0:
@@ -3240,7 +3240,7 @@ class Item:
       if isinstance(self.place,Kobold) and self==self.place.equip:
         self.place.add_trait("tool_broke")
       self.destroy("Out of durability")
-  
+
   def hatch(self):
     if not self.kobold: 
       if self.place:
@@ -3280,7 +3280,7 @@ class Item:
     self.kobold.p("[n] has hatched!")
     if self.kobold not in self.kobold.world.kobold_list: self.kobold.world.kobold_list.append(self.kobold)
     self.destroy("Hatched")
-    
+
   def butcher(self,k):
     ch=40+(k.smod("wis")*2)+(k.skmod("survival")*2)
     ch+=k.equip_bonus("butchering")
@@ -3315,7 +3315,7 @@ class Item:
       k.p("This gruesome act will not go without consequence... The tribe's heat level has increased.")
     self.destroy("Butchered")
     return hit
-    
+
   def map_merge(self,other):
     combined={}
     for m in self.map: combined[m]=dict(self.map[m])
@@ -3329,7 +3329,7 @@ class Item:
           else: combined[m][d]=False
     self.map=dict(combined)
     other.map=dict(combined)
-  
+
   def map_update(self,k):
     m=str(k.x)+","+str(k.y)+","+str(k.z)
     if m not in self.map: self.map[m]={"symbol":"O","x":k.x,"y":k.y,"z":k.z}
@@ -3341,7 +3341,7 @@ class Item:
     else: self.map[m]["symbol"]="O"
     for d in DIR_FULL: self.map[m][d]=t.blocked[d]
     k.p("[n] updates their "+self.name+".")
-    
+
   def map_render(self,k):
     lowx=9999
     lowy=9999
@@ -3374,7 +3374,7 @@ class Item:
     for y in msg:
       lines.append("".join(y))
     k.p("```"+"\n".join(lines)+"```")
-    
+
 class Encounter:
   def __init__(self,world,tile,n,level,force=None):
     self.place=tile
@@ -3434,7 +3434,7 @@ class Encounter:
         mob=choice(creatures)
       if not mob: mob="Dopple"
       self.populate(mob,n)
-      
+
   def populate(self,mob,n):
     spawned=n
     a=ord("A")
@@ -3446,14 +3446,14 @@ class Encounter:
       a+=1
       n-=max(1,cr.cr)
     console_print("Spawned "+str(len(self.creatures))+" "+mob+" (n="+str(spawned)+")")
-    
+
   def start(self,party):
     if party.owner.tribe and not isinstance(self.creatures[0],Kobold) and self.creatures[0].faction in party.owner.tribe.shc_faction and party.owner.tribe.shc_faction[self.creatures[0].faction]<1:
       party.owner.tribe.violate_truce(party.owner,self.creatures[0].faction)
     self.engaged.append(party)
     self.new_turn(party)
     self.examine(party.owner)
-    
+
   def end(self):
     if self in self.world.encounters: self.world.encounters.remove(self)
     for p in self.engaged: game_print("The battle is won!",p.get_chan())
@@ -3489,18 +3489,18 @@ class Encounter:
         for t in ts: t.heat_faction["Ant"]=0
         game_print("This has been an enlightening experience for everyone.",p.get_chan())
         for m in p.k_members: m.get_familiar("Verticality",600)
-        
+
   def disengage(self,party):
     for k in party.members:
       ts=list(k.traits)
       for t in ts:
         if trait_data[t].get("end_combat",False): k.traits.remove(t)
     while party in self.engaged: self.engaged.remove(party)
-    
+
   def disengage_all(self):
     ps=list(self.engaged)
     for p in ps: self.disengage(p)
-    
+
   def pac_check(self):
     pac=True
     for c in self.creatures:
@@ -3511,7 +3511,7 @@ class Encounter:
       self.disengage_all()
       self.hostile=False
       self.pacified=True
-      
+
   def examine(self,me):
     title="Encounter"    
     msg="Creatures here:"
@@ -3531,7 +3531,7 @@ class Encounter:
       else: msg+="\n\nThis encounter is not hostile. You can type !fight to attempt an ambush and attack them anyway."
     action_queue.append(["embed",me.get_chan(),discord.Embed(type="rich",title=title,description=msg)])
     return msg
-    
+
   def enemy_turn(self,party):
     self.pac_check()
     if party not in self.engaged: return
@@ -3575,7 +3575,7 @@ class Encounter:
         self.disengage(party)
         return
     self.new_turn(party)
-      
+
   def new_turn(self,party):
     for k in party.members: 
       k.didturn=False
@@ -3589,13 +3589,13 @@ class Encounter:
         k.attack(target)
         k.didturn=True
       if isinstance(k,Creature) and "combat" not in k.training and "guard" not in k.training: k.didturn=True
-      
+
   def get_party(self):
     return self.place.get_party()[0]
-    
+
   def get_chan(self):
     return self.get_party().get_chan()
-    
+
 class Creature:
   def __init__(self,name,world,encounter):
     self.world=world
@@ -3623,11 +3623,11 @@ class Creature:
     self.carry=None
     self.dungeon=None
     self.guardian=None
-    
+
   @property
   def nick(self):
     return None
-    
+
   @property
   def inv_size(self):
     if self.hp<=0: return -10
@@ -3635,14 +3635,14 @@ class Creature:
     for i in self.items: inv+=i.inv_size
     if self.carry: inv-=1
     return inv
-    
+
   @property
   def worns(self):
     return {}
-    
+
   def wearing_nonmage_equipment(self):
     return False
-    
+
   def stat_str(self,stat):
     st=self.stats[stat]
     for t in self.traits:
@@ -3650,18 +3650,18 @@ class Creature:
     ret=str(st)
     if st!=self.stats[stat]: ret=str(self.stats[stat])+" ["+ret+"]"
     return ret
-    
+
   def watch_strength(k):
     return (k.dmg[0]*k.dmg[1])+k.dmg[2]
-    
+
   def watch_damage(k,dmg,dmgto):
     defense=k.watch_strength()
     if k.name in dmgto: k.hp_tax(dmgto[k.name],"Killed in action",dmgtype=choice(["bludgeoning","slashing","piercing"]))
     return defense
-    
+
   def mount_strength(k):
     return max(0,(k.stats["str"]+k.stats["con"])-8)*3
-    
+
   def char_info(self,k,pr=True):
     title="Creature info: "+self.display()
     msg="Name: "+self.name+"\n"
@@ -3701,7 +3701,7 @@ class Creature:
     msg+=" / ".join(statblock)
     if pr: action_queue.append(["embed",k.get_chan(),discord.Embed(type="rich",title=title,description=msg)])
     return msg
-    
+
   def get_place(self):
     if self.encounter: return self.encounter.place
     elif self.party: return self.party.owner.get_place()
@@ -3711,42 +3711,42 @@ class Creature:
       for m in self.world.map:
         if self in self.world.map[m].pasture: return self.world.map[m]
     return None
-    
+
   def smod(self,stat,rand=True): #this is the CREATURE smod
     st=self.stats[stat]
     for t in self.traits:
       if stat in trait_data[t].get("stats",{}): st+=trait_data[t]["stats"][stat]
     if rand: st+=random.randint(0,1)
     return math.floor((st-10)/2)
-    
+
   def save(self,stat):
     s=droll(1,20)+self.smod(stat)
     console_print(self.name+" rolls a "+stat+" save and gets "+str(s))
     return s
-    
+
   def get_name(self):
     return self.name
-  
+
   def display(self):
     if self.owner: n="*"+self.name+"*"
     else: n=self.name
     return self.emoji+n
-    
+
   def get_chan(self):
     try: 
       if self.party: return self.party.owner.get_chan()
       else: return self.get_place().get_chan()
     except: return "exception-log"
-    
+
   def p(self,msg):
     msg=msg.replace("[n]",self.display())
     game_print(msg,self.get_chan())
-    
+
   def hp_gain(self,n):
     self.hp+=n
     self.p("[n] gained "+str(n)+" HP.")
     if self.hp>self.max_hp: self.hp=self.max_hp
-  
+
   def hp_tax(self,n,cause,killer=None,dmgtype="bludgeoning"):
     if dmgtype in self.dmg_immune: return
     if dmgtype=="fire" and self.has_trait("greased"): n*=2
@@ -3767,18 +3767,18 @@ class Creature:
       return
     if self.hp<=0:
       self.die(killer)
-      
+
   def has_trait(self,trait):
     return trait in self.traits
-    
+
   def add_trait(self,trait):
     if trait in self.trait_immune: return
     if trait not in self.traits: self.traits.append(trait)
     if trait_data[trait].get("contract_msg",None): self.p(trait_data[trait]["contract_msg"])
-    
+
   def del_trait(self,trait):
     if trait in self.traits: self.traits.remove(trait)
-      
+
   def die(self,killer=None):
     p=self.get_place()
     self.p("[n] has been slain.")
@@ -3807,7 +3807,7 @@ class Creature:
     for i in inv: i.move(p,tumble=True)
     if self.encounter and len(self.encounter.creatures)==0:
       self.encounter.end()
-      
+
   def slave(self,enemy):
     queen=None
     for c in self.encounter.creatures:
@@ -3820,7 +3820,7 @@ class Creature:
       queen.hp_gain(heal)
     else:
       self.attack(enemy)
-  
+
   def multisummon(self,enemy):
     summoned=False
     target=enemy.pop(0)
@@ -3839,7 +3839,7 @@ class Creature:
         new.add_trait("summoned")
         new.p("[n] has joined the battle.")
     if not summoned: self.attack(target)
-  
+
   def summon(self,enemy):
     self.p("[n] calls for help...")
     if chance(40+self.stats["cha"]): 
@@ -3853,7 +3853,7 @@ class Creature:
       new.add_trait("summoned")
       new.p("[n] has joined the battle.")
     else: game_print("Nothing answered the call.",self.get_chan())
-  
+
   def inflict(self,arg):
     msg=arg[2]
     msg=msg.replace("[n]",self.display())
@@ -3866,12 +3866,12 @@ class Creature:
       arg[0].add_trait(arg[1])
     else:
       arg[0].p("[n] resists.")
-  
+
   def charge(self,target):
     if self.attack(target):
       self.inflict([target,"stunned","[n] collides with [t] at full force!"])
       target.hp_tax(3,"Killed by "+self.display(),self,self.dmgtype)
-  
+
   def cure(self,target):
     worst=None
     for c in self.encounter.creatures:
@@ -3879,28 +3879,28 @@ class Creature:
     if not worst: return self.attack(target)
     self.p("[n] casts Cure Wounds!")
     worst.hp_gain(droll(1,8)+self.smod("wis"))
-  
+
   def smite(self,target):
     if self.attack(target):
       target.p("[n] is stricken with holy fury!")
       target.hp_tax(droll(1,8),"Killed by "+self.display(),self,"radiant")
-  
+
   def flamewave(self,target):
     self.p("[n] casts Flame Wave!")
     for t in target.party.members:
       dmg=droll(3,8)
       if t.save("dex")>=10+self.smod("int"): dmg=math.ceil(dmg/2)
       t.hp_tax(dmg,"Killed by "+self.display(),self,"fire")
-  
+
   def attack_multi(self,target):
     for x in range(int(target[1])): self.attack(target[0])
-  
+
   def attack_mark(self,target):
     for k in target.party.members:
       if k.has_trait("marked"): target=k
     target.add_trait("marked")
     self.attack(target)
-  
+
   def attack(self,target):
     guard=False
     if isinstance(target,Kobold):
@@ -3917,7 +3917,7 @@ class Creature:
       target=target.guardian
       guard=True
     return attack_roll(self,target,guarding=guard)
-    
+
 def attack_roll(self, target, guarding=False, sparring=False):
     chan = target.get_chan()
     if target.has_trait("protected") and len(
@@ -4016,7 +4016,7 @@ def attack_roll(self, target, guarding=False, sparring=False):
         if trait_data[t].get("attack_reset", False):
             self.del_trait(t)
     return dmg
-    
+
 def turn_traits(fighter):
     traits = list(fighter.traits)
     for trait in traits:
@@ -4034,7 +4034,7 @@ def turn_traits(fighter):
             if fighter.save(trait_data[trait]["save_stat"]) >= trait_data[trait]["save"]:
                 fighter.del_trait(trait)
                 fighter.p(f"[n] has overcome their {trait_data[trait].get('display',trait)} condition.")
-    
+
 def droll(dice, sides, adv=0):
     rolls = []
     nbRolls = 1
@@ -4050,7 +4050,7 @@ def droll(dice, sides, adv=0):
         return max(rolls)
     else:
         return min(rolls)
-    
+
 def spawn_item(name,place,num=1,force=False,quality=None):
   i=None
   while num>0:
@@ -4070,7 +4070,7 @@ def spawn_item(name,place,num=1,force=False,quality=None):
     i.move(place)
     console_print("Spawned: "+name+" x "+str(i.num))
   return i
-  
+
 def make_baby(male,female):
   baby=Kobold(female.tribe)
   baby.age=0
@@ -4130,7 +4130,7 @@ def spell_fireball(spell,words,me,target):
     if t.save("dex")>=spellsave: bdmg=math.floor(dmg/2)
     t.hp_tax(bdmg,spell["name"],me,"fire")
   return True
-  
+
 def spell_tremor(spell,words,me,target):
   targets=list(target.encounter.creatures)
   spellsave=6+me.smod("int")+me.skmod("sorcery")
@@ -4148,7 +4148,7 @@ def spell_tremor(spell,words,me,target):
     if t.save("dex")>=spellsave: bdmg=math.floor(dmg/2)
     t.hp_tax(bdmg,spell["name"],me,"bludgeoning")
   return True
-    
+
 def spell_freeze(spell,words,me,t):
   spellsave=6+me.smod("int")+me.skmod("sorcery")
   dmg=spell["dmg"][2]
@@ -4159,7 +4159,7 @@ def spell_freeze(spell,words,me,t):
   else: t.add_trait("frozen")
   t.hp_tax(dmg,spell["name"],me,"cold")
   return True
-  
+
 def spell_grease(spell,words,me,t):
   spellsave=4+me.smod("int")+me.skmod("sorcery")
   for c in t.encounter.creatures:
@@ -4178,7 +4178,7 @@ def spell_sparkle(spell,words,me,t):
     me.p(t.display()+" is blinded!")
     t.add_trait("blinded")
   return True
-  
+
 def spell_charm(spell,words,me,t):
   if t.tribe:
     me.p("You can only cast that on a tribeless kobold.")
@@ -4190,7 +4190,7 @@ def spell_charm(spell,words,me,t):
     me.p(t.display()+" is charmed!")
     t.add_trait("charmed")
   return True
-  
+
 def spell_missile(spell,words,me,t):
   dmg=spell["dmg"][2]
   for x in range(spell["dmg"][0]):
@@ -4198,7 +4198,7 @@ def spell_missile(spell,words,me,t):
   if me.wearing_nonmage_equipment(): dmg=math.ceil(dmg/2)
   t.hp_tax(dmg,spell["name"],me,"force")
   return True
-  
+
 def spell_lifesteal(spell,words,me,t):
   me.tohit=me.smod("int")+math.floor(me.skmod("sorcery")/2)
   me.dmg=list(spell["dmg"])
@@ -4294,7 +4294,7 @@ def spell_heal(spell,words,me,target):
   s=me.spell_strength(spell)
   target.hp_gain(s)
   return True
-  
+
 def spell_energy(spell,words,me,target):
   s=spell["strength"]
   if target.has_trait("overworked"):
@@ -4304,7 +4304,7 @@ def spell_energy(spell,words,me,target):
     target.ap_gain(s)
     target.add_trait("overworked")
   return True
-  
+
 def spell_transfusion(spell,words,me,target):
   blood=False
   for i in me.items:
@@ -4342,7 +4342,7 @@ def spell_soulbind(spell,words,me,target):
         return True
     else: me.p("Target '"+words[2]+"' not found.")
   return False
-  
+
 def spell_rupture(spell,words,me,target):
   me.tohit=me.smod("int")+math.floor(me.skmod("sorcery")/2)
   me.dmg=list(spell["dmg"])
@@ -4367,7 +4367,7 @@ def spell_condensate(spell,words,me,target):
     return True
   else: me.p("Target must be a container that can hold 1 additional unit of water.")
   return False
-  
+
 def spell_dislocate(spell,words,me,target):
   if me.z>0 and not me.dungeon:
     p=me.world.get_tile(me.x,me.y,me.z)
@@ -4393,7 +4393,7 @@ def spell_dislocate(spell,words,me,target):
     return True
   else: me.p("There's nothing to dislocate here.")
   return False
-  
+
 def spell_enchant(spell,words,me,target):
   s=max(1,me.spell_strength(spell))+3
   if target.quality<s: target.quality+=1
@@ -4429,12 +4429,12 @@ def spell_goodberry(spell,words,me,target):
   me.p(str(s)+" Goodberries materialize in the palm of [n]'s hand.")
   spawn_item("Goodberry",me,s)
   return True
-  
+
 def spell_blade(spell,words,me,target):
   me.p("A blade of magical force materializes in [n]'s hands.")
   spawn_item("Spectral Blade",me)
   return True
-  
+
 def spell_arrow(spell,words,me,target):
   me.p("A bow and arrows of magical force materialize in [n]'s hands.")
   spawn_item("Spectral Bow",me)
@@ -4681,7 +4681,7 @@ async def cmd_researches(words,me,chan):
   if len(embeds)>0: await embed_group(chan,embeds)
   else: await chan.send("No research projects available at this time.")
   return True
-  
+
 async def cmd_buildings(words,me,chan):
   if not me.tribe:
     me.p("You can't build things if you aren't in a tribe (for now)")
@@ -4929,7 +4929,7 @@ def cmd_fast(words,k,target):
     k.add_trait("fasting")
     k.p("[n] is fasting this month and will not automatically eat anything.")
   return True
-  
+
 def cmd_rest(words,k,target):
   if k.has_trait("resting"):
     k.del_trait("resting")
@@ -4938,7 +4938,7 @@ def cmd_rest(words,k,target):
     k.add_trait("resting")
     k.p("[n] is resting this month and will not participate in tasks.")
   return True
-  
+
 async def cmd_pacify(words,k,target):
   if target.encounter.pacified:
     k.p(target.display()+" will not play this game with you.")
@@ -5467,7 +5467,7 @@ def cmd_sell(words,k,target):
     else: k.p("The trader can't carry any more stuff.")
   else: k.p("Can't sell to this kobold.")
   return False
-  
+
 def cmd_buy(words,k,target):
   if target.has_trait("trader"):
     for i in target.items:
@@ -5522,7 +5522,7 @@ def cmd_trade(words,k,target):
     return True
   k.p("Can't trade with this kobold.")
   return False
-  
+
 def cmd_tribename(words,k,target):
   for c in words[1]:
     if len(c)>1 or ord(c)>256:
@@ -5559,7 +5559,7 @@ def cmd_tavkick(words,k,target):
     return True
   else: k.p("The target must be in a different tribe and in your tavern.")
   return False
-  
+
 def cmd_tavban(words,k,target):
   if target.tribe!=k.tribe and target in k.tribe.tavern:
     if target.party: target=target.party.owner
@@ -5570,7 +5570,7 @@ def cmd_tavban(words,k,target):
     return True
   else: k.p("The target must be in a different tribe and in your tavern.")
   return False
-  
+
 def cmd_tavunban(words,k,target):
   if target.id in k.tribe.banned:
     k.p(target.display()+" has been unbanned from [n]'s tavern.")
@@ -5705,7 +5705,7 @@ async def cmd_look(words,k,chan):
         target=await multi_select(chan,words[1],k)
         if target: target.examine(k)
   return True
-  
+
 async def cmd_lookall(words,me,chan):
   p=me.get_place()
   bolds=[]
@@ -5744,7 +5744,7 @@ async def cmd_items(words,me,chan):
     index+=1
   await embed_group(chan,embeds)
   return True
-      
+
 def cmd_bio(words,me,target):
   e=discord.Embed(type="rich",title=target.display(),description=target.bio)
   action_queue.append(["embed",me.get_chan(),e])
@@ -5766,7 +5766,7 @@ async def cmd_say(words,me,chan):
   await chan.send(msg)
   if me.party: me.party.broadcast(msg)
   return True
-  
+
 async def cmd_me(words,me,chan):
   if len(words[1])>1000:
     await chan.send("Message must be 1000 characters or less.")
@@ -5925,7 +5925,7 @@ def cmd_drink(words,me,lol):
       console_print("water left: "+str(p.water))
     return True
   return False
-    
+
 async def cmd_fill(words,me,chan):
   p=me.get_place()
   drained=0
@@ -6106,7 +6106,7 @@ def cmd_comfort(words,me,target):
     return False
   me.gain_xp("willpower",exp)
   return True
-  
+
 def cmd_cheer(words,me,target):
   if not (target.nick and me.nick):
     me.p("Only a named kobold can do this, and the target must be another named kobold.")
@@ -6370,7 +6370,7 @@ def cmd_equip(words,me,target):
   else:
     me.p("[n] doesn't have that.")
     return False
-    
+
 def cmd_wear(words,me,target):
   if not hasattr(target,"eqslot") and me.worns["body"]==target: target.eqslot="body"
   if target.eqslot and target.eqslot!="none":
@@ -6431,7 +6431,7 @@ def cmd_leave(words,me,target):
       return True
     else: me.p("There's nowhere to leave to from here.")
   return False
-    
+
 def cmd_enter(words,me,target):
   p=me.get_place()
   tribe=p.get_tribe()
@@ -6481,7 +6481,7 @@ def cmd_enter(words,me,target):
         for e in me.world.encounters:
           if e.place==dgn.map[m]: console_print("Found dungeon encounter at "+str((dgn.map[m].x,dgn.map[m].y,dgn.map[m].z)))
   return False
-      
+
 def check_move(words,me,cost):
   (newx,newy,newz)=(me.x,me.y,me.z)
   p=me.get_place()
@@ -6575,7 +6575,7 @@ def cmd_move(words,me,cost):
   me.p("[n]'s party moves "+words[1]+".")
   me.party.move(move[0],move[1],move[2],cost)
   return True
-  
+
 def cmd_prospect(words,me,target):
   t=me.world.get_tile(me.x,me.y,me.z)
   if me.z>0 or me.dungeon:
@@ -6604,7 +6604,7 @@ def cmd_prospect(words,me,target):
     me.gain_xp("geology",exp)
   else: me.p("There is nothing to prospect here.")
   return True
-  
+
 def cmd_butcher(words,me,target):
   me.equip_best("butchering")
   if target.type!="corpse": me.p("Must butcher a corpse.")
@@ -6849,7 +6849,7 @@ async def cmd_use(words,me,chan):
       me.p("You can't use the "+target+" in any meaningful way.")
       return False
     return True
-  
+
 def cmd_expand(words,me,target):
   p=me.get_place()
   tribe=None
@@ -7140,7 +7140,7 @@ def cmd_breed(words,me,k):
       if k.id in me.breeders: me.breeders.remove(k.id)
       return True
   return False
-  
+
 def cmd_roll(words,me,target):
   m=0
   if len(words)>1:
@@ -7418,7 +7418,7 @@ def cmd_study(words,k,target):
   k.gain_xp("research",prog/2)
   k.get_familiar(r["name"],prog-(k.smod("int")*2)) #int is already factored in
   return True
-  
+
 def cmd_thesis(words,k,target):
   r=find_research(words[1],lax=True)
   if not r:
@@ -7614,7 +7614,7 @@ def cmd_mine(words,k,target):
   if tribe and tribe.has_building("Stone Pillars"): ch=math.floor(ch/2)
   if k.accident(ch): k.p("[n] caused some rocks to collapse!")
   return True
-  
+
 def cmd_chop(words,k,target):
   if k.z!=0 or k.dungeon:
     k.p("That can only be done on the surface.")
@@ -7660,7 +7660,7 @@ def cmd_chop(words,k,target):
   ch=10-k.smod("dex")
   if k.accident(ch): k.p("[n] was hit by a broken branch!")
   return True
-  
+
 async def cmd_spells(words,user,chan,w):
   pages={}
   maxlevel=0
@@ -7833,7 +7833,7 @@ async def cmd_sp(words,user,chan,w):
   spe=get_pdata(user.id,"sp_earned",0)
   await chan.send("You currently have "+str(sp)+" Soul Points. You have earned "+str(spe)+" Soul Points to date.")
   return False
-  
+
 async def show_selection(udm,sel,first=None):
   embeds=[]
   a=0
@@ -8005,7 +8005,7 @@ async def cmd_name(words,user,chan,w,wand=None):
     await chan.send("You have joined the game! Your current channel is #"+p.get_chan()+" on the server.")
   playerdata[str(user.id)]["selection"]={}
   return True
-    
+
 async def log_exception(info=None):
   chan = discord.utils.get(guild.channels,name="exception-log")
   if chan:
@@ -8023,7 +8023,7 @@ async def log_exception(info=None):
       else: first=True; msg+=q
     if len(msg)>0: 
       await chan.send(msg)
-      
+
 def console_print(m,hp=False,lp=False):
   global console_crosspost
   msg="["+time.strftime("%H:%M:%S")+"] "
@@ -8031,13 +8031,13 @@ def console_print(m,hp=False,lp=False):
   msg+=str(m)
   print(msg)
   if (console_crosspost or hp) and not lp: console_queue.append(msg)
-  
+
 def game_print(msg,chan,pin=False):
   if not chan: return
   if chan not in post_queue: post_queue[chan]=[]
   if pin: msg="<<PINTHIS>>"+msg
   post_queue[chan].append(msg)
-  
+
 async def multi_select(chan,search,me,startininv=True,place="any",type=None,landmarks=False,ordering=False):
   target=None
   first=False
@@ -8069,7 +8069,7 @@ async def multi_select(chan,search,me,startininv=True,place="any",type=None,land
     else: await chan.send("Timed out.")
   else: target=targets[0]
   return target
-  
+
 def find_item_multi(name,me,startininv=True,place="any",type=None,ignore_displays=False):
   #console_print("searching for "+name+" among items (multi)")
   targets=[]
@@ -8094,7 +8094,7 @@ def find_item_multi(name,me,startininv=True,place="any",type=None,ignore_display
       targets.append(i)
       if not ignore_displays: displays.append(i.display())
   return targets
-  
+
 def find_item(name,me,startininv=True,type=None,hasliquid=False):
   #console_print("searching for "+name+" among items")
   t=me.get_place()
@@ -8130,13 +8130,13 @@ def find_kobold(name,area=None,w=None):
     if name.lower() in k.get_name().lower():
       return k
   return None
-  
+
 def find_spell(name,lax=True):
   for s in spell_data:
     if s["name"]==name: return s
     elif lax and name.lower() in s["name"].lower(): return s
   return None
-  
+
 def find_craft(name,lax=True):
   for c in craft_data:
     if c["result"].lower()==name.lower(): return c
@@ -8146,13 +8146,13 @@ def find_craft(name,lax=True):
         if " "+name.lower() in " "+w.lower(): return c
         if " "+name.lower() in " "+c["result"].lower(): return c
   return None
-  
+
 def find_creature(name,lax=True):
   for c in creature_data:
     if c["name"]==name: return c
     elif lax and name.lower() in c["name"].lower(): return c
   return None
-  
+
 def find_research(name,lax=True):
   for r in research_data:
     if r["name"]==name: return r
@@ -8164,7 +8164,7 @@ def find_building(name,lax=True):
     if r["name"]==name: return r
     elif lax and name.lower() in r["name"].lower(): return r
   return None
-  
+
 async def cmd_spawn(words,user,chan,w):
   try: k=find_kobold(words[1],w=w)
   except: k=None
@@ -8249,7 +8249,7 @@ async def cmd_kvar(words,user,chan,w):
     else: setattr(k,words[2],v)
     await chan.send("Set attribute "+words[2]+" of kobold "+k.get_name()+" to "+str(v)+" (type "+str(type(v))+")")
   else: await chan.send("Kobold "+words[1]+" not found")
-  
+
 async def cmd_setheat(words,user,chan,w):
   tribe=None
   for t in w.tribes:
@@ -8290,7 +8290,7 @@ async def cmd_tvar(words,user,chan,w):
     setattr(tribe,words[2],v)
     await chan.send("Set attribute "+words[2]+" of tribe "+tribe.name+" ("+str(tribe.id)+") to "+str(v)+" (type "+str(type(v))+")")
   else: await chan.send("Tribe "+words[1]+" not found")
-  
+
 async def cmd_trait(words,user,chan,w):
   try: k=find_kobold(words[1],w=w)
   except: k=None
@@ -8312,7 +8312,7 @@ async def cmd_reboot(words,user,chan,w):
     await chan.send("Couldn't save game. Will not reboot.")
     await chan.send(e)
     await log_exception()
-    
+
 async def cmd_repopulate(words,user,chan,w):
   nests=0
   for m in w.map:
@@ -8373,7 +8373,7 @@ async def cmd_ageup(words,user,chan,w):
       k.age+=1
     await chan.send(k.get_name()+" aged to adult")
   else: await chan.send("Kobold not found")
-  
+
 async def cmd_forcetunnel(words,user,chan,w):
   try: k=find_kobold(words[1],w=w)
   except: k=None
@@ -8465,7 +8465,7 @@ async def cmd_reset(words,user,chan,w):
         await c.delete()
     world=World()
   await chan.send("World reset.")
-  
+
 async def do_msg_queue():
   global console_queue, guild
   if not guild: return
@@ -8486,7 +8486,7 @@ async def do_msg_queue():
       await chan.send(msg)
     for m in msgsent:
       if m in console_queue: console_queue.remove(m)
-      
+
 async def do_post_queue():
   global post_queue, guild
   if not guild: return
@@ -8514,7 +8514,7 @@ async def do_post_queue():
         post=await channel.send(s)
         if pin: await post.pin()
     for m in msg: post_queue[p].remove(m)
-  
+
 async def confirm_prompt(chan,msg,confirm=None):
   e=discord.Embed(type="rich",title="Confirmation",description=msg)
   e.set_footer(text="React with 👍 to continue, or 👎 to abort.")
@@ -8596,7 +8596,7 @@ async def embed_group(chan,embeds,confirm=None):
       await message.edit(embed = embeds[i])
   except: pass
   return None
-  
+
 async def edit_wanderer(chan,user=None):
   pid=str(user.id)
   k=get_pdata(pid,"editing",None)
@@ -8678,7 +8678,7 @@ async def edit_wanderer(chan,user=None):
   e.set_footer(text="")
   await message.edit(embed = e)
   return None
-  
+
 async def print_routine(r,chan):
   rl=[]
   rcount=0
@@ -8687,7 +8687,7 @@ async def print_routine(r,chan):
     rcount+=1
   e=discord.Embed(type="rich",title="Editing routine",description="\n".join(rl))
   await chan.send(None,embed=e)
-  
+
 async def print_tasks(tribe,chan):
   rl=[]
   rcount=0
@@ -8707,7 +8707,7 @@ async def print_tasks(tribe,chan):
     rcount+=1
   e=discord.Embed(type="rich",title="Tribe tasks",description="\n".join(rl))
   await chan.send(None,embed=e)
-  
+
 async def cmd_task(words,me,chan):
   if len(words)>1:
     if me.tribe:
@@ -9028,7 +9028,7 @@ async def cmd_wanderer(words,user,chan,w):
       await chan.send("Wanderer '"+words[2]+"' saved.")
     else:
       await chan.send("You aren't editing a wanderer.")
-  
+
 async def do_action_queue():
   toremove=[]
   if not guild: return
@@ -9117,7 +9117,7 @@ async def do_action_queue():
         await log_exception()
   for x in toremove:
     action_queue.remove(x)
-  
+
 def load_game(path='klsave'):
   refresh_data()
   global world,sandbox,playerdata,action_queue
@@ -9223,7 +9223,7 @@ def load_game(path='klsave'):
       for d in df:
         if not hasattr(i,d): setattr(i,d,this.get(d,df[d]))
     console_print("there are "+str(eggs)+" eggs that will be bugged")
-    
+
 def save_game(path='klsave'):
   file = shelve.open(path, 'n')
   file['world'] = world
@@ -9232,14 +9232,14 @@ def save_game(path='klsave'):
   file['action_queue'] = action_queue
   file.close()
   #console_print("Game saved.")
-  
+
 def get_pdata(id,data,df=None):
   global playerdata
   i=str(id)
   if i not in playerdata: playerdata[i]={}
   if data not in playerdata[i]: playerdata[i][data]=df
   return playerdata[i][data]
-  
+
 def refresh_data():
   global item_data,item_cats,research_data,building_data,craft_data,cmd_data,creature_data,spell_data,liquid_data,landmark_data,trait_data,skill_data,dungeon_data
   item_data=get_json('data/items.json')
@@ -9273,7 +9273,7 @@ def refresh_data():
   trait_data=get_json('data/traits.json')
   skill_data=get_json('data/skills.json')
   dungeon_data=get_json('data/dungeons.json')
-  
+
 async def handle_final_orders(w):
   for k in w.kobold_list:
     if len(k.fo)>0:
@@ -9291,7 +9291,7 @@ async def handle_final_orders(w):
           m=DummyMessage(discord.utils.get(guild.channels,name=k.get_chan()),None,a,w=w,k=k)
           await handle_message(m)
     k.fo=[]
-    
+
 async def cmd_task_test(words,user,chan,w):
   await handle_tasks(w)
 
@@ -9389,7 +9389,7 @@ async def handle_tasks(w):
             break
         for i in toolsused: 
           if isinstance(i.place,Kobold): cmd_drop([],i.place,i)
-  
+
 async def main_loop():
   astimer=0
   while True:
@@ -9415,7 +9415,7 @@ async def main_loop():
       if sta:
         for t in world.tribes:
           game_print("Error: Something went wrong during month change. The previous logs are not canon. The dev has been notified; please wait for him to fix the problem and revert to the backup.",t.get_chan())
-  
+
 console_queue=[]
 action_queue=[]
 post_queue={}
@@ -9453,19 +9453,18 @@ async def on_ready():
   )
   game = discord.Game("Kobold Legacy")
   await clive.change_presence(activity=game)
-  
+
 @clive.event
 async def on_member_join(member):
   newchan = discord.utils.get(member.guild.channels,name="verify")
   await newchan.send("<@!"+str(member.id)+"> Hey! Before you can begin your legacy, you need to let me know you're a real person by typing `!verify` in the chat here. If that doesn't work or something is wrong, please ping/DM the dev (orange name).")
-  
+
 @clive.event
 async def on_member_remove(member):
   for k in world.kobold_list:
     if k.d_user_id==member.id: cmd_quit([],k,None,force=True)
   newchan = discord.utils.get(member.guild.channels,name="general")
   await newchan.send(member.name+" suffered an identity crisis and left this world.")
-
 
 class DummyMessage:
     def __init__(self, channel, author, content, w=None, k=None):
@@ -9474,7 +9473,6 @@ class DummyMessage:
         self.content = content
         self.world = w if w else world
         self.k = k
-
 
 @clive.event
 async def on_message(message):
@@ -9818,12 +9816,12 @@ async def handle_message(message,num=1):
     if chan: await chan.send("Your command resulted in an error. The dev has been notified.")
     if user: await log_exception("Player: "+str(user)+", channel: "+str(cname)+", command: `"+message.content+"`")
     else: await log_exception("Player: "+me.get_name()+", channel: "+str(cname)+", command: `"+message.content+"` (final orders)")
-  
+
 try: load_game()
 except:
   console_print("There was a problem running load_game")
   m=traceback.format_exc().split("\n")
   console_print(m)
-  
+
 clive.loop.create_task(main_loop())
 clive.run(TOKEN)
