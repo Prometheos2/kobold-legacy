@@ -1,4 +1,5 @@
 # kobold-legacy
+
 A discord bot game where players play the role of kobolds surviving in a harsh, low-tech environment.
 
 The game is discontinued by the original developer, but the source is open. Anyone is free to copy, modify, and run their own versions of this bot.
