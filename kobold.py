@@ -12,6 +12,8 @@ import traceback
 import discord
 from dotenv import load_dotenv
 
+
+BOT_NAME = 'Lulurnbus#1506'
 STATS = ["str", "dex", "con", "int", "wis", "cha"]
 STAT_COLOR = {"str": "red", "dex": "white", "con": "black",
               "int": "blue", "wis": "green", "cha": "yellow"}
@@ -10747,7 +10749,7 @@ async def confirm_prompt(chan, msg, confirm=None):
         if res == None:
             break
         # Example: 'MyBot#1111'
-        if str(res[1]) != 'Lulumbus#2714' and (not confirm or res[1] == confirm):
+        if str(res[1]) != BOT_NAME and (not confirm or res[1] == confirm):
             emoji = str(res[0].emoji)
             if not isinstance(chan, discord.DMChannel):
                 await message.remove_reaction(res[0].emoji, res[1])
@@ -10804,7 +10806,7 @@ async def embed_group(chan, embeds, confirm=None):
         if res == None:
             break
         # Example: 'MyBot#1111'
-        if str(res[1]) != 'Lulumbus#2714' and (not confirm or res[1] == confirm):
+        if str(res[1]) != BOT_NAME and (not confirm or res[1] == confirm):
             emoji = str(res[0].emoji)
             if not isinstance(chan, discord.DMChannel):
                 await message.remove_reaction(res[0].emoji, res[1])
@@ -10914,7 +10916,7 @@ async def edit_wanderer(chan, user=None):
             res = None
         if res == None:
             break
-        if str(res[1]) != 'Lulumbus#2714' and (not user or res[1] == user):  # Example: 'MyBot#1111'
+        if str(res[1]) != BOT_NAME and (not user or res[1] == user):  # Example: 'MyBot#1111'
             emoji = str(res[0].emoji)
             if not isinstance(chan, discord.DMChannel):
                 await message.remove_reaction(res[0].emoji, res[1])
