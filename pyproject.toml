@@ -6,10 +6,9 @@ authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-discord2 = "^2.0.1"
-discord = "^1.7.3"
 python-dotenv = "^0.20.0"
 pip = "^22.1.2"
+py-cord = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 toml = {version = "^0.10.2", optional = true}
