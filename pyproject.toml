@@ -8,23 +8,27 @@ authors = ["Your Name <you@example.com>"]
 python = "^3.8"
 python-dotenv = "^0.20.0"
 pip = "^22.1.2"
-py-cord = "^2.0.0"
+# TODO: switch to py-cord; discord & discord2 are no longer maintained
+discord = "^1.7.3"
+jupyter = {version = "^1.0.0", optional = true}
 
 [tool.poetry.dev-dependencies]
-toml = {version = "^0.10.2", optional = true}
-yapf = {version = "^0.32.0", optional = true}
-pre-commit = {version = "^2.20.0", optional = true}
-jupyter = {version = "^1.0.0", optional = true}
+yapf = "^0.32.0"
+toml = "^0.10.2"
+pre-commit = "^2.20.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+# To install optional packages
+[tool.poetry.extras]
+jupyter = ["jupyter"]
+
 # Import sorter
 [tool.isort]
 src_paths = ["src", "tests"]
 combine_as_imports=true
-combine_star=true
 float_to_top=true
 remove_redundant_aliases=true
 balanced_wrapping=true
