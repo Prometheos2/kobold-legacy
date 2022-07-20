@@ -10,10 +10,10 @@ repos:
       - id: destroyed-symlinks
       - id: detect-private-key
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.1
+    rev: v2.37.2
     hooks:
       - id: pyupgrade
-        args: [--py39-plus]
+        args: [--py38-plus]
   - repo: https://github.com/hadialqattan/pycln
     rev: v2.0.4 # Possible releases: https://github.com/hadialqattan/pycln/releases
     hooks:
