@@ -7,9 +7,17 @@ from kobold import Kobold
 from tile import Tile
 from tribe import Tribe
 
-from ..kobold import (STATS, action_queue, attack_roll, chance,
-                      choice, console_print, creature_data,
-                      droll, game_print, spawn_item, trait_data)
+from ..kobold import STATS
+from ..kobold import action_queue
+from ..kobold import attack_roll
+from ..kobold import chance
+from ..kobold import choice
+from ..kobold import console_print
+from ..kobold import creature_data
+from ..kobold import droll
+from ..kobold import game_print
+from ..kobold import spawn_item
+from ..kobold import trait_data
 
 
 class Creature:

@@ -4,8 +4,13 @@ import random
 from encounter import Encounter
 from tile import Tile
 
-from ..kobold import (OPP_DIR, chance, choice,
-                      console_print, dungeon_data, forage, spawn_item)
+from ..kobold import OPP_DIR
+from ..kobold import chance
+from ..kobold import choice
+from ..kobold import console_print
+from ..kobold import dungeon_data
+from ..kobold import forage
+from ..kobold import spawn_item
 
 
 class Dungeon:

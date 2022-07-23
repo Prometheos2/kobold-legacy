@@ -6,10 +6,20 @@ from kobold import Kobold
 from tile import Tile
 from tribe import Tribe
 
-from ..kobold import (chance, choice, console_print,
-                      find_building, forage, game_print, get_tri_distance,
-                      item_cats, item_data, landmark_data, liquid_data,
-                      skill_data, spawn_item, trait_data)
+from ..kobold import chance
+from ..kobold import choice
+from ..kobold import console_print
+from ..kobold import find_building
+from ..kobold import forage
+from ..kobold import game_print
+from ..kobold import get_tri_distance
+from ..kobold import item_cats
+from ..kobold import item_data
+from ..kobold import landmark_data
+from ..kobold import liquid_data
+from ..kobold import skill_data
+from ..kobold import spawn_item
+from ..kobold import trait_data
 
 
 class World:

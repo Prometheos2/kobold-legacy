@@ -7,7 +7,8 @@ import shelve
 import time
 import traceback
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
+from typing import Optional
 
 import discord
 from dotenv import load_dotenv
@@ -15,11 +16,14 @@ from dotenv import load_dotenv
 from src.creature import Creature
 from src.dummy_message import DummyMessage
 from src.encounter import Encounter
-from src.item import Item, get_q_desc
-from src.kobold import Kobold, kobold_name
+from src.item import Item
+from src.item import get_q_desc
+from src.kobold import Kobold
+from src.kobold import kobold_name
 from src.party import Party
 from src.tile import Tile
-from src.tribe import Tribe, tribe_name
+from src.tribe import Tribe
+from src.tribe import tribe_name
 from src.world import World
 
 STATS = ["str", "dex", "con", "int", "wis", "cha"]

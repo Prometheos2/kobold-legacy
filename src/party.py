@@ -8,8 +8,14 @@ from creature import Creature
 from kobold import Kobold
 from tribe import Tribe
 
-from ..kobold import (action_queue, chance, game_print, guild,
-                      landmark_data, liquid_data, sandbox, trait_data)
+from ..kobold import action_queue
+from ..kobold import chance
+from ..kobold import game_print
+from ..kobold import guild
+from ..kobold import landmark_data
+from ..kobold import liquid_data
+from ..kobold import sandbox
+from ..kobold import trait_data
 
 
 class Party:

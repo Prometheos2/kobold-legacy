@@ -7,10 +7,21 @@ from encounter import Encounter
 from kobold import Kobold
 from tribe import Tribe
 
-from ..kobold import (DIR_FULL, action_queue, chance, check_req, choice,
-                      console_print, find_research, game_print, get_dir,
-                      get_tri_distance, item_data, landmark_data,
-                      liquid_data, spawn_item, spell_data)
+from ..kobold import DIR_FULL
+from ..kobold import action_queue
+from ..kobold import chance
+from ..kobold import check_req
+from ..kobold import choice
+from ..kobold import console_print
+from ..kobold import find_research
+from ..kobold import game_print
+from ..kobold import get_dir
+from ..kobold import get_tri_distance
+from ..kobold import item_data
+from ..kobold import landmark_data
+from ..kobold import liquid_data
+from ..kobold import spawn_item
+from ..kobold import spell_data
 
 
 def get_q_desc(quality: int) -> str:

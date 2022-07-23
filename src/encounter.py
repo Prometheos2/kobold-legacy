@@ -5,9 +5,14 @@ import discord
 from creature import Creature
 from kobold import Kobold
 
-from ..kobold import (action_queue, chance, choice,
-                      console_print, creature_data, game_print,
-                      spawn_item, trait_data)
+from ..kobold import action_queue
+from ..kobold import chance
+from ..kobold import choice
+from ..kobold import console_print
+from ..kobold import creature_data
+from ..kobold import game_print
+from ..kobold import spawn_item
+from ..kobold import trait_data
 
 
 class Encounter:

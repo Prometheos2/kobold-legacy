@@ -6,12 +6,34 @@ import discord
 
 from tribe import Tribe
 
-from ..kobold import (COLOR_STAT, GENOME, ROLENAMES, STAT_COLOR, STATS,
-                      action_queue, chance, choice, cmd_attack, cmd_drop,
-                      cmd_equip, cmd_get, console_print, consume_item, droll,
-                      find_research, game_print, get_pdata, has_item,
-                      item_data, liquid_data, make_baby, playerdata, sandbox,
-                      skill_data, spawn_item, spell_data, trait_data)
+from ..kobold import COLOR_STAT
+from ..kobold import GENOME
+from ..kobold import ROLENAMES
+from ..kobold import STAT_COLOR
+from ..kobold import STATS
+from ..kobold import action_queue
+from ..kobold import chance
+from ..kobold import choice
+from ..kobold import cmd_attack
+from ..kobold import cmd_drop
+from ..kobold import cmd_equip
+from ..kobold import cmd_get
+from ..kobold import console_print
+from ..kobold import consume_item
+from ..kobold import droll
+from ..kobold import find_research
+from ..kobold import game_print
+from ..kobold import get_pdata
+from ..kobold import has_item
+from ..kobold import item_data
+from ..kobold import liquid_data
+from ..kobold import make_baby
+from ..kobold import playerdata
+from ..kobold import sandbox
+from ..kobold import skill_data
+from ..kobold import spawn_item
+from ..kobold import spell_data
+from ..kobold import trait_data
 
 
 def kobold_name() -> str:

@@ -8,10 +8,22 @@ from creature import Creature
 from dungeon import Dungeon
 from encounter import Encounter
 
-from ..kobold import (DIR_FULL, OPP_DIR, action_queue,
-                      building_data, chance, check_req, choice, console_print,
-                      consume_item, dungeon_data, game_print, get_dir,
-                      has_item, item_data, landmark_data, spawn_item)
+from ..kobold import DIR_FULL
+from ..kobold import OPP_DIR
+from ..kobold import action_queue
+from ..kobold import building_data
+from ..kobold import chance
+from ..kobold import check_req
+from ..kobold import choice
+from ..kobold import console_print
+from ..kobold import consume_item
+from ..kobold import dungeon_data
+from ..kobold import game_print
+from ..kobold import get_dir
+from ..kobold import has_item
+from ..kobold import item_data
+from ..kobold import landmark_data
+from ..kobold import spawn_item
 
 
 class Tile:
