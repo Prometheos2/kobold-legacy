@@ -6,6 +6,8 @@ import random
 import shelve
 import time
 import traceback
+from collections.abc import Iterable
+from typing import Any, Optional
 
 import discord
 from dotenv import load_dotenv
@@ -37,22 +39,20 @@ ROLENAMES = {"brown": "Mudscale", "red": "Bloodscale", "yellow": "Goldscale", "g
              "white": "Marblescale", "black": "Coalscale", "orange": "Copperscale", "purple": "Violetscale", "silver": "Silverscale"}
 
 
-def choice(ch):
-    if len(ch) == 0:
+def choice(possible_choices: Iterable[Any]) -> Optional[Any]:
+    if len(possible_choices) == 0:
         return None
-    else:
-        return random.choice(ch)
+
+    return random.choice(possible_choices)
 
 
-def chance(ch):
-    if ch <= 0:
+def chance(success_chance: int) -> bool:
+    if success_chance <= 0:
         return False
-    c = random.randint(1, 100)
-    console_print("CHANCE: looking for "+str(ch)+" or less, got "+str(c))
-    if c <= abs(ch):
-        return True
-    else:
-        return False
+
+    luck = random.randint(1, 100)
+    console_print(f"CHANCE: looking for {str(success_chance)} or less, got {str(luck)}")
+    return luck <= abs(success_chance)
 
 
 def get_json(fname):
