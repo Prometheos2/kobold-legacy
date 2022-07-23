@@ -26,7 +26,6 @@ STAT_COLOR = {"str": "red", "dex": "white", "con": "black",
 COLOR_STAT = {"red": "str", "white": "dex", "black": "con",
               "blue": "int", "green": "wis", "yellow": "cha"}
 OPP_DIR = {"n": "s", "s": "n", "w": "e", "e": "w"}
-OPP_DIR2 = {"n": "s", "s": "n", "w": "e", "e": "w", "u": "d", "d": "u"}
 DIR_FULL = {"n": "north", "e": "east", "w": "west", "s": "south"}
 GENOME = {"red": [False, False],
           "yellow": [False, False],
@@ -36,7 +35,6 @@ GENOME = {"red": [False, False],
           "white": [False, False]}
 ROLENAMES = {"brown": "Mudscale", "red": "Bloodscale", "yellow": "Goldscale", "green": "Jadescale", "blue": "Silkscale",
              "white": "Marblescale", "black": "Coalscale", "orange": "Copperscale", "purple": "Violetscale", "silver": "Silverscale"}
-# ADVANCE_TOTALS=[4,8,12,16,20,24]
 
 
 def get_q_desc(q):
