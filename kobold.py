@@ -124,86 +124,16 @@ def consume_item(self, item_name: str, quantity: int = 1) -> NoReturn:
             return
 
 
-def check_req(self: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Optional[Kobold] = None) -> str:
-    good = "good"
-    place = kobold.get_place() if kobold else self
+def check_req(place: Union[Tribe, Tile, NoneType],
+              req: Iterable[str],
+              kobold: Optional[Kobold] = None) -> str:
 
-    # Tile
-    if isinstance(place, Tribe):
-        tile = place.world.get_tile(place.x, place.y, place.z)
-    else:
-        tile = place
+    if kobold:
+        assert isinstance(kobold, Kobold)
+        return kobold.check_req(req)
 
-    for q in req:
-        req_category = q[0]
-        req_objects = q[1]
-        if req_category == "research":
-            if isinstance(self, Tribe) and req_objects in self.research:
-                continue
-            fam = False
-            if kobold:
-                if kobold.familiar(req_objects) > 0:
-                    continue
-                for l in kobold.world.kobold_list:
-                    if l.get_place() == place and l.familiar(req_objects) >= 2:
-                        fam = True
-                        break
-            if fam:
-                continue
-            if place == self:
-                good = "Research missing: " + req_objects
-            else:
-                good = "Unfamiliar research: " + req_objects
-        elif req_category == "item":
-            g = "Item missing: " + req_objects
-            if place.has_item(req_objects):
-                g = "good"
-            if kobold and kobold.has_item(req_objects):
-                g = "good"
-            good = g
-        elif req_category == "tool":
-            g = "Tool missing: " + req_objects
-            for i in place.items:
-                if i.tool == req_objects:
-                    g = "good"
-                    break
-            if  g != "good" and kobold:
-                for i in kobold.items:
-                    if i.tool == req_objects:
-                        g = "good"
-                        break
-            if good == "good":
-                good = g
-        elif req_category == "building":
-            if not isinstance(place, Tribe):
-                good = "Can't be done in the overworld."
-            elif not place.has_building(req_objects):
-                good = "Building missing: " + req_objects
-        elif req_category == "landmark":
-            if req_objects not in tile.special:
-                good = "Landmark missing: " + req_objects
-        elif req_category == "minlevel":
-            z = kobold.z if kobold else self.z
-            if req_objects > z:
-                good = "Must be done at level " + str(req_objects) + " or lower."
-        elif req_category == "maxlevel":
-            z = kobold.z if kobold else self.z
-            if req_objects < z:
-                good = "Must be done at level " + str(req_objects) + " or lower."
-        elif req_category == "tribe":
-            t = place if isinstance(place, Tribe) else place.get_tribe()
-            if t and not req_objects:
-                good = "You cannot do that in a tile with a den."
-            if not t and req_objects:
-                good = "Must be done in a tile with a den."
-        elif req_category == "liquid":
-            g = "Liquid source missing: " + req_objects
-            for l in tile.special:
-                if landmark_data[l].get("liquid_source", "none") == req_objects:
-                    g = "good"
-            if good == "good":
-                good = g
-    return good
+    assert isinstance(place, (Tribe, Tile)), "check_req require either a kobold or a place argument (Tribe or Tile)."
+    return place.check_req(req)
 
 
 def get_tri_distance(x1, y1, x2, y2):
