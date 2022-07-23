@@ -73,19 +73,35 @@ def get_json(fname):
     return stuff
 
 
-def has_item(self, name, q=1):
-    #console_print("has item for "+name)
-    if name[0] == "*":
-        cat = name.replace("*", "")
+def has_item(self, item_name: str, quantity: int = 1) -> Optional[Item]:
+    """Check whether `self` has a given item.
+
+    Arguments:
+        self -- entity that 'holds' items (Kobold, Tile, Tribe)
+        item_name -- Name of the queried item.
+
+    Keyword Arguments:
+        quantity -- Queried quantity? (default: {1})
+
+    Returns:
+        Item if found.
+    """
+    if item_name[0] == "*":
+        item_category = item_name.replace("*", "")
+
+        def check_for_item(_name: str) -> bool:
+            return _name in item_cats[item_category]
     else:
-        cat = None
-    for i in self.items:
-        if (cat and i.name in item_cats[cat]) or (not cat and i.name == name):
-            #console_print(i.name+" fits the bill")
-            if i.num >= q:
-                return i
-            else:
-                q -= i.num
+
+        def check_for_item(_name: str) -> bool:
+            return _name == item_name
+
+    for item in self.items:
+        if check_for_item(item.name):
+            if item.num >= quantity:
+                return item
+
+            quantity -= item.num
     return None
 
 
