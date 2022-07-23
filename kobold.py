@@ -37,10 +37,10 @@ ROLENAMES = {"brown": "Mudscale", "red": "Bloodscale", "yellow": "Goldscale", "g
              "white": "Marblescale", "black": "Coalscale", "orange": "Copperscale", "purple": "Violetscale", "silver": "Silverscale"}
 
 
-def tribe_name():
+def tribe_name() -> str:
     try:
         f = open('data/tribe_names.txt')
-    except:
+    except BaseException:
         console_print('ERROR: Cannot find tribe name list')
         return "Erroneously-named Tribe"
     temp_names = []
@@ -48,11 +48,9 @@ def tribe_name():
         nam = line.strip('\n')
         nam = nam.capitalize()
         temp_names.append(nam)
-    n = choice(temp_names)+" "+choice(temp_names)
+    n = choice(temp_names) + " " + choice(temp_names)
     f.close()
     return n
-
-# def alpha_str(str):
 
 
 def choice(ch):
