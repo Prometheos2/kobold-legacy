@@ -131,10 +131,10 @@ def check_req(self: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Op
         if q[0] == "research":
             if isinstance(self, Tribe) and q[1] in self.research:
                 continue
-            if kobold and kobold.familiar(q[1]) > 0:
-                continue
             fam = False
             if kobold:
+                if kobold.familiar(q[1]) > 0:
+                    continue
                 for l in kobold.world.kobold_list:
                     if l.get_place() == place and l.familiar(q[1]) >= 2:
                         fam = True
@@ -180,17 +180,11 @@ def check_req(self: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Op
             if q[1] > z:
                 good = "Must be done at level " + str(q[1]) + " or lower."
         elif q[0] == "maxlevel":
-            if kobold:
-                z = kobold.z
-            else:
-                z = self.z
+            z = kobold.z if kobold else self.z
             if q[1] < z:
                 good = "Must be done at level " + str(q[1]) + " or lower."
         elif q[0] == "tribe":
-            if isinstance(place, Tribe):
-                t = place
-            else:
-                t = place.get_tribe()
+            t = place if isinstance(place, Tribe) else place.get_tribe()
             if t and not q[1]:
                 good = "You cannot do that in a tile with a den."
             if not t and q[1]:
