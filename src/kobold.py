@@ -8,12 +8,59 @@ from tribe import Tribe
 
 from ..kobold import (COLOR_STAT, GENOME, ROLENAMES, STAT_COLOR, STATS,
                       action_queue, chance, choice, cmd_attack, cmd_drop,
-                      cmd_equip, cmd_get, console_print, consume_item,
-                      droll, find_research, game_print, get_pdata,
-                      has_item, item_data, kobold_name, liquid_data,
-                      make_baby, playerdata, sandbox, skill_data,
-                      spawn_item, spell_data, trait_data)
+                      cmd_equip, cmd_get, console_print, consume_item, droll,
+                      find_research, game_print, get_pdata, has_item,
+                      item_data, liquid_data, make_baby, playerdata, sandbox,
+                      skill_data, spawn_item, spell_data, trait_data)
 
+
+def kobold_name() -> str:
+    vowels = ['a', 'i', 'o', 'u', 'e']
+    penvowels = ['a', 'o', 'u', 'ay', 'ee', 'i']
+    frontcluster = [
+        'b', 'br', 'bl', 'd', 'dr', 'dl', 'st', 'str', 'stl', 'shl', 'k', 'p',
+        'l', 'lr', 'sh', 'j', 'jr', 'thl', 'g', 'f', 'gl', 'gr', 'fl', 'fr',
+        'x', 'z', 'zr', 'r'
+    ]
+    cluster = ['b', 'd', 'l', 'f', 'g', 'k', 'p', 'n', 'm', 's', 'v']
+    fincluster = [
+        'm', 'r', 'ng', 'b', 'rb', 'mb', 'g', 'lg', 'l', 'lb', 'lm', 'rg', 'k',
+        'rk', 'lk', 'rv', 'v'
+    ]
+    finsyl = ['is', 'us', 'ex1', 'ex2', 'al', 'a', 'ex3']
+
+    is_first_iter = True
+    syl = random.randint(0, 2) + 1
+    firstname = []
+    vowel = choice(vowels)
+    while syl > 0:
+        if is_first_iter or syl == 1:
+            if syl == 1:
+                vowel = choice(penvowels)
+
+            firstname.append(choice(frontcluster))
+            is_first_iter = False
+        else:
+            firstname.append(choice(cluster))
+        firstname.append(vowel)
+        syl -= 1
+
+    firstname.append(choice(fincluster))
+    fin = choice(finsyl)
+    if 'ex' not in fin:
+        return "".join(firstname).capitalize()
+
+    if vowel in ['o', 'ay', 'u', 'a']:
+        if fin == 'ex1':
+            firstname.append(choice(['er', 'ar']))
+        elif fin == 'ex2':
+            firstname.append(choice(['in', 'an']))
+        elif fin == 'ex3':
+            firstname.append('i')
+    else:
+        firstname.append(choice(['is', 'us', 'al', 'a']))
+
+    return "".join(firstname).capitalize()
 
 class Kobold:
     def __init__(self, tribe=None):
