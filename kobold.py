@@ -17,7 +17,7 @@ from src.item import Item, get_q_desc
 from src.kobold import Kobold, kobold_name
 from src.party import Party
 from src.tile import Tile
-from src.tribe import Tribe
+from src.tribe import Tribe, tribe_name
 from src.world import World
 
 STATS = ["str", "dex", "con", "int", "wis", "cha"]
@@ -35,22 +35,6 @@ GENOME = {"red": [False, False],
           "white": [False, False]}
 ROLENAMES = {"brown": "Mudscale", "red": "Bloodscale", "yellow": "Goldscale", "green": "Jadescale", "blue": "Silkscale",
              "white": "Marblescale", "black": "Coalscale", "orange": "Copperscale", "purple": "Violetscale", "silver": "Silverscale"}
-
-
-def tribe_name() -> str:
-    try:
-        path = os.path.join("data", "tribe_names.txt")
-        f = open(path)
-    except BaseException:
-        console_print('ERROR: Cannot find tribe name list')
-        return "Erroneously-named Tribe"
-    temp_names = []
-    for line in f:
-        nam = line.strip('\n')
-        nam = nam.capitalize()
-        temp_names.append(nam)
-    f.close()
-    return choice(temp_names) + " " + choice(temp_names)
 
 
 def choice(ch):

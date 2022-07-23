@@ -1,4 +1,5 @@
 import math
+import os
 import random
 import time
 
@@ -10,7 +11,23 @@ from tile import Tile
 from ..kobold import (COLOR_STAT, DIR_FULL, OPP_DIR, building_data,
                       check_req, choice, console_print, consume_item,
                       find_building, find_research, game_print,
-                      has_item, research_data, spawn_item, tribe_name)
+                      has_item, research_data, spawn_item)
+
+
+def tribe_name() -> str:
+    try:
+        path = os.path.join("data", "tribe_names.txt")
+        f = open(path)
+    except BaseException:
+        console_print('ERROR: Cannot find tribe name list')
+        return "Erroneously-named Tribe"
+    temp_names = []
+    for line in f:
+        nam = line.strip('\n')
+        nam = nam.capitalize()
+        temp_names.append(nam)
+    f.close()
+    return choice(temp_names) + " " + choice(temp_names)
 
 
 class Tribe:
