@@ -49,9 +49,8 @@ def tribe_name() -> str:
         nam = line.strip('\n')
         nam = nam.capitalize()
         temp_names.append(nam)
-    n = choice(temp_names) + " " + choice(temp_names)
     f.close()
-    return n
+    return choice(temp_names) + " " + choice(temp_names)
 
 
 def choice(ch):
