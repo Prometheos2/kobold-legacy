@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from src.creature import Creature
 from src.dummy_message import DummyMessage
 from src.encounter import Encounter
-from src.item import Item
+from src.item import Item, get_q_desc
 from src.kobold import Kobold, kobold_name
 from src.party import Party
 from src.tile import Tile
@@ -35,20 +35,6 @@ GENOME = {"red": [False, False],
           "white": [False, False]}
 ROLENAMES = {"brown": "Mudscale", "red": "Bloodscale", "yellow": "Goldscale", "green": "Jadescale", "blue": "Silkscale",
              "white": "Marblescale", "black": "Coalscale", "orange": "Copperscale", "purple": "Violetscale", "silver": "Silverscale"}
-
-
-def get_q_desc(quality: int) -> str:
-    quality += 4
-    if quality > 9:
-        return "Divine"
-    if quality < 0:
-        return "Broken"
-
-    rates = [
-        "Abysmal", "Awful", "Crude", "Poor", "Normal", "Decent", "Good",
-        "Excellent", "Masterwork", "Legendary"
-    ]
-    return rates[quality]
 
 
 def tribe_name():

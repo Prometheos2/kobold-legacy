@@ -7,10 +7,24 @@ from encounter import Encounter
 from kobold import Kobold
 from tribe import Tribe
 
-from ..kobold import (DIR_FULL, action_queue, chance, check_req,
-                      choice, console_print, find_research, game_print,
-                      get_dir, get_q_desc, get_tri_distance, item_data,
-                      landmark_data, liquid_data, spawn_item, spell_data)
+from ..kobold import (DIR_FULL, action_queue, chance, check_req, choice,
+                      console_print, find_research, game_print, get_dir,
+                      get_tri_distance, item_data, landmark_data,
+                      liquid_data, spawn_item, spell_data)
+
+
+def get_q_desc(quality: int) -> str:
+    quality += 4
+    if quality > 9:
+        return "Divine"
+    if quality < 0:
+        return "Broken"
+
+    rates = [
+        "Abysmal", "Awful", "Crude", "Poor", "Normal", "Decent", "Good",
+        "Excellent", "Masterwork", "Legendary"
+    ]
+    return rates[quality]
 
 
 class Item:
