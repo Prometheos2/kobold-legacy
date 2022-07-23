@@ -37,15 +37,18 @@ ROLENAMES = {"brown": "Mudscale", "red": "Bloodscale", "yellow": "Goldscale", "g
              "white": "Marblescale", "black": "Coalscale", "orange": "Copperscale", "purple": "Violetscale", "silver": "Silverscale"}
 
 
-def get_q_desc(q):
-    qs = ["Abysmal", "Awful", "Crude", "Poor", "Normal",
-          "Decent", "Good", "Excellent", "Masterwork", "Legendary"]
-    q += 4
-    if q > 9:
+def get_q_desc(quality: int) -> str:
+    quality += 4
+    if quality > 9:
         return "Divine"
-    if q < 0:
+    if quality < 0:
         return "Broken"
-    return qs[q]
+
+    rates = [
+        "Abysmal", "Awful", "Crude", "Poor", "Normal", "Decent", "Good",
+        "Excellent", "Masterwork", "Legendary"
+    ]
+    return rates[quality]
 
 
 def kobold_name():
@@ -3795,7 +3798,7 @@ def spell_hut(spell, words, me, target):
             return False
     me.p("[n] waves their hands around the party, and a hut of magical force materializes around them.")
     t.camp = {"tribe": me.tribe, "heat": 0,
-              "defense": 0, "watch": [], "magic": true}
+              "defense": 0, "watch": [], "magic": True}
     return True
 
 
