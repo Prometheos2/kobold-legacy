@@ -127,6 +127,13 @@ def consume_item(self, item_name: str, quantity: int = 1) -> NoReturn:
 def check_req(self: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Optional[Kobold] = None) -> str:
     good = "good"
     place = kobold.get_place() if kobold else self
+
+    # Tile
+    if isinstance(place, Tribe):
+        tile = place.world.get_tile(place.x, place.y, place.z)
+    else:
+        tile = place
+
     for q in req:
         req_category = q[0]
         req_objects = q[1]
@@ -159,10 +166,12 @@ def check_req(self: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Op
             for i in place.items:
                 if i.tool == req_objects:
                     g = "good"
-            if kobold:
+                    break
+            if  g != "good" and kobold:
                 for i in kobold.items:
                     if i.tool == req_objects:
                         g = "good"
+                        break
             if good == "good":
                 good = g
         elif req_category == "building":
@@ -171,10 +180,6 @@ def check_req(self: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Op
             elif not place.has_building(req_objects):
                 good = "Building missing: " + req_objects
         elif req_category == "landmark":
-            if isinstance(place, Tribe):
-                tile = place.world.get_tile(place.x, place.y, place.z)
-            else:
-                tile = place
             if req_objects not in tile.special:
                 good = "Landmark missing: " + req_objects
         elif req_category == "minlevel":
@@ -192,10 +197,6 @@ def check_req(self: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Op
             if not t and req_objects:
                 good = "Must be done in a tile with a den."
         elif req_category == "liquid":
-            if isinstance(place, Tribe):
-                tile = place.world.get_tile(place.x, place.y, place.z)
-            else:
-                tile = place
             g = "Liquid source missing: " + req_objects
             for l in tile.special:
                 if landmark_data[l].get("liquid_source", "none") == req_objects:
