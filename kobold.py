@@ -39,7 +39,8 @@ ROLENAMES = {"brown": "Mudscale", "red": "Bloodscale", "yellow": "Goldscale", "g
 
 def tribe_name() -> str:
     try:
-        f = open('data/tribe_names.txt')
+        path = os.path.join("data", "tribe_names.txt")
+        f = open(path)
     except BaseException:
         console_print('ERROR: Cannot find tribe name list')
         return "Erroneously-named Tribe"
