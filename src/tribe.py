@@ -11,6 +11,7 @@ from tile import Tile
 from ..kobold import COLOR_STAT
 from ..kobold import DIR_FULL
 from ..kobold import OPP_DIR
+from ..kobold import Kobold
 from ..kobold import building_data
 from ..kobold import check_req
 from ..kobold import choice
