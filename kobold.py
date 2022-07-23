@@ -51,42 +51,53 @@ def get_q_desc(quality: int) -> str:
     return rates[quality]
 
 
-def kobold_name():
+def kobold_name() -> str:
     vowels = ['a', 'i', 'o', 'u', 'e']
     penvowels = ['a', 'o', 'u', 'ay', 'ee', 'i']
-    frontcluster = ['b', 'br', 'bl', 'd', 'dr', 'dl', 'st', 'str', 'stl', 'shl', 'k', 'p',
-                    'l', 'lr', 'sh', 'j', 'jr', 'thl', 'g', 'f', 'gl', 'gr', 'fl', 'fr', 'x', 'z', 'zr', 'r']
+    frontcluster = [
+        'b', 'br', 'bl', 'd', 'dr', 'dl', 'st', 'str', 'stl', 'shl', 'k', 'p',
+        'l', 'lr', 'sh', 'j', 'jr', 'thl', 'g', 'f', 'gl', 'gr', 'fl', 'fr',
+        'x', 'z', 'zr', 'r'
+    ]
     cluster = ['b', 'd', 'l', 'f', 'g', 'k', 'p', 'n', 'm', 's', 'v']
-    fincluster = ['m', 'r', 'ng', 'b', 'rb', 'mb', 'g', 'lg',
-                  'l', 'lb', 'lm', 'rg', 'k', 'rk', 'lk', 'rv', 'v']
+    fincluster = [
+        'm', 'r', 'ng', 'b', 'rb', 'mb', 'g', 'lg', 'l', 'lb', 'lm', 'rg', 'k',
+        'rk', 'lk', 'rv', 'v'
+    ]
     finsyl = ['is', 'us', 'ex1', 'ex2', 'al', 'a', 'ex3']
-    first = 1
-    syl = random.randint(0, 2)+1
-    firstname = ""
+
+    is_first_iter = True
+    syl = random.randint(0, 2) + 1
+    firstname = []
     vowel = choice(vowels)
     while syl > 0:
-        if syl == 1:
-            vowel = choice(penvowels)
-        if first == 1 or syl == 1:
-            firstname = firstname + choice(frontcluster)
-            first = 0
+        if is_first_iter or syl == 1:
+            if syl == 1:
+                vowel = choice(penvowels)
+
+            firstname.append(choice(frontcluster))
+            is_first_iter = False
         else:
-            firstname = firstname + choice(cluster)
-        firstname = firstname + vowel
-        syl = syl - 1
-    firstname = firstname + choice(fincluster)
+            firstname.append(choice(cluster))
+        firstname.append(vowel)
+        syl -= 1
+
+    firstname.append(choice(fincluster))
     fin = choice(finsyl)
+    if 'ex' not in fin:
+        return "".join(firstname).capitalize()
+
     if vowel in ['o', 'ay', 'u', 'a']:
         if fin == 'ex1':
-            fin = choice(['er', 'ar'])
+            firstname.append(choice(['er', 'ar']))
         elif fin == 'ex2':
-            fin = choice(['in', 'an'])
+            firstname.append(choice(['in', 'an']))
         elif fin == 'ex3':
-            fin = 'i'
-    elif 'ex' in fin:
-        fin = choice(['is', 'us', 'al', 'a'])
-    firstname = firstname + fin
-    return firstname.capitalize()
+            firstname.append('i')
+    else:
+        firstname.append(choice(['is', 'us', 'al', 'a']))
+
+    return "".join(firstname).capitalize()
 
 
 def tribe_name():
