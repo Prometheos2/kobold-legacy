@@ -1,10 +1,8 @@
 import asyncio
 import json
 import math
-import operator
 import os
 import random
-import re
 import shelve
 import time
 import traceback
@@ -131,7 +129,7 @@ def get_json(fname):
         f = open(fname)
         stuff = json.load(f)
         f.close()
-    except IOError as e:
+    except OSError as e:
         console_print('There was a problem loading '+fname+':\n'+e.args[0])
         return None
     except ValueError as e:
@@ -2564,7 +2562,7 @@ async def cmd_me(words, me, chan):
     if len(words[1]) > 1000:
         await chan.send("Message must be 1000 characters or less.")
         return False
-    words[1] = words[1].replace("*", "\*")
+    words[1] = words[1].replace("*", r"\*")
     msg = "*"+me.display()+" "+words[1]+"*"
     await chan.send(msg)
     if me.party:
@@ -5027,8 +5025,8 @@ async def cmd_info(words, user, chan, w):
                 msg.append(b+": "+dstr)
             elif b != "name" and b != "result" and b != "cmd":
                 m = b+": "+str(a[0][b])
-                m = m.replace("*", "\*")
-                m = m.replace(":", "\:")
+                m = m.replace("*", r"\*")
+                m = m.replace(":", r"\:")
                 msg.append(m)
         embeds.append(discord.Embed(
             type="rich", title=title, description="\n".join(msg)))
