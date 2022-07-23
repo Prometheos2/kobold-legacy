@@ -201,26 +201,17 @@ def check_req_4kobolds(req: Iterable[str], kobold: Kobold) -> str:
     return good
 
 
-def check_req(place: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Optional[Kobold] = None) -> str:
-
-    if kobold:
-        assert isinstance(kobold, Kobold)
-        return check_req_4kobolds(req, kobold)
-
-    assert place, "check_req require either a kobold or a place argument."
+def check_req_4tribes(place: Tribe, req: Iterable[str]) -> str:
 
     good = "good"
-    # Tile
-    if isinstance(place, Tribe):
-        tile = place.world.get_tile(place.x, place.y, place.z)
-    else:
-        tile = place
+    tile = place.world.get_tile(place.x, place.y, place.z)
 
     for q in req:
         req_category = q[0]
         req_objects = q[1]
+
         if req_category == "research":
-            if isinstance(place, Tribe) and req_objects in place.research:
+            if req_objects in place.research:
                 continue
 
             good = "Research missing: " + req_objects
@@ -242,13 +233,67 @@ def check_req(place: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: O
                 good = g
 
         elif req_category == "building":
-            if not isinstance(place, Tribe):
-                good = "Can't be done in the overworld."
-            elif not place.has_building(req_objects):
+            if not place.has_building(req_objects):
                 good = "Building missing: " + req_objects
 
         elif req_category == "landmark":
             if req_objects not in tile.special:
+                good = "Landmark missing: " + req_objects
+        elif req_category == "minlevel":
+            if req_objects > place.z:
+                good = "Must be done at level " + str(
+                    req_objects) + " or lower."
+        elif req_category == "maxlevel":
+            if req_objects < place.z:
+                good = "Must be done at level " + str(
+                    req_objects) + " or lower."
+        elif req_category == "tribe":
+            if not req_objects:
+                good = "You cannot do that in a tile with a den."
+                continue
+            good = "Must be done in a tile with a den."
+        elif req_category == "liquid":
+            g = "Liquid source missing: " + req_objects
+            for l in tile.special:
+                if landmark_data[l].get("liquid_source",
+                                        "none") == req_objects:
+                    g = "good"
+            if good == "good":
+                good = g
+    return good
+
+
+def check_req_4tiles(place: Tribe, req: Iterable[str]) -> str:
+    # For Tiles
+    good = "good"
+
+    for q in req:
+        req_category = q[0]
+        req_objects = q[1]
+        if req_category == "research":
+            good = "Research missing: " + req_objects
+
+        elif req_category == "item":
+            if place.has_item(req_objects):
+                good = "good"
+                continue
+
+            good = "Item missing: " + req_objects
+
+        elif req_category == "tool":
+            g = "Tool missing: " + req_objects
+            for i in place.items:
+                if i.tool == req_objects:
+                    g = "good"
+                    break
+            if good == "good":
+                good = g
+
+        elif req_category == "building":
+            good = "Can't be done in the overworld."
+
+        elif req_category == "landmark":
+            if req_objects not in place.special:
                 good = "Landmark missing: " + req_objects
         elif req_category == "minlevel":
             if req_objects > place.z:
@@ -257,19 +302,34 @@ def check_req(place: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: O
             if req_objects < place.z:
                 good = "Must be done at level " + str(req_objects) + " or lower."
         elif req_category == "tribe":
-            t = place if isinstance(place, Tribe) else place.get_tribe()
+            t = place.get_tribe()
             if t and not req_objects:
                 good = "You cannot do that in a tile with a den."
             if not t and req_objects:
                 good = "Must be done in a tile with a den."
         elif req_category == "liquid":
             g = "Liquid source missing: " + req_objects
-            for l in tile.special:
+            for l in place.special:
                 if landmark_data[l].get("liquid_source", "none") == req_objects:
                     g = "good"
             if good == "good":
                 good = g
     return good
+
+
+def check_req(place: Union[Tribe, Tile, NoneType],
+              req: Iterable[str],
+              kobold: Optional[Kobold] = None) -> str:
+
+    if kobold:
+        assert isinstance(kobold, Kobold)
+        return check_req_4kobolds(req, kobold)
+
+    assert place, "check_req require either a kobold or a place argument."
+    if isinstance(place, Tribe):
+        return check_req_4tribes(place, req)
+
+    return check_req_4tiles(place, req)
 
 
 def get_tri_distance(x1, y1, x2, y2):
