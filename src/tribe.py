@@ -8,10 +8,20 @@ import discord
 from creature import Creature
 from tile import Tile
 
-from ..kobold import (COLOR_STAT, DIR_FULL, OPP_DIR, building_data,
-                      check_req, choice, console_print, consume_item,
-                      find_building, find_research, game_print,
-                      has_item, research_data, spawn_item)
+from ..kobold import COLOR_STAT
+from ..kobold import DIR_FULL
+from ..kobold import OPP_DIR
+from ..kobold import building_data
+from ..kobold import check_req
+from ..kobold import choice
+from ..kobold import console_print
+from ..kobold import consume_item
+from ..kobold import find_building
+from ..kobold import find_research
+from ..kobold import game_print
+from ..kobold import has_item
+from ..kobold import research_data
+from ..kobold import spawn_item
 
 
 def tribe_name() -> str:
