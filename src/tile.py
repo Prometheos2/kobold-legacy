@@ -1,6 +1,7 @@
 import math
 import random
 import time
+from typing import Iterable
 
 import discord
 
@@ -405,7 +406,7 @@ class Tile:
                     if good:
                         good = g
                 if good:
-                    g = check_req(None, r.get("req", []), k)
+                    g = check_req(self, r.get("req", []), k)
                     if g != "good":
                         good = False
             if good:
@@ -607,3 +608,55 @@ class Tile:
         action_queue.append(["embed", me.get_chan(), discord.Embed(
             type="rich", title=title, description=msg)])
         return msg
+
+
+    def check_req(self, req: Iterable[str]) -> str:
+        good = "good"
+        for q in req:
+            req_category = q[0]
+            req_objects = q[1]
+            if req_category == "research":
+                good = "Research missing: " + req_objects
+
+            elif req_category == "item":
+                if self.has_item(req_objects):
+                    good = "good"
+                    continue
+
+                good = "Item missing: " + req_objects
+
+            elif req_category == "tool":
+                g = "Tool missing: " + req_objects
+                for i in self.items:
+                    if i.tool == req_objects:
+                        g = "good"
+                        break
+                if good == "good":
+                    good = g
+
+            elif req_category == "building":
+                good = "Can't be done in the overworld."
+
+            elif req_category == "landmark":
+                if req_objects not in self.special:
+                    good = "Landmark missing: " + req_objects
+            elif req_category == "minlevel":
+                if req_objects > self.z:
+                    good = "Must be done at level " + str(req_objects) + " or lower."
+            elif req_category == "maxlevel":
+                if req_objects < self.z:
+                    good = "Must be done at level " + str(req_objects) + " or lower."
+            elif req_category == "tribe":
+                t = self.get_tribe()
+                if t and not req_objects:
+                    good = "You cannot do that in a tile with a den."
+                if not t and req_objects:
+                    good = "Must be done in a tile with a den."
+            elif req_category == "liquid":
+                g = "Liquid source missing: " + req_objects
+                for l in self.special:
+                    if landmark_data[l].get("liquid_source", "none") == req_objects:
+                        g = "good"
+                if good == "good":
+                    good = g
+        return good

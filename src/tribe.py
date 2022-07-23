@@ -2,6 +2,7 @@ import math
 import os
 import random
 import time
+from typing import Iterable
 
 import discord
 
@@ -21,6 +22,7 @@ from ..kobold import find_building
 from ..kobold import find_research
 from ..kobold import game_print
 from ..kobold import has_item
+from ..kobold import landmark_data
 from ..kobold import research_data
 from ..kobold import spawn_item
 
@@ -723,3 +725,65 @@ class Tribe:
         if t.has_building("Marble Statues") and faction in ["Goblin", "Human", "Elf", "Dwarf"] and t.heat_faction[faction] > 5:
             t.heat_faction[faction] -= 5
         t.shc_faction[faction] *= 2
+
+
+    def check_req_4tribes(self, req: Iterable[str]) -> str:
+
+        good = "good"
+        tile = self.world.get_tile(self.x, self.y, self.z)
+
+        for q in req:
+            req_category = q[0]
+            req_objects = q[1]
+
+            if req_category == "research":
+                if req_objects in self.research:
+                    continue
+
+                good = "Research missing: " + req_objects
+
+            elif req_category == "item":
+                if self.has_item(req_objects):
+                    good = "good"
+                    continue
+
+                good = "Item missing: " + req_objects
+
+            elif req_category == "tool":
+                g = "Tool missing: " + req_objects
+                for i in self.items:
+                    if i.tool == req_objects:
+                        g = "good"
+                        break
+                if good == "good":
+                    good = g
+
+            elif req_category == "building":
+                if not self.has_building(req_objects):
+                    good = "Building missing: " + req_objects
+
+            elif req_category == "landmark":
+                if req_objects not in tile.special:
+                    good = "Landmark missing: " + req_objects
+            elif req_category == "minlevel":
+                if req_objects > self.z:
+                    good = "Must be done at level " + str(
+                        req_objects) + " or lower."
+            elif req_category == "maxlevel":
+                if req_objects < self.z:
+                    good = "Must be done at level " + str(
+                        req_objects) + " or lower."
+            elif req_category == "tribe":
+                if not req_objects:
+                    good = "You cannot do that in a tile with a den."
+                    continue
+                good = "Must be done in a tile with a den."
+            elif req_category == "liquid":
+                g = "Liquid source missing: " + req_objects
+                for l in tile.special:
+                    if landmark_data[l].get("liquid_source",
+                                            "none") == req_objects:
+                        g = "good"
+                if good == "good":
+                    good = g
+        return good

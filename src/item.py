@@ -10,7 +10,6 @@ from tribe import Tribe
 from ..kobold import DIR_FULL
 from ..kobold import action_queue
 from ..kobold import chance
-from ..kobold import check_req
 from ..kobold import choice
 from ..kobold import console_print
 from ..kobold import find_research
@@ -306,7 +305,7 @@ class Item:
             if r["name"] in k.tribe.research:
                 k.p(self.note+" is already available for this tribe.")
                 return False
-            good = check_req(k.tribe, r.get("req", []), k)
+            good = k.check_req(r.get("req", []))
             if good != "good":
                 k.p("Cannot install this research: "+good)
                 return False
