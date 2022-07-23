@@ -7,9 +7,11 @@ import shelve
 import time
 import traceback
 from collections.abc import Iterable
+from types import NoneType
 from typing import Any
 from typing import NoReturn
 from typing import Optional
+from typing import Union
 
 import discord
 from dotenv import load_dotenv
@@ -122,48 +124,41 @@ def consume_item(self, item_name: str, quantity: int = 1) -> NoReturn:
             return
 
 
-def check_req(self, req, k=None):
+def check_req(self: Union[Tribe, Tile, NoneType], req: Iterable[str], kobold: Optional[Kobold] = None) -> str:
     good = "good"
-    if k:
-        place = k.get_place()
-    else:
-        place = self
+    place = kobold.get_place() if kobold else self
     for q in req:
         if q[0] == "research":
             if isinstance(self, Tribe) and q[1] in self.research:
-                #console_print("research req good because in tribe research")
                 continue
-            #console_print(k.get_name()+" fam with "+q[1]+" = "+str(k.familiar(q[1])))
-            if k and k.familiar(q[1]) > 0:
-                #console_print("research req good because initiator is familiar")
+            if kobold and kobold.familiar(q[1]) > 0:
                 continue
             fam = False
-            if k:
-                for l in k.world.kobold_list:
+            if kobold:
+                for l in kobold.world.kobold_list:
                     if l.get_place() == place and l.familiar(q[1]) >= 2:
                         fam = True
                         break
             if fam:
-                #console_print("research req good because kobold with familiarity here")
                 continue
             if place == self:
-                good = "Research missing: "+q[1]
+                good = "Research missing: " + q[1]
             else:
-                good = "Unfamiliar research: "+q[1]
+                good = "Unfamiliar research: " + q[1]
         elif q[0] == "item":
-            g = "Item missing: "+q[1]
+            g = "Item missing: " + q[1]
             if place.has_item(q[1]):
                 g = "good"
-            if k and k.has_item(q[1]):
+            if kobold and kobold.has_item(q[1]):
                 g = "good"
             good = g
         elif q[0] == "tool":
-            g = "Tool missing: "+q[1]
+            g = "Tool missing: " + q[1]
             for i in place.items:
                 if i.tool == q[1]:
                     g = "good"
-            if k:
-                for i in k.items:
+            if kobold:
+                for i in kobold.items:
                     if i.tool == q[1]:
                         g = "good"
             if good == "good":
@@ -172,28 +167,25 @@ def check_req(self, req, k=None):
             if not isinstance(place, Tribe):
                 good = "Can't be done in the overworld."
             elif not place.has_building(q[1]):
-                good = "Building missing: "+q[1]
+                good = "Building missing: " + q[1]
         elif q[0] == "landmark":
             if isinstance(place, Tribe):
                 tile = place.world.get_tile(place.x, place.y, place.z)
             else:
                 tile = place
             if q[1] not in tile.special:
-                good = "Landmark missing: "+q[1]
+                good = "Landmark missing: " + q[1]
         elif q[0] == "minlevel":
-            if k:
-                z = k.z
-            else:
-                z = self.z
+            z = kobold.z if kobold else self.z
             if q[1] > z:
-                good = "Must be done at level "+str(q[1])+" or lower."
+                good = "Must be done at level " + str(q[1]) + " or lower."
         elif q[0] == "maxlevel":
-            if k:
-                z = k.z
+            if kobold:
+                z = kobold.z
             else:
                 z = self.z
             if q[1] < z:
-                good = "Must be done at level "+str(q[1])+" or lower."
+                good = "Must be done at level " + str(q[1]) + " or lower."
         elif q[0] == "tribe":
             if isinstance(place, Tribe):
                 t = place
@@ -208,7 +200,7 @@ def check_req(self, req, k=None):
                 tile = place.world.get_tile(place.x, place.y, place.z)
             else:
                 tile = place
-            g = "Liquid source missing: "+q[1]
+            g = "Liquid source missing: " + q[1]
             for l in tile.special:
                 if landmark_data[l].get("liquid_source", "none") == q[1]:
                     g = "good"
