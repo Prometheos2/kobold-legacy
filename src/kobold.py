@@ -16,13 +16,13 @@ from ..kobold import (COLOR_STAT, GENOME, ROLENAMES, STAT_COLOR, STATS,
 
 
 class Kobold:
-    def __init__(self, tribe=None):
+    def __init__(self, tribe: Tribe = None):
         self.name = kobold_name()
         self.nick = None
         self.orders = True
         self.emoji = None
         self.fo = []
-        self.tribe = tribe
+        self.tribe: Tribe = tribe
         self.familiarity = {}
         self.world = self.tribe.world
         self.id = self.world.kid
