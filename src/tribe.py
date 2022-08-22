@@ -5,6 +5,7 @@ import time
 import discord
 
 from creature import Creature
+from kobold import Kobold
 from tile import Tile
 
 from ..kobold import (COLOR_STAT, DIR_FULL, OPP_DIR, building_data,
