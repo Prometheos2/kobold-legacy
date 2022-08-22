@@ -16,7 +16,7 @@ from ..kobold import (COLOR_STAT, DIR_FULL, OPP_DIR, building_data,
 
 class Tribe:
     def __init__(self, world, x=None, y=None, z=1):
-        self.name = tribe_name()
+        self.name: str = tribe_name()
         self.world = world
         self.space = 15
         self.month = 1
