@@ -956,10 +956,8 @@ class Kobold:
         for i in inv:
             i.move(t, tumble=True)
         if self.tribe:
-            if self in self.tribe.kobolds:
-                self.tribe.kobolds.remove(self)
-            if self in self.tribe.watchmen:
-                self.tribe.watchmen.remove(self)
+            # Remove kobold from tribe and nulls their titles.
+            self.tribe.remove_bold(self)
         if self in self.world.kobold_list:
             self.world.kobold_list.remove(self)
         if self.party:

@@ -171,6 +171,41 @@ class Tribe:
         if isinstance(k, Kobold) and k not in self.kobolds:
             self.kobolds.append(k)
 
+    def remove_bold(self, kobold_: Kobold) -> None:
+        """Remove a kobold from the tribe's.
+
+        Remove the kobold's roles, such as Chieftain, Overseer, and watchman.
+
+        Intended for (semi-)permanent leaves, such as kobold death.
+        The 'Chieftain' role is removed in Kobold.die().
+
+        Parameters
+        ----------
+        kobold_ : Kobold
+            Kobold to remove from the tribe
+        """
+        if not isinstance(kobold_, Kobold):
+            console_print(
+                f"[WARN] Tried to remove a non-kobold from Tribe {self.name}: {kobold_}"
+            )
+            return
+        if kobold_ not in self.kobolds:
+            console_print(
+                f"[WARN] Tried to remove a kobold from a Tribe {self.name} that is not theirs {kobold_.tribe.name}."
+            )
+            return
+
+        self.kobolds.remove(kobold_)
+
+        if kobold_ == self.chieftain:
+            self.chieftain = None
+
+        elif kobold_ == self.overseer:
+            self.overseer = None
+
+        if kobold_ in self.watchmen:
+            self.watchmen.remove(kobold_)
+
     def examine(self, me):
         title = self.name+", Month "+str(self.month)
         msg = "Time until month change: "
