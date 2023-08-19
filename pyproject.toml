@@ -1,0 +1,34 @@
+[project]
+name = "KoboldLegacy"
+version = "1.0.0"
+description = "A discord bot game where players play the role of kobolds surviving in a harsh, low-tech environment."
+authors = [
+    { name = "Prometheos2", email = "45640841+Prometheos2@users.noreply.github.com" },
+    { name = "GlyphGryph", email = "glyphgryph@gmail.com" },
+    { name = "Blahsadfeguie", email = "86696745+Blahsadfeguie@users.noreply.github.com" },
+    { name = "horusboyd", email = "thafunkyequine@hotmail.com" },
+]
+dependencies = ["python-dotenv>=1.0.0", "discord.py~=1.7.3"]
+requires-python = ">=3.8, <3.11"
+readme = "README.md"
+license = { text = "GNU" }
+
+# Exports requirements.txt files so that GitHub can scan dependencies.
+[[tool.pdm.autoexport]]
+filename = "requirements/requirements.txt"
+without-hashes = "true"
+
+# Default arguments
+[tool.pdm.options]
+# Keep PDM from trying to install the package.
+add = ["--no-self"]
+install = ["--no-self"]
+update = ["--no-self"]
+sync = ["--no-self"]
+
+[tool.pdm.dev-dependencies]
+# Autopep8 formatter, supposed to fix pycodestyle issues
+formatter = ["autopep8>=2.0.3"]
+lint = [
+    "ruff>=0.3.2",
+]
