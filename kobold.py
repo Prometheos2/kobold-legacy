@@ -1276,7 +1276,6 @@ class Tile:
                     for l in self.special:
                         if "Farm" in l:
                             good = False
-                self.item_quantities()
                 for m in r.get("materials", []):
                     gra = m.split("/")
                     g = False
@@ -1971,7 +1970,6 @@ class Tribe:
                 good = False
             if r.get("space", 0) > self.space:
                 good = False
-            self.item_quantities()
             for m in r.get("materials", []):
                 gra = m.split("/")
                 g = False
@@ -9485,7 +9483,6 @@ def cmd_move(words, me, cost):
         words[1] = "up"
     elif words[1] == "d":
         words[1] = "down"
-    me.get_place()
     if me.dungeon:
         cost = 0
     else:
