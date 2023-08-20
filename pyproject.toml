@@ -38,6 +38,7 @@ select = [
     "ASYNC", # flake8-async
     "B",     # flake8-bugbear
     "A",     # flake8-builtins
+    "SIM",   # flake8-simplify
 ]
 ignore = [
     "E501", # Line too large / to be handled by formatters
