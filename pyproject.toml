@@ -27,5 +27,5 @@ update = ["--no-self"]
 sync = ["--no-self"]
 
 [tool.pdm.dev-dependencies]
-# Autopep8 formatter, supposed to fix pycodestyle issues
-formatter = ["autopep8>=2.0.3"]
+# Black formatter, the opinionated formatter
+formatter = ["black>=23.7.0"]
