@@ -32,6 +32,7 @@ select = [
     "F", # Pyflakes
     "E", # pycodestyle errors
     "W", # pycodestyle warnings
+    "I", # isort
 ]
 ignore = [
     "E501", # Line too large / to be handled by formatters

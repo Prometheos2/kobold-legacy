@@ -10,7 +10,6 @@ import traceback
 import discord
 from dotenv import load_dotenv
 
-
 BOT_NAME = 'Lulurnbus#1506'
 STATS = ["str", "dex", "con", "int", "wis", "cha"]
 STAT_COLOR = {"str": "red", "dex": "white", "con": "black",
