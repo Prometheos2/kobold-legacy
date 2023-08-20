@@ -1,10 +1,8 @@
 import asyncio
 import json
 import math
-import operator
 import os
 import random
-import re
 import shelve
 import time
 import traceback
@@ -1224,7 +1222,6 @@ class Tile:
         mindist = 9999
         if len(self.world.tribes) <= 0:
             return  # can't spawn if no tribes
-        ct = None
         if self.z > 0:
             for t in self.world.tribes:
                 disto = abs(self.x - t.x) + abs(self.y - t.y)
@@ -1266,15 +1263,6 @@ class Tile:
         t = self.world.get_tile(borders[d][0], borders[d][1], borders[d][2])
         return t
 
-    def item_quantities(self):
-        q = {}
-        for i in self.items:
-            if i.name not in q:
-                q[i.name] = i.num
-            else:
-                q[i.name] += i.num
-        return q
-
     def get_available_builds(self, k=None):
         ar = []
         for r in building_data:
@@ -1288,7 +1276,7 @@ class Tile:
                     for l in self.special:
                         if "Farm" in l:
                             good = False
-                allitems = self.item_quantities()
+                self.item_quantities()
                 for m in r.get("materials", []):
                     gra = m.split("/")
                     g = False
@@ -1983,7 +1971,7 @@ class Tribe:
                 good = False
             if r.get("space", 0) > self.space:
                 good = False
-            allitems = self.item_quantities()
+            self.item_quantities()
             for m in r.get("materials", []):
                 gra = m.split("/")
                 g = False
@@ -2275,15 +2263,6 @@ class Tribe:
 
     def consume_item(self, name, q=1):
         return consume_item(self, name, q)
-
-    def item_quantities(self):
-        q = {}
-        for i in self.items:
-            if i.name not in q:
-                q[i.name] = i.num
-            else:
-                q[i.name] += i.num
-        return q
 
     def gain_heat(self, h, faction=None):
         if not faction:
@@ -4823,7 +4802,6 @@ class Item:
         lowy = 9999
         highx = -9999
         highy = -9999
-        r = {}
         for m in self.map:
             if self.map[m]["x"] < lowx:
                 lowx = self.map[m]["x"]
@@ -4833,7 +4811,6 @@ class Item:
                 lowy = self.map[m]["y"]
             if self.map[m]["y"] > highy:
                 highy = self.map[m]["y"]
-        ycount = lowy
         msg = []
         row = []
         for a in range((((highx - lowx) + 1) * 2) + 1):
@@ -7325,13 +7302,13 @@ def cmd_gift(words, k, target):
             )
             if f == "Goblin":
                 if "Goblin Language" not in k.tribe.research:
-                    i = spawn_item("Goblin Script", k)
+                    spawn_item("Goblin Script", k)
                     k.p(
                         "The goblins seem to recognize your willingness to negotiate and hand you something in return. It's a tablet filled with strange symbols."
                     )
             else:
                 if "Common Language" not in k.tribe.research:
-                    i = spawn_item("Common Script", k)
+                    spawn_item("Common Script", k)
                     k.p(
                         "The "
                         + f
@@ -9508,7 +9485,7 @@ def cmd_move(words, me, cost):
         words[1] = "up"
     elif words[1] == "d":
         words[1] = "down"
-    p = me.get_place()
+    me.get_place()
     if me.dungeon:
         cost = 0
     else:
@@ -10060,7 +10037,7 @@ def cmd_recycle(words, me, target):
     reclaim = []
     for i in target.recycle["into"]:
         if chance(base):
-            rc = spawn_item(i, me)
+            spawn_item(i, me)
             reclaim.append(i)
     if len(reclaim) > 0:
         me.p(
@@ -11361,7 +11338,7 @@ def get_newbold(user, chan, w, test=False, nt=False):
 async def cmd_refund(words, user, chan, w):
     m = discord.utils.get(guild.members, nick=words[1])
     if m:
-        sp = get_pdata(m.id, "sp", 10)
+        get_pdata(m.id, "sp", 10)
         playerdata[str(m.id)]["sp"] += int(words[2])
         await chan.send(words[1] + " has been refunded " + words[2] + " SP.")
         return True
@@ -11417,7 +11394,6 @@ async def cmd_reroll(words, user, chan, w):
     else:
         await chan.send("You have 4 kobolds in your selection already.")
         return False
-    embeds = []
     await udm.send("Added " + newbold.display() + " to your selection.")
     await show_selection(udm, sel, first=str(newbold.id))
     return True
@@ -12542,7 +12518,6 @@ async def edit_wanderer(chan, user=None):
     await message.add_reaction("📛")
     await message.add_reaction("⚧")
     await message.add_reaction("❌")
-    i = 0
     emoji = ""
     stat_sort = {}
     sel = 0
@@ -12559,7 +12534,7 @@ async def edit_wanderer(chan, user=None):
             if ed[STATS[sel]] > 6:
                 ed[STATS[sel]] -= 1
         elif emoji == "▶":
-            if ed[STATS[sel]] < 14 and stotal < 60:
+            if ed[STATS[sel]] < 14 and sum(ed.values()) < 60:
                 ed[STATS[sel]] += 1
         elif emoji == "🎲":
             points = 24
@@ -12755,7 +12730,7 @@ async def cmd_task(words, me, chan):
                         )
                         return False
                 try:
-                    am = int(words[4])
+                    int(words[4])
                 except:
                     await chan.send(
                         "'" + str(words[4]) + "' (argument1) is not a valid number."
@@ -13588,7 +13563,7 @@ async def handle_tasks(w):
                                 and lastworker != worker
                                 and lastworker.has_trait("sunglasses")
                             ):
-                                cmd_unshade([], lastworker, None)
+                                cmd_wear([], lastworker, None)
                                 for i in lastworker.items:
                                     if i.name == "Sunglasses":
                                         cmd_drop([], worker, i)
@@ -13877,7 +13852,6 @@ async def handle_message(message, num=1):
                         break
             else:
                 me = message.k
-        repeat = False
         if me:
             place = me.get_place()
             dumb = me
@@ -13886,9 +13860,8 @@ async def handle_message(message, num=1):
                     message.content = me.lastcommand
                     words = message.content.split()
                     words[0] = words[0].lower()
-                    repeat = True
             elif message.content == me.lastcommand:
-                repeat = True
+                pass
             if message.content[0] in [">", "!", "-"]:
                 me.lastcommand = message.content
         ordering = False

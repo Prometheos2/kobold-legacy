@@ -29,3 +29,5 @@ sync = ["--no-self"]
 [tool.pdm.dev-dependencies]
 # Black formatter, the opinionated formatter
 formatter = ["black>=23.7.0"]
+# Ruff, a linter written in Rust for optimal performances
+linter = ["ruff>=0.0.285"]
