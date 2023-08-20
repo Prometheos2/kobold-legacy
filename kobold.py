@@ -6,6 +6,7 @@ import random
 import shelve
 import time
 import traceback
+from pathlib import Path
 
 import discord
 from dotenv import load_dotenv
@@ -161,7 +162,7 @@ def kobold_name():
 
 def tribe_name():
     try:
-        f = open("data/tribe_names.txt")
+        f = Path("data/tribe_names.txt").open()
     except:
         console_print("ERROR: Cannot find tribe name list")
         return "Erroneously-named Tribe"
@@ -198,10 +199,10 @@ def chance(ch):
 
 def get_json(fname):
     try:
-        f = open(fname)
+        f = Path(fname).open()
         stuff = json.load(f)
         f.close()
-    except IOError as e:
+    except OSError as e:
         console_print("There was a problem loading " + fname + ":\n" + e.args[0])
         return None
     except ValueError as e:
@@ -564,7 +565,7 @@ class World:
                     k.despawn()
             if t.has_building("Tavern"):
                 customers = math.floor((math.sqrt((8 * liqs) + 1) - 1) / 2)
-                for x in range(customers):
+                for _ in range(customers):
                     k = Kobold(t)
                     k.tribe = None
                     k.random_stats()
@@ -1082,7 +1083,7 @@ class Tile:
                         "Some kobolds were caught sleeping outside! This wouldn't happen if we had enough space for everyone...",
                         chan,
                     )
-                    for x in range(outside):
+                    for _x in range(outside):
                         k = choice(bolds)
                         if k:
                             k.hp_tax(
@@ -1097,7 +1098,7 @@ class Tile:
                         "The invaders broke through our outer defenses. Our watchmen are the only thing between us and certain doom.",
                         chan,
                     )
-                    for x in range(dmg):
+                    for _x in range(dmg):
                         target = choice(t.camp["watch"])
                         if isinstance(target, Creature):
                             tn = target.name
@@ -1115,7 +1116,7 @@ class Tile:
                     dmg = invasion - defense
                     dmgto = {}
                     targets = ["kobold", "building", "item"]
-                    for x in range(dmg):
+                    for _x in range(dmg):
                         hit = choice(targets)
                         if hit == "item" and len(t.items) > 0:
                             target = choice(t.items)
@@ -1638,15 +1639,15 @@ class Dungeon:
         firstile = self.get_tile(self.entry[0], self.entry[1], self.entry[2])
         firstile.special.append("Dungeon Exit")
         gpos = list(self.entry)
-        for x in range(dungeon_data[self.d]["bosslength"]):
+        for _x in range(dungeon_data[self.d]["bosslength"]):
             npos = self.expand(gpos)
             if chance(50):
-                for xx in range(
+                for _xx in range(
                     random.randint(1, math.ceil(dungeon_data[self.d]["bosslength"] / 2))
                 ):
                     self.expand(gpos)
             if chance(50):
-                for xx in range(
+                for _xx in range(
                     random.randint(1, math.ceil(dungeon_data[self.d]["bosslength"] / 2))
                 ):
                     self.expand(gpos)
@@ -2353,7 +2354,7 @@ class Tribe:
                 "Some kobolds were caught sleeping outside! This wouldn't happen if we had enough space for everyone...",
                 t.get_chan(),
             )
-            for x in range(outside):
+            for _x in range(outside):
                 k = choice(bolds)
                 if k:
                     k.hp_tax(
@@ -2368,7 +2369,7 @@ class Tribe:
                 "The invaders broke through our outer defenses. Our watchmen are the only thing between us and certain doom.",
                 t.get_chan(),
             )
-            for x in range(dmg):
+            for _x in range(dmg):
                 target = choice(t.watchmen)
                 if isinstance(target, Creature):
                     tn = target.name
@@ -2396,7 +2397,7 @@ class Tribe:
                 if not b.get("destructible", True):
                     while b["name"] in builds:
                         builds.remove(b["name"])
-            for x in range(dmg):
+            for _x in range(dmg):
                 hit = choice(targets)
                 if hit == "building" and len(builds) > 0:
                     target = choice(builds)
@@ -3731,7 +3732,7 @@ class Kobold:
                     male = partner
                     female.father = partner
                 e = random.randint(1, 4)
-                for i in range(e):
+                for _i in range(e):
                     baby = make_baby(male, female)
                     female.eggs.append(baby)
                     male.children.append(baby.id)
@@ -4723,7 +4724,7 @@ class Item:
         missed = 0
         hit = 0
         for y in self.gain:
-            for x in range(y[1]):
+            for _x in range(y[1]):
                 if chance(ch + missed):
                     if y[0] in got:
                         got[y[0]] += 1
@@ -4811,9 +4812,9 @@ class Item:
                 highy = self.map[m]["y"]
         msg = []
         row = []
-        for a in range((((highx - lowx) + 1) * 2) + 1):
+        for _a in range((((highx - lowx) + 1) * 2) + 1):
             row.append(" ")
-        for b in range((((highy - lowy) + 1) * 2) + 1):
+        for _b in range((((highy - lowy) + 1) * 2) + 1):
             msg.append(list(row))
         # console_print("msg and row: "+str(len(msg))+","+str(len(row)))
         # console_print("lowx and y: "+str(lowx)+","+str(lowy))
@@ -4859,7 +4860,7 @@ class Encounter:
                 a = random.randint(2, 5)
             else:
                 a = 1
-            for b in range(a):
+            for _b in range(a):
                 k = Kobold(world.tribes[0])
                 k.tribe = None
                 k.encounter = self
@@ -4869,7 +4870,7 @@ class Encounter:
                     k.random_stats()
                     for st in k.s:
                         k.s[st] = 0
-                    for x in range(k.age):
+                    for _x in range(k.age):
                         k.age_up()
                     k.hp = k.max_hp
                 else:
@@ -5473,7 +5474,7 @@ class Creature:
     def multisummon(self, enemy):
         summoned = False
         target = enemy.pop(0)
-        for x in range(2):
+        for _x in range(2):
             if chance(40 + self.stats["cha"]):
                 if not summoned:
                     self.p("[n] calls upon her subjects.")
@@ -5551,7 +5552,7 @@ class Creature:
             t.hp_tax(dmg, "Killed by " + self.display(), self, "fire")
 
     def attack_multi(self, target):
-        for x in range(int(target[1])):
+        for _x in range(int(target[1])):
             self.attack(target[0])
 
     def attack_mark(self, target):
@@ -5624,7 +5625,7 @@ def attack_roll(self, target, bonus=0, guarding=False, sparring=False):
         if roll == self.tohit + 20 and target.ac - self.tohit < 20:
             game_print("Critical hit!", chan)
             dmg *= 2
-        for x in range(self.dmg[0]):
+        for _x in range(self.dmg[0]):
             dmg += random.randint(1, self.dmg[1])
         if (
             self.dmgtype not in ["bludgeoning", "piercing", "slashing"]
@@ -5718,9 +5719,9 @@ def droll(dice, sides, adv=0):
         rolls = 2
     else:
         rolls = 1
-    for q in range(rolls):
+    for _q in range(rolls):
         r = 0
-        for d in range(dice):
+        for _d in range(dice):
             r += random.randint(1, sides)
         roll.append(r)
     if adv == 1:
@@ -5825,7 +5826,7 @@ def spell_fireball(spell, words, me, target):
     targets = list(target.encounter.creatures)
     spellsave = 6 + me.smod("int") + me.skmod("sorcery")
     dmg = spell["dmg"][2]
-    for x in range(spell["dmg"][0]):
+    for _x in range(spell["dmg"][0]):
         dmg += random.randint(1, spell["dmg"][1])
     if me.wearing_nonmage_equipment():
         dmg = math.ceil(dmg / 2)
@@ -5841,7 +5842,7 @@ def spell_tremor(spell, words, me, target):
     targets = list(target.encounter.creatures)
     spellsave = 6 + me.smod("int") + me.skmod("sorcery")
     dmg = spell["dmg"][2]
-    for x in range(spell["dmg"][0]):
+    for _x in range(spell["dmg"][0]):
         dmg += random.randint(1, spell["dmg"][1])
     p = me.get_place()
     if p.z == 0 and not me.dungeon:
@@ -5862,7 +5863,7 @@ def spell_tremor(spell, words, me, target):
 def spell_freeze(spell, words, me, t):
     spellsave = 6 + me.smod("int") + me.skmod("sorcery")
     dmg = spell["dmg"][2]
-    for x in range(spell["dmg"][0]):
+    for _x in range(spell["dmg"][0]):
         dmg += random.randint(1, spell["dmg"][1])
     if me.wearing_nonmage_equipment():
         dmg = math.ceil(dmg / 2)
@@ -5910,7 +5911,7 @@ def spell_charm(spell, words, me, t):
 
 def spell_missile(spell, words, me, t):
     dmg = spell["dmg"][2]
-    for x in range(spell["dmg"][0]):
+    for _x in range(spell["dmg"][0]):
         dmg += random.randint(1, spell["dmg"][1])
     if me.wearing_nonmage_equipment():
         dmg = math.ceil(dmg / 2)
@@ -12153,7 +12154,7 @@ async def cmd_findbold(words, user, chan, w):
     except:
         k = None
     if k:
-        await chan.send("Found " + k.get_name() + " at " + ",".join([k.x, k.y, k.z]))
+        await chan.send("Found " + k.get_name() + " at " + f"{k.x},{k.y},{k.z}")
     else:
         await chan.send("Kobold " + words[1] + " not found")
 
@@ -12679,7 +12680,7 @@ async def cmd_task(words, me, chan):
                 await chan.send("Command not found.")
         elif words[1] in ["until", "condition", "conditional", "stop", "break"]:
             words = " ".join(words).split(" ", 5)
-            for x in range(5):
+            for _x in range(5):
                 words.append(None)
             s = None
             try:
@@ -13781,7 +13782,7 @@ async def on_message(message):
             return
     omc = str(message.content)
     if num > 0 and num <= 12:
-        for x in range(num):
+        for _x in range(num):
             gewd = True
             for k in allmembers:
                 message.content = str(omc)
