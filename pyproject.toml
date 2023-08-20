@@ -30,4 +30,10 @@ dev = [
 [tool.ruff]
 select = [
     "F", # Pyflakes
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+]
+ignore = [
+    "E501", # Line too large / to be handled by formatters
+    "E741", # Ambiguous variable names / need to know what they do before they can documented
 ]

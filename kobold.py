@@ -83,7 +83,7 @@ def kobold_name():
 def tribe_name():
     try:
         f = open('data/tribe_names.txt')
-    except:
+    except IOError:
         console_print('ERROR: Cannot find tribe name list')
         return "Erroneously-named Tribe"
     temp_names = []
@@ -2468,7 +2468,7 @@ class Kobold:
         if self.encounter:
             try:
                 return self.encounter.get_party().get_chan()
-            except:
+            except Exception:
                 pass
         place = self.get_place()
         if isinstance(place, Tribe):
@@ -4328,7 +4328,7 @@ class Encounter:
             if spawned > 1:
                 try:
                     cr.name += " "+chr(a)
-                except:
+                except AttributeError:
                     cr.name += "error"
             a += 1
             n -= max(1, cr.cr)
@@ -4695,7 +4695,7 @@ class Creature:
                 return self.party.owner.get_chan()
             else:
                 return self.get_place().get_chan()
-        except:
+        except Exception:
             return "exception-log"
 
     def p(self, msg):
@@ -5950,7 +5950,7 @@ def cmd_cpgive(words, me, target):
     if len(words) > 1:
         try:
             am = int(words[2])
-        except:
+        except AttributeError:
             am = 0
         if am <= 0:
             me.p("Please enter a positive number.")
@@ -7218,7 +7218,7 @@ async def cmd_me(words, me, chan):
     if len(words[1]) > 1000:
         await chan.send("Message must be 1000 characters or less.")
         return False
-    words[1] = words[1].replace("*", "\*")
+    words[1] = words[1].replace("*", r"\*")
     msg = "*"+me.display()+" "+words[1]+"*"
     await chan.send(msg)
     if me.party:
@@ -8923,13 +8923,13 @@ def cmd_roll(words, me, target):
             elif "+" in a:
                 try:
                     m += int(a.replace("+", ""))
-                except:
+                except AttributeError:
                     me.p("'"+a+"' is not a number.")
                     return False
             elif "-" in a:
                 try:
                     m -= int(a.replace("-", ""))
-                except:
+                except AttributeError:
                     me.p("'"+a+"' is not a number.")
                     return False
             else:
@@ -9029,7 +9029,7 @@ def cmd_spar(words, me, k):
 def cmd_tribe(words, me, target):
     try:
         k = find_kobold(words[2], me.get_place(), me.world)
-    except:
+    except Exception:
         k = None
     cmds = ["new", "join", "leave", "invite"]
     if len(words) < 2 or words[1] not in cmds:
@@ -9142,7 +9142,7 @@ def cmd_party(words, me, target):
         k = find_kobold(words[2], place, me.world)
         if not k:
             k = find_creature_i(words[2], me)
-    except:
+    except Exception:
         k = None
     cmds = ["new", "join", "leave", "members", "invite", "kick", "leader"]
     if len(words) < 2 or words[1] not in cmds:
@@ -9681,8 +9681,8 @@ async def cmd_info(words, user, chan, w):
                 msg.append(b+": "+dstr)
             elif b != "name" and b != "result" and b != "cmd":
                 m = b+": "+str(a[0][b])
-                m = m.replace("*", "\*")
-                m = m.replace(":", "\:")
+                m = m.replace("*", r"\*")
+                m = m.replace(":", r"\:")
                 msg.append(m)
         embeds.append(discord.Embed(
             type="rich", title=title, description="\n".join(msg)))
@@ -9986,7 +9986,7 @@ async def cmd_name(words, user, chan, w, wand=None):
     if w != sandbox:
         try:
             await user.edit(nick=name)
-        except:
+        except Exception:
             pass
         for c in guild.channels:
             if "party" in c.name or "tribe" in c.name:
@@ -10238,7 +10238,7 @@ def find_building(name, lax=True):
 async def cmd_spawn(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         i = spawn_item(words[2], k)
@@ -10262,12 +10262,12 @@ async def cmd_unlockall(words, user, chan, w):
 async def cmd_spencounter(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         try:
             n = int(words[2])
-        except:
+        except AttributeError:
             n = 1
         Encounter(w, k.get_place(), n, k.z, words[3])
     else:
@@ -10277,7 +10277,7 @@ async def cmd_spencounter(words, user, chan, w):
 async def cmd_tribefix(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         tribe = None
@@ -10306,7 +10306,7 @@ async def cmd_partyfix(words, user, chan, w):
 async def cmd_givespell(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         if words[2] in k.spells:
@@ -10322,7 +10322,7 @@ async def cmd_givespell(words, user, chan, w):
 async def cmd_familiarize(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         for r in research_data:
@@ -10335,12 +10335,12 @@ async def cmd_familiarize(words, user, chan, w):
 async def cmd_kvar(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         try:
             v = int(words[3])
-        except:
+        except AttributeError:
             if words[3][0] == "t":
                 v = True
             elif words[3][0] == "f":
@@ -10368,7 +10368,7 @@ async def cmd_setheat(words, user, chan, w):
     if tribe:
         try:
             v = int(words[2])
-        except:
+        except Exception:
             await chan.send("Invalid heat amount")
             return False
         tribe.heat_faction[words[3]] = v
@@ -10401,7 +10401,7 @@ async def cmd_tvar(words, user, chan, w):
     if tribe:
         try:
             v = int(words[3])
-        except:
+        except Exception:
             if words[3][0] == "t":
                 v = True
             elif words[3][0] == "f":
@@ -10417,7 +10417,7 @@ async def cmd_tvar(words, user, chan, w):
 async def cmd_trait(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         if k.has_trait(words[2]):
@@ -10459,7 +10459,7 @@ async def cmd_landmark(words, user, chan, w):
     else:
         try:
             k = find_kobold(words[1], w=w)
-        except:
+        except Exception:
             k = None
         if k:
             t = k.get_place()
@@ -10479,7 +10479,7 @@ async def cmd_landmark(words, user, chan, w):
 async def cmd_findbold(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         await chan.send("Found "+k.get_name()+" at "+",".join([k.x, k.y, k.z]))
@@ -10490,7 +10490,7 @@ async def cmd_findbold(words, user, chan, w):
 async def cmd_spawne(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         t = k.get_place()
@@ -10503,7 +10503,7 @@ async def cmd_spawne(words, user, chan, w):
 async def cmd_makechief(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k and k.tribe:
         k.tribe.chieftain = k
@@ -10515,7 +10515,7 @@ async def cmd_makechief(words, user, chan, w):
 async def cmd_ageup(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         while k.age < 6:
@@ -10529,7 +10529,7 @@ async def cmd_ageup(words, user, chan, w):
 async def cmd_forcetunnel(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         p = w.get_tile(k.x, k.y, k.z)
@@ -10558,12 +10558,12 @@ async def cmd_forcehatch(words, user, chan, w):
 async def cmd_forceegg(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         try:
             l = find_kobold(words[2], w=w)
-        except:
+        except Exception:
             l = None
         if l:
             egg = spawn_item("Kobold Egg", l)
@@ -10576,12 +10576,12 @@ async def cmd_forceegg(words, user, chan, w):
 async def cmd_forcebreed(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except Exception:
         k = None
     if k:
         try:
             l = find_kobold(words[2], w=w)
-        except:
+        except Exception:
             l = None
         if l:
             k.breed(l, force=True)
@@ -10632,7 +10632,7 @@ async def cmd_reset(words, user, chan, w):
             if k.d_user_id and k.nick:
                 try:
                     k.die("Big Crunch")
-                except:
+                except Exception:
                     console_print("Couldn't kill "+k.get_name())
                     await log_exception()
         for p in playerdata:
@@ -10729,9 +10729,9 @@ async def confirm_prompt(chan, msg, confirm=None):
             to = 180.0
         try:
             res = await clive.wait_for("reaction_add", timeout=to, check=check)
-        except:
+        except asyncio.TimeoutError:
             res = None
-        if res == None:
+        if res is None:
             break
         # Example: 'MyBot#1111'
         if str(res[1]) != BOT_NAME and (not confirm or res[1] == confirm):
@@ -10740,7 +10740,7 @@ async def confirm_prompt(chan, msg, confirm=None):
                 await message.remove_reaction(res[0].emoji, res[1])
     try:
         await message.delete()
-    except:
+    except Exception:
         pass
     return conf
 
@@ -10786,9 +10786,9 @@ async def embed_group(chan, embeds, confirm=None):
             to = 180.0
         try:
             res = await clive.wait_for("reaction_add", timeout=to, check=check)
-        except:
+        except asyncio.TimeoutError:
             res = None
-        if res == None:
+        if res is None:
             break
         # Example: 'MyBot#1111'
         if str(res[1]) != BOT_NAME and (not confirm or res[1] == confirm):
@@ -10803,7 +10803,7 @@ async def embed_group(chan, embeds, confirm=None):
         else:
             embeds[i].set_footer(text="")
             await message.edit(embed=embeds[i])
-    except:
+    except Exception:
         pass
     return None
 
@@ -10896,9 +10896,9 @@ async def edit_wanderer(chan, user=None):
             return m.message == message
         try:
             res = await clive.wait_for("reaction_add", timeout=180.0, check=check)
-        except:
+        except asyncio.TimeoutError:
             res = None
-        if res == None:
+        if res is None:
             break
         if str(res[1]) != BOT_NAME and (not user or res[1] == user):  # Example: 'MyBot#1111'
             emoji = str(res[0].emoji)
@@ -10991,7 +10991,7 @@ async def cmd_task(words, me, chan):
             s = None
             try:
                 s = int(words[2])
-            except:
+            except AttributeError:
                 for a in me.tribe.tasks:
                     if words[2] in a[0]:
                         s = me.tribe.tasks.index(a)
@@ -11026,7 +11026,7 @@ async def cmd_task(words, me, chan):
                         return False
                 try:
                     int(words[4])
-                except:
+                except AttributeError:
                     await chan.send("'"+str(words[4])+"' (argument1) is not a valid number.")
                     return False
                 if len(words) >= 4:
@@ -11042,7 +11042,7 @@ async def cmd_task(words, me, chan):
             s = None
             try:
                 s = int(words[2])
-            except:
+            except AttributeError:
                 for a in me.tribe.tasks:
                     if words[2] in a[0]:
                         s = me.tribe.tasks.index(a)
@@ -11067,7 +11067,7 @@ async def cmd_task(words, me, chan):
             s = None
             try:
                 s = int(words[2])
-            except:
+            except AttributeError:
                 for a in me.tribe.tasks:
                     if words[2] in a[0]:
                         s = me.tribe.tasks.index(a)
@@ -11079,11 +11079,11 @@ async def cmd_task(words, me, chan):
         elif words[1] == "move":
             try:
                 s = int(words[2])
-            except:
+            except AttributeError:
                 s = None
             try:
                 t = int(words[3])
-            except:
+            except AttributeError:
                 t = None
             if s is not None and t is not None:
                 (me.tribe.tasks[s], me.tribe.tasks[t]) = (
@@ -11214,7 +11214,7 @@ async def cmd_routine(words, user, chan, w):
         s = None
         try:
             s = int(words[2])
-        except:
+        except AttributeError:
             for a in playerdata[pid]["rediting"]:
                 if a == words[2]:
                     s = playerdata[pid]["rediting"].index(a)
@@ -11227,11 +11227,11 @@ async def cmd_routine(words, user, chan, w):
     elif words[1] == "move":
         try:
             s = int(words[2])
-        except:
+        except AttributeError:
             s = None
         try:
             t = int(words[3])
-        except:
+        except AttributeError:
             t = None
         if s is not None and t is not None:
             (playerdata[pid]["rediting"][s], playerdata[pid]["rediting"][t]) = (
@@ -11372,7 +11372,7 @@ async def do_action_queue():
                 if channel and len(a) > 2:
                     await channel.send(None, embed=a[2])
                 toremove.append(a)
-            except:
+            except Exception:
                 console_print("Couldn't send embed")
                 await log_exception()
         if a[0] == "newchan":
@@ -11390,7 +11390,7 @@ async def do_action_queue():
                     }
                     channel = await guild.create_text_channel(a[1], overwrites=overwrites)
                 toremove.append(a)
-            except:
+            except Exception:
                 console_print("Couldn't make a channel")
                 await log_exception()
         if a[0] == "delchan":
@@ -11400,7 +11400,7 @@ async def do_action_queue():
                     if channel:
                         await channel.delete()
                     toremove.append(a)
-            except:
+            except Exception:
                 console_print("Couldn't delete a channel")
                 # await log_exception()
         if a[0] == "addrole":
@@ -11410,7 +11410,7 @@ async def do_action_queue():
                     role = discord.utils.get(guild.roles, name=a[1])
                     await m.add_roles(role)
                 toremove.append(a)
-            except:
+            except Exception:
                 console_print("Couldn't add role to member")
                 await log_exception()
         if a[0] == "delrole":
@@ -11420,7 +11420,7 @@ async def do_action_queue():
                     role = discord.utils.get(guild.roles, name=a[1])
                     await m.remove_roles(role)
                 toremove.append(a)
-            except:
+            except Exception:
                 console_print("Couldn't add role to member")
                 await log_exception()
         if a[0] == "addmember":
@@ -11431,7 +11431,7 @@ async def do_action_queue():
                     if channel:
                         await channel.set_permissions(m, overwrite=discord.PermissionOverwrite(read_messages=True))
                 toremove.append(a)
-            except:
+            except Exception:
                 console_print("Couldn't add member to channel")
                 await log_exception()
         if a[0] == "delmember":
@@ -11442,7 +11442,7 @@ async def do_action_queue():
                     if channel:
                         await channel.set_permissions(m, overwrite=discord.PermissionOverwrite(read_messages=False))
                 toremove.append(a)
-            except:
+            except Exception:
                 console_print("Couldn't remove member from channel")
                 await log_exception()
     for x in toremove:
@@ -11803,7 +11803,7 @@ async def handle_tasks(w):
                                 break
                         if "expand" in cmd and tile.farm_cap >= 1000:
                             break
-                    except:
+                    except Exception:
                         await log_exception("Task for tribe "+str(t.id)+": `"+cmd+"`")
                         break
                 for i in toolsused:
@@ -11831,7 +11831,7 @@ async def main_loop():
                     await handle_final_orders(world)
                     await handle_tasks(world)
                     world.month_change()
-        except:
+        except Exception:
             await log_exception()
             if sta:
                 for t in world.tribes:
@@ -11919,7 +11919,7 @@ async def on_message(message):
     try:
         num = int(teest[0])
         message.content = message.content.replace(str(num), "", 1)
-    except:
+    except AttributeError:
         num = 1
     me = None
     allmembers = [None]
@@ -12226,7 +12226,7 @@ async def handle_message(message, num=1):
                         for b in wordwords:
                             try:
                                 num = int(b)
-                            except:
+                            except AttributeError:
                                 pass
                             if num > 0:
                                 wordwords.remove(b)
@@ -12329,13 +12329,13 @@ async def handle_message(message, num=1):
                                 engage.enemy_turn(me.party)
                     try:
                         await message.delete()
-                    except:
+                    except Exception:
                         pass
                     return True
             else:
                 await chan.send("Command not found.")
                 return
-    except:
+    except Exception:
         if chan:
             await chan.send("Your command resulted in an error. The dev has been notified.")
         if user:
@@ -12345,7 +12345,7 @@ async def handle_message(message, num=1):
 
 try:
     load_game()
-except:
+except Exception:
     console_print("There was a problem running load_game")
     m = traceback.format_exc().split("\n")
     console_print(m)
