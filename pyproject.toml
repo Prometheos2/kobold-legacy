@@ -37,6 +37,7 @@ select = [
     "UP",    # pyupgrade
     "ASYNC", # flake8-async
     "B",     # flake8-bugbear
+    "A",     # flake8-builtins
 ]
 ignore = [
     "E501", # Line too large / to be handled by formatters

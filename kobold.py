@@ -848,10 +848,10 @@ class Tile:
                 return t
         return None
 
-    def cave_in(self, me, dir=None):
-        if dir and self.blocked[dir]:
+    def cave_in(self, me, _dir=None):
+        if _dir and self.blocked[_dir]:
             return
-        if dir:
+        if _dir:
             ch = 100-self.stability-(me.skmod("mining")*5)
         else:
             ch = 100-self.stability
@@ -860,10 +860,10 @@ class Tile:
             ch = math.floor(ch/2)
         if chance(ch):
             bolds = []
-            if dir:
+            if _dir:
                 msg = me.display()+"'s mining has caused a cave-in! Rocks are falling everywhere!"
                 msg += "\nThe tunnel to the " + \
-                    DIR_FULL[dir]+" has been completely filled with rocks."
+                    DIR_FULL[_dir]+" has been completely filled with rocks."
             else:
                 msg = "A cave-in has occurred! Rocks are falling everywhere!"
             me.p(msg)
@@ -880,9 +880,9 @@ class Tile:
                     if k.worns["body"] and k.worns["body"].name == "Work Gear":
                         dmg = math.ceil(dmg/2)
                     k.hp_tax(dmg, "Cave-in")
-            if dir:
-                self.blocked[dir] = True
-                self.get_border(dir).blocked[OPP_DIR[dir]] = True
+            if _dir:
+                self.blocked[_dir] = True
+                self.get_border(_dir).blocked[OPP_DIR[_dir]] = True
             self.stability += 50
 
     def invasion(self):
@@ -999,10 +999,10 @@ class Tile:
                     ct = k.world.find_tile_feature(
                         10, self, "Goblin Camp", "special")
                     if ct:
-                        dir = get_dir(ct, k)
-                        if dir != "same":
+                        _dir = get_dir(ct, k)
+                        if _dir != "same":
                             k.p("[n] watches the goblins head " +
-                                dir+" back to their camp.")
+                                _dir+" back to their camp.")
                         k.gain_xp("stealth", 100)
         if self.farm_cap > 0:
             if "Scarecrow" in self.special and chance(34):
@@ -1308,7 +1308,7 @@ class Tile:
 
 
 class Dungeon:
-    def __init__(self, type, world, x, y, z):
+    def __init__(self, _type, world, x, y, z):
         self.world = world
         self.x = x
         self.y = y
@@ -1316,7 +1316,7 @@ class Dungeon:
         self.id = self.world.did
         self.world.did += 1
         self.map = {}
-        self.d = type
+        self.d = _type
         world.dungeons.append(self)
         self.generate()
 
@@ -1375,35 +1375,35 @@ class Dungeon:
             dirs.remove("u")
         if gpos[2] == dungeon_data[self.d]["dimensions"][2]:
             dirs.remove("d")
-        dir = choice(dirs)
+        _dir = choice(dirs)
         npos = list(gpos)
-        if dir == "w":
+        if _dir == "w":
             npos[0] -= 1
-        elif dir == "e":
+        elif _dir == "e":
             npos[0] += 1
-        elif dir == "n":
+        elif _dir == "n":
             npos[1] -= 1
-        elif dir == "s":
+        elif _dir == "s":
             npos[1] += 1
-        elif dir == "u":
+        elif _dir == "u":
             npos[2] -= 1
-        elif dir == "d":
+        elif _dir == "d":
             npos[2] += 1
         nt = self.get_tile(npos[0], npos[1], npos[2])
         console_print("expanding "+str(gpos)+" to "+str(npos))
-        if dir == "u":
+        if _dir == "u":
             if "Stairs Up" not in ot.special:
                 ot.special.append("Stairs Up")
             if "Stairs Down" not in nt.special:
                 nt.special.append("Stairs Down")
-        elif dir == "d":
+        elif _dir == "d":
             if "Stairs Up" not in nt.special:
                 nt.special.append("Stairs Up")
             if "Stairs Down" not in ot.special:
                 ot.special.append("Stairs Down")
         else:
-            ot.blocked[dir] = False
-            nt.blocked[OPP_DIR[dir]] = False
+            ot.blocked[_dir] = False
+            nt.blocked[OPP_DIR[_dir]] = False
         return npos
 
     def generate(self):
@@ -3174,7 +3174,7 @@ class Kobold:
         if self.max_hp > oldmax:
             self.hp += self.max_hp-oldmax
 
-    def equip_best(self, type):
+    def equip_best(self, _type):
         best = None
         bestam = 0
         if not self.shaded:
@@ -3182,7 +3182,7 @@ class Kobold:
         else:
             umb = False
         for i in self.items:
-            if i.tool == type:
+            if i.tool == _type:
                 if i.toolpower > bestam:
                     best = i
                     bestam = i.toolpower
@@ -3191,7 +3191,7 @@ class Kobold:
         if best and self.equip != best:
             cmd_equip([], self, best)
 
-    def equip_bonus(self, type):
+    def equip_bonus(self, _type):
         p = 0
         if self.tribe:
             o = self.tribe.overseer
@@ -3210,7 +3210,7 @@ class Kobold:
                         bestp = ip
             p += bestp
             best.gain_xp("intimidation", 5)
-        if self.equip and self.equip.tool == type:
+        if self.equip and self.equip.tool == _type:
             p += max(1, math.floor(self.equip.toolpower *
                      2*(1+(self.equip.quality/5))))+5
             self.equip.lower_durability()
@@ -3977,10 +3977,10 @@ class Item:
                 15, k, "Ant Nest", "special", gen=True)
             k.p("[n] squeezes the Ant Pheromonal Gland, which emits a strong scent not unlike rotten fruit...")
             if ct:
-                dir = get_dir(ct, k)
-                if dir != "same":
+                _dir = get_dir(ct, k)
+                if _dir != "same":
                     k.p("Ants crawl out of crevasses in the " +
-                        dir+" wall and swarm the party!")
+                        _dir+" wall and swarm the party!")
                 else:
                     k.p("Ants immediately pour out of the nest and engage the party!")
                 e = Encounter(k.world, place, random.randint(8, 12), k.z, choice(
@@ -3997,9 +3997,9 @@ class Item:
                 10, k, "Raw Manacite", "resources", gen=True)
             k.p("[n] holds out the Tin Rod and feels out the vibrations within...")
             if ct:
-                dir = get_dir(ct, k)
-                if dir != "same":
-                    k.p("The rod pulls toward the "+dir+".")
+                _dir = get_dir(ct, k)
+                if _dir != "same":
+                    k.p("The rod pulls toward the "+_dir+".")
                 else:
                     k.p("The rod is hot to the touch!")
                 self.magic_item_use(
@@ -4053,9 +4053,9 @@ class Item:
                 else:
                     k.p("The crystal ball is hazy... it's impossible to make out anything.")
             if ct:
-                dir = get_dir(ct, k)
-                if dir != "same":
-                    k.p("[n] senses that this place is somewhere to the "+dir+".")
+                _dir = get_dir(ct, k)
+                if _dir != "same":
+                    k.p("[n] senses that this place is somewhere to the "+_dir+".")
                 else:
                     k.p("[n] sees themselves in the vision as well, holding the crystal ball.")
             self.magic_item_use(
@@ -4262,10 +4262,10 @@ class Encounter:
         self.pacified = False
         if (not force and chance(25)) or force == "kobold":
             self.hostile = False
-            type = choice(["merchant", "wanderer", "child", "hunters"])
+            _type = choice(["merchant", "wanderer", "child", "hunters"])
             if force == "kobold":
-                type = "merchant"
-            if type == "hunters":
+                _type = "merchant"
+            if _type == "hunters":
                 a = random.randint(2, 5)
             else:
                 a = 1
@@ -4274,7 +4274,7 @@ class Encounter:
                 k.tribe = None
                 k.encounter = self
                 (k.x, k.y, k.z) = (tile.x, tile.y, tile.z)
-                if type == "child":
+                if _type == "child":
                     k.age = random.randint(1, 5)
                     k.random_stats()
                     for st in k.s:
@@ -4284,7 +4284,7 @@ class Encounter:
                     k.hp = k.max_hp
                 else:
                     k.random_stats()
-                    if type == "hunters":
+                    if _type == "hunters":
                         w = choice(["Stone Spear", "Stone Hammer", "Stone Knife", "Sling", "Stone Spear", "Stone Hammer",
                                    "Stone Knife", "Sling", "Copper Spear", "Copper Hammer", "Copper Knife", "Bone Bow"])
                         item = spawn_item(w, k)
@@ -4296,7 +4296,7 @@ class Encounter:
                             spawn_item("Bone Arrow", k, random.randint(10, 20))
                 k.ap = k.max_ap
                 self.creatures.append(k)
-            if type == "merchant":
+            if _type == "merchant":
                 k.add_trait("trader")
                 for c in creature_data:
                     if c['name'] == 'Bear':
@@ -5302,20 +5302,20 @@ def spell_prospect(spell, words, k, target):
         return False
     ct = k.world.find_tile_feature(10, k, mineral, "resources", gen=True)
     if ct:
-        dir = "none"
+        _dir = "none"
         if abs(ct.x-k.x) > abs(ct.y-k.y):
             if ct.x < k.x:
-                dir = "to the west."
+                _dir = "to the west."
             elif ct.x > k.x:
-                dir = "to the east."
+                _dir = "to the east."
         else:
             if ct.y < k.y:
-                dir = "to the north."
+                _dir = "to the north."
             elif ct.y > k.y:
-                dir = "to the south."
+                _dir = "to the south."
             else:
-                dir = "right under their nose."
-        k.p("[n] senses a node of "+mineral+" "+dir)
+                _dir = "right under their nose."
+        k.p("[n] senses a node of "+mineral+" "+_dir)
     else:
         k.p("[n] doesn't sense any "+mineral+" nearby.")
     return True
@@ -6174,7 +6174,7 @@ async def cmd_pacify(words, k, target):
         return False
     elif not isinstance(target, Kobold) and target.language == "none":
         if target.stats["int"] < 6 and target.companion:
-            bait = await multi_select(discord.utils.get(guild.channels, name=k.get_chan()), "", k, place="inv", type="bait/food/material")
+            bait = await multi_select(discord.utils.get(guild.channels, name=k.get_chan()), "", k, place="inv", _type="bait/food/material")
             good = False
             if bait:
                 for b in target.diet:
@@ -6645,7 +6645,7 @@ async def cmd_feeder(words, k, target):
         scope = "any"
     elif words[1].lower() == "remove":
         scope = "kennel"
-    item = await multi_select(discord.utils.get(guild.channels, name=k.get_chan()), "", k, place=scope, type="bait/food/material")
+    item = await multi_select(discord.utils.get(guild.channels, name=k.get_chan()), "", k, place=scope, _type="bait/food/material")
     if item:
         if scope == "any":
             item.move(k.tribe.kennel_items)
@@ -6670,7 +6670,7 @@ async def cmd_tame(words, k, target):
     elif target.encounter.hostile:
         k.p("That creature is hostile to you. You need to pacify it first (using !pacify in combat).")
     else:
-        bait = await multi_select(discord.utils.get(guild.channels, name=k.get_chan()), "", k, place="inv", type="bait/food/material")
+        bait = await multi_select(discord.utils.get(guild.channels, name=k.get_chan()), "", k, place="inv", _type="bait/food/material")
         good = False
         if bait:
             for b in target.diet:
@@ -7403,13 +7403,13 @@ def cmd_drink(words, me, lol):
 async def cmd_fill(words, me, chan):
     p = me.get_place()
     drained = 0
-    h = await multi_select(chan, words[1], me, type="container")
+    h = await multi_select(chan, words[1], me, _type="container")
     if h:
         if h.liquid_capacity == 0:  # food container
             if h.contains:
                 me.p(h.display()+" already contains "+h.contains.display()+".")
                 return False
-            i = await multi_select(chan, words[2], me, type="food")
+            i = await multi_select(chan, words[2], me, _type="food")
             if i:
                 i.move(h)
                 me.p("[n] stores their "+h.contains.display() +
@@ -8398,10 +8398,10 @@ def cmd_search(words, me, target):
                             ct = t
                 tracks = "Kobold"
             if ct and tracks:
-                dir = get_dir(ct, me)
-                if dir != "same":
+                _dir = get_dir(ct, me)
+                if _dir != "same":
                     me.p("[n] finds what appear to be " +
-                         tracks+" tracks leading "+dir+".")
+                         tracks+" tracks leading "+_dir+".")
                 exp += 20
         me.gain_xp("survival", exp)
     me.searched.append(c)
@@ -8500,7 +8500,7 @@ def cmd_attune(words, me, target):
     if target.school == "none" or target.type == "gem":
         me.p(target.display()+" cannot be attuned.")
         return False
-    gem = find_item(words[2], me, type="gem")
+    gem = find_item(words[2], me, _type="gem")
     if not gem:
         me.p("Gem '"+words[2]+"' not found.")
         return False
@@ -10049,13 +10049,13 @@ def game_print(msg, chan, pin=False):
     post_queue[chan].append(msg)
 
 
-async def multi_select(chan, search, me, startininv=True, place="any", type=None, landmarks=False, ordering=False):
+async def multi_select(chan, search, me, startininv=True, place="any", _type=None, landmarks=False, ordering=False):
     target = None
     first = False
     if "-first" in search:
         first = True
         search = search.replace("-first", "")
-    targets = find_item_multi(search.lower(), me, startininv, place, type)
+    targets = find_item_multi(search.lower(), me, startininv, place, _type)
     if landmarks:
         tile = me.world.get_tile(me.x, me.y, me.z)
         for l in tile.special:
@@ -10097,7 +10097,7 @@ async def multi_select(chan, search, me, startininv=True, place="any", type=None
     return target
 
 
-def find_item_multi(name, me, startininv=True, place="any", type=None, ignore_displays=False):
+def find_item_multi(name, me, startininv=True, place="any", _type=None, ignore_displays=False):
     # console_print("searching for "+name+" among items (multi)")
     targets = []
     displays = []
@@ -10119,21 +10119,21 @@ def find_item_multi(name, me, startininv=True, place="any", type=None, ignore_di
     for i in scope:
         if not i:
             continue
-        if i.name.lower() == name and i.display() not in displays and (not type or i.type in type):
+        if i.name.lower() == name and i.display() not in displays and (not _type or i.type in _type):
             targets.append(i)
             if not ignore_displays:
                 displays.append(i.display())
     for i in scope:
         if not i:
             continue
-        if name in i.display().lower() and i.display() not in displays and (not type or i.type in type):
+        if name in i.display().lower() and i.display() not in displays and (not _type or i.type in _type):
             targets.append(i)
             if not ignore_displays:
                 displays.append(i.display())
     return targets
 
 
-def find_item(name, me, startininv=True, type=None, hasliquid=False):
+def find_item(name, me, startininv=True, _type=None, hasliquid=False):
     # console_print("searching for "+name+" among items")
     t = me.get_place()
     if isinstance(t, Tribe) and me in t.tavern:
@@ -10143,10 +10143,10 @@ def find_item(name, me, startininv=True, type=None, hasliquid=False):
     else:
         scope = list(t.items)+list(me.items)
     for i in scope:
-        if i.name.lower() == name and (not type or i.type == type) and (not hasliquid or i.liquid_units > 0):
+        if i.name.lower() == name and (not _type or i.type == _type) and (not hasliquid or i.liquid_units > 0):
             return i
     for i in scope:
-        if name in i.display().lower() and (not type or i.type == type) and (not hasliquid or i.liquid_units > 0):
+        if name in i.display().lower() and (not _type or i.type == _type) and (not hasliquid or i.liquid_units > 0):
             return i
     return None
 
@@ -11607,9 +11607,9 @@ def save_game(path='klsave'):
     # console_print("Game saved.")
 
 
-def get_pdata(id, data, df=None):
+def get_pdata(_id, data, df=None):
     global playerdata
-    i = str(id)
+    i = str(_id)
     if i not in playerdata:
         playerdata[i] = {}
     if data not in playerdata[i]:
