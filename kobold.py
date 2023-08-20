@@ -8467,7 +8467,7 @@ def spell_hut(spell, words, me, target):
             return False
     me.p("[n] waves their hands around the party, and a hut of magical force materializes around them.")
     t.camp = {"tribe": me.tribe, "heat": 0,
-              "defense": 0, "watch": [], "magic": true}
+              "defense": 0, "watch": [], "magic": True}
     return True
 
 
