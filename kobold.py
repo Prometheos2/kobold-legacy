@@ -885,35 +885,35 @@ class Tile:
                 self.get_border(dir).blocked[OPP_DIR[dir]] = True
             self.stability += 50
 
-    def invasion(t):
+    def invasion(self):
         bolds = []
         neut = True
         chan = None
-        for k in t.world.kobold_list:
-            if k.get_place() == t:
+        for k in self.world.kobold_list:
+            if k.get_place() == self:
                 bolds.append(k)
                 if k.get_chan() != "exception-log":
                     chan = k.get_chan()
             if k.tribe and not k.tribe.shc_faction["Goblin"] < 1:
                 neut = False
-        if t.camp:
+        if self.camp:
             if neut:
                 game_print(
                     "The goblins have passed this camp by thanks to the truce.", chan)
                 return
-            invasion = int(t.camp["heat"]*random.randint(80, 120)/100)
-            if t.camp.get("magic", False):
-                t.camp = {}
+            invasion = int(self.camp["heat"]*random.randint(80, 120)/100)
+            if self.camp.get("magic", False):
+                self.camp = {}
                 if chan:
                     game_print("The Tiny Hut vanishes.", chan)
             elif invasion > 0:
                 game_print(
                     str(invasion)+" goblins have discovered the camp and attack!", chan)
-                defense = t.camp["defense"]
+                defense = self.camp["defense"]
                 dmg = 0
                 dmgto = {}
-                if defense+5 < t.space_in_use:
-                    outside = t.space_in_use-(defense+5)
+                if defense+5 < self.space_in_use:
+                    outside = self.space_in_use-(defense+5)
                     game_print(
                         "Some kobolds were caught sleeping outside! This wouldn't happen if we had enough space for everyone...", chan)
                     for x in range(outside):
@@ -922,12 +922,12 @@ class Tile:
                             k.hp_tax(random.randint(1, invasion), "Slept in the open", dmgtype=choice(
                                 ["bludgeoning", "slashing", "piercing"]))
                             bolds.remove(k)
-                if invasion > defense and len(t.camp["watch"]) > 0:
+                if invasion > defense and len(self.camp["watch"]) > 0:
                     dmg = invasion-defense
                     game_print(
                         "The invaders broke through our outer defenses. Our watchmen are the only thing between us and certain doom.", chan)
                     for x in range(dmg):
-                        target = choice(t.camp["watch"])
+                        target = choice(self.camp["watch"])
                         if isinstance(target, Creature):
                             tn = target.name
                         else:
@@ -936,7 +936,7 @@ class Tile:
                             dmgto[tn] += 1
                         else:
                             dmgto[tn] = 1
-                    wm = list(t.camp["watch"])
+                    wm = list(self.camp["watch"])
                     for k in wm:
                         defense += k.watch_damage(dmg, dmgto)
                 if invasion > defense:
@@ -947,8 +947,8 @@ class Tile:
                     targets = ["kobold", "building", "item"]
                     for x in range(dmg):
                         hit = choice(targets)
-                        if hit == "item" and len(t.items) > 0:
-                            target = choice(t.items)
+                        if hit == "item" and len(self.items) > 0:
+                            target = choice(self.items)
                             target.destroy("Lost in raid")
                             game_print(target.display() +
                                        " was lost in the raid!", chan)
@@ -959,7 +959,7 @@ class Tile:
                             else:
                                 dmgto[str(target.id)] = 2
                         else:
-                            t.camp["defense"] -= 1
+                            self.camp["defense"] -= 1
                     for k in bolds:
                         if str(k.id) in dmgto:
                             k.hp_tax(dmgto[str(k.id)], "Civilian casualty", dmgtype=choice(
@@ -970,21 +970,21 @@ class Tile:
                 else:
                     game_print(
                         "The invaders could not reach the camp. We have made it through the raid.", chan)
-                if t.camp["defense"] < 0:
-                    t.camp = {}
+                if self.camp["defense"] < 0:
+                    self.camp = {}
                     game_print("The camp was destroyed!", chan)
                     console_print("Camp destroyed at " +
-                                  str((t.x, t.y, t.z)), hp=True)
+                                  str((self.x, self.y, self.z)), hp=True)
                 else:
                     near = 0
-                    tils = t.world.scan(t, 3, False)
+                    tils = self.world.scan(self, 3, False)
                     for m in tils:
-                        if t.world.map[m] != t and (t.world.map[m].camp or t.world.map[m].get_tribe()):
+                        if self.world.map[m] != self and (self.world.map[m].camp or self.world.map[m].get_tribe()):
                             near += 1
-                    t.camp["heat"] += len(bolds)*(1.5**near)
-                    t.camp["watch"] = []
+                    self.camp["heat"] += len(bolds)*(1.5**near)
+                    self.camp["watch"] = []
             else:
-                t.camp["heat"] += 1
+                self.camp["heat"] += 1
         elif len(bolds) > 0:
             if chan:
                 game_print(
@@ -997,42 +997,42 @@ class Tile:
                 else:
                     k.p("[n] survived the night completely undetected.")
                     ct = k.world.find_tile_feature(
-                        10, t, "Goblin Camp", "special")
+                        10, self, "Goblin Camp", "special")
                     if ct:
                         dir = get_dir(ct, k)
                         if dir != "same":
                             k.p("[n] watches the goblins head " +
                                 dir+" back to their camp.")
                         k.gain_xp("stealth", 100)
-        if t.farm_cap > 0:
-            if "Scarecrow" in t.special and chance(34):
+        if self.farm_cap > 0:
+            if "Scarecrow" in self.special and chance(34):
                 return
-            oldspace = t.farm_cap
-            decay = max(math.floor(t.farm_cap/4), 50)
-            if "Farm Fencing" in t.special:
+            oldspace = self.farm_cap
+            decay = max(math.floor(self.farm_cap/4), 50)
+            if "Farm Fencing" in self.special:
                 decay = math.floor(decay/2)
-            t.farm_cap -= decay
-            tribe = t.get_tribe()
+            self.farm_cap -= decay
+            tribe = self.get_tribe()
             if tribe:
                 sp = math.floor(oldspace/100) - \
-                    math.floor(max(t.farm_cap, 0)/100)
+                    math.floor(max(self.farm_cap, 0)/100)
                 tribe.space += sp
-            if t.farm_cap <= 0:
+            if self.farm_cap <= 0:
                 if chan:
                     game_print("The farm was destroyed!", chan)
-                for l in t.special:
+                for l in self.special:
                     if "Farm" in l:
-                        t.special.remove(l)
+                        self.special.remove(l)
             elif chan:
                 game_print("The farm was damaged!", chan)
-            if "Scarecrow" in t.special and chance(50-(t.farm_cap/10)):
+            if "Scarecrow" in self.special and chance(50-(self.farm_cap/10)):
                 if chan:
                     game_print("The Scarecrow was destroyed!", chan)
-                t.special.remove("Scarecrow")
-            if "Farm Fencing" in t.special and chance(50-(t.farm_cap/10)):
+                self.special.remove("Scarecrow")
+            if "Farm Fencing" in self.special and chance(50-(self.farm_cap/10)):
                 if chan:
                     game_print("The Farm Fencing was destroyed!", chan)
-                t.special.remove("Farm Fencing")
+                self.special.remove("Farm Fencing")
 
     def spawn_encounter(self, force=None, n=0):
         for e in self.world.encounters:
@@ -1915,13 +1915,13 @@ class Tribe:
                 if self.building_prog[thing["name"]] >= thing["work"]:
                     self.finish_building(thing)
 
-    def election(t):
+    def election(self):
         tally = {}
-        for k in t.kobolds:
+        for k in self.kobolds:
             if k.age < 6 or not k.nick or k.vote < 0:
                 continue
             bad = False
-            for j in t.kobolds:
+            for j in self.kobolds:
                 if j.id == k.vote and j.has_trait("inactive"):
                     bad = True
             if bad:
@@ -1943,17 +1943,17 @@ class Tribe:
                 ties += 1
         console_print("election time. best="+str(best)+", ties="+str(ties))
         if ties == 1 and int(best) != -1:
-            for k in t.kobolds:
-                if k.id == int(best) and t.chieftain != k:
+            for k in self.kobolds:
+                if k.id == int(best) and self.chieftain != k:
                     game_print("The people have spoken. "+k.display() +
-                               " will be our new Chieftain.", t.get_chan())
-                    if t.chieftain:
+                               " will be our new Chieftain.", self.get_chan())
+                    if self.chieftain:
                         action_queue.append(
-                            ["delrole", "Chieftain", t.chieftain.d_user_id])
-                    t.chieftain = k
+                            ["delrole", "Chieftain", self.chieftain.d_user_id])
+                    self.chieftain = k
                     action_queue.append(["addrole", "Chieftain", k.d_user_id])
-                    if t.overseer == k:
-                        t.overseer = None
+                    if self.overseer == k:
+                        self.overseer = None
 
     def has_item(self, name, q=1):
         return has_item(self, name, q)
@@ -2001,60 +2001,60 @@ class Tribe:
         self.heat_faction[f] = max(
             self.heat_faction[f], int(self.shc_faction[f]/2))
 
-    def invasion(t, faction="Goblin"):
-        invasion = int(t.heat_faction[faction]*random.randint(80, 120)/100)
+    def invasion(self, faction="Goblin"):
+        invasion = int(self.heat_faction[faction]*random.randint(80, 120)/100)
         game_print("A raid consisting of "+str(invasion)+" " +
-                   faction+" invaders attacks!", t.get_chan())
+                   faction+" invaders attacks!", self.get_chan())
         if faction == "Human":
             builds = []
-            for b in t.buildings:
+            for b in self.buildings:
                 r = find_building(b)
                 if r.get("defense", 0) > 0 and r.get("destructible", True):
                     builds.append(b)
             siege = invasion
             if siege > 10 and len(builds) > 0:
                 game_print(
-                    "The humans fire a volley from their siege weaponry!", t.get_chan())
+                    "The humans fire a volley from their siege weaponry!", self.get_chan())
             while siege > 10 and len(builds) > 0:
                 b = choice(builds)
                 dmg = random.randint(10, siege)
-                t.building_damage(b, dmg)
+                self.building_damage(b, dmg)
                 siege -= dmg
                 builds.remove(b)
-        defense = t.defense
+        defense = self.defense
         if faction == "Ant":
             game_print(
-                "The ants crawl all over the walls and ceiling, rendering our constructed defenses half as effective...", t.get_chan())
+                "The ants crawl all over the walls and ceiling, rendering our constructed defenses half as effective...", self.get_chan())
             defense = math.floor(defense/2)
-        if faction == "Dwarf" and t.z > 0 and len(t.kobolds) > 0:
-            tile = t.world.get_tile(t.x, t.y, t.z)
+        if faction == "Dwarf" and self.z > 0 and len(self.kobolds) > 0:
+            tile = self.world.get_tile(self.x, self.y, self.z)
             game_print(
-                "The cavern rumbles as dwarves tunnel into the vicinity from all directions...", t.get_chan())
+                "The cavern rumbles as dwarves tunnel into the vicinity from all directions...", self.get_chan())
             tile.stability -= random.randint(math.floor(invasion/4),
                                              math.floor(invasion/3))
-            tile.cave_in(t.kobolds[0])
+            tile.cave_in(self.kobolds[0])
         dmg = 0
         dmgto = {}
         bolds = []
-        for k in t.kobolds:
-            if k.age >= 6 or not t.has_building("Nursery"):
+        for k in self.kobolds:
+            if k.age >= 6 or not self.has_building("Nursery"):
                 bolds.append(k)
-        if t.space < t.space_in_use:
-            outside = t.space_in_use-t.space
+        if self.space < self.space_in_use:
+            outside = self.space_in_use-self.space
             game_print(
-                "Some kobolds were caught sleeping outside! This wouldn't happen if we had enough space for everyone...", t.get_chan())
+                "Some kobolds were caught sleeping outside! This wouldn't happen if we had enough space for everyone...", self.get_chan())
             for x in range(outside):
                 k = choice(bolds)
                 if k:
                     k.hp_tax(random.randint(1, invasion), "Slept in the open", dmgtype=choice(
                         ["bludgeoning", "slashing", "piercing"]))
                     bolds.remove(k)
-        if invasion > defense and len(t.watchmen) > 0:
+        if invasion > defense and len(self.watchmen) > 0:
             dmg = invasion-defense
             game_print(
-                "The invaders broke through our outer defenses. Our watchmen are the only thing between us and certain doom.", t.get_chan())
+                "The invaders broke through our outer defenses. Our watchmen are the only thing between us and certain doom.", self.get_chan())
             for x in range(dmg):
-                target = choice(t.watchmen)
+                target = choice(self.watchmen)
                 if isinstance(target, Creature):
                     tn = target.name
                 else:
@@ -2065,16 +2065,16 @@ class Tribe:
                     dmgto[tn] = 1
                 if faction == "Gnoll":
                     dmgto[tn] += 1
-            wm = list(t.watchmen)
+            wm = list(self.watchmen)
             for k in wm:
                 defense += k.watch_damage(dmg, dmgto)
         if invasion > defense:
             game_print(
-                "The invaders have breached our defenses and are running amok in the den!", t.get_chan())
+                "The invaders have breached our defenses and are running amok in the den!", self.get_chan())
             dmg = invasion-defense
             dmgto = {}
             targets = ["kobold", "building", "item"]
-            builds = list(t.buildings)
+            builds = list(self.buildings)
             for b in building_data:
                 if not b.get("destructible", True):
                     while b["name"] in builds:
@@ -2083,14 +2083,14 @@ class Tribe:
                 hit = choice(targets)
                 if hit == "building" and len(builds) > 0:
                     target = choice(builds)
-                    t.building_damage(target, random.randint(1, 10))
-                    if target not in t.buildings:
+                    self.building_damage(target, random.randint(1, 10))
+                    if target not in self.buildings:
                         builds.remove(target)
-                elif hit == "item" and len(t.items) > 0:
-                    target = choice(t.items)
+                elif hit == "item" and len(self.items) > 0:
+                    target = choice(self.items)
                     target.destroy("Lost in raid")
                     game_print(target.display() +
-                               " was lost in the raid!", t.get_chan())
+                               " was lost in the raid!", self.get_chan())
                 elif len(bolds) > 0:
                     target = choice(bolds)
                     if str(target.id) in dmgto:
@@ -2105,22 +2105,23 @@ class Tribe:
                         ["bludgeoning", "slashing", "piercing"]))
                 if k.save("wis") < 12:
                     k.add_trait("stressed")
-            game_print("The attack is finally over.", t.get_chan())
+            game_print("The attack is finally over.", self.get_chan())
         else:
             game_print(
-                "The invaders could not reach the den. We have made it through the raid.", t.get_chan())
+                "The invaders could not reach the den. We have made it through the raid.", self.get_chan())
         near = 0
-        tils = t.world.scan(t, 3, False)
+        tils = self.world.scan(self, 3, False)
         for m in tils:
-            if t.world.map[m] != t and (t.world.map[m].camp or t.world.map[m].get_tribe()):
+            if self.world.map[m] != self and (self.world.map[m].camp or self.world.map[m].get_tribe()):
                 near += 1
         if faction == "Ant":
-            t.gain_heat(5, faction)
+            self.gain_heat(5, faction)
         else:
-            t.gain_heat(((len(t.kobolds)/2)+(t.month*2))*(1.1**near), faction)
-        if t.has_building("Marble Statues") and faction in ["Goblin", "Human", "Elf", "Dwarf"] and t.heat_faction[faction] > 5:
-            t.heat_faction[faction] -= 5
-        t.shc_faction[faction] *= 2
+            self.gain_heat(((len(self.kobolds)/2)+(self.month*2))
+                           * (1.1**near), faction)
+        if self.has_building("Marble Statues") and faction in ["Goblin", "Human", "Elf", "Dwarf"] and self.heat_faction[faction] > 5:
+            self.heat_faction[faction] -= 5
+        self.shc_faction[faction] *= 2
 
 
 class Kobold:
@@ -2491,8 +2492,8 @@ class Kobold:
     def consume_item(self, name, q=1):
         return consume_item(self, name, q)
 
-    def auto_eat(k):
-        area = list(k.items)+list(k.get_place().items)
+    def auto_eat(self):
+        area = list(self.items)+list(self.get_place().items)
         food = None
         fprio = -999
         for i in area:
@@ -2502,17 +2503,17 @@ class Kobold:
                 prio = 100-(i.ap*10)
             if i.hp < 0:
                 prio -= 200
-            elif k.hp < k.max_hp:
+            elif self.hp < self.max_hp:
                 prio += i.hp*5
-            if k.mp < k.max_mp:
+            if self.mp < self.max_mp:
                 prio += i.mp*5
-            if prio < 0 and not k.has_trait("starving"):
+            if prio < 0 and not self.has_trait("starving"):
                 continue
             if i.type == "food" and prio > fprio:
                 food = i
                 fprio = prio
         if food:
-            food.use(k)
+            food.use(self)
             return True
         return False
 
@@ -2559,36 +2560,36 @@ class Kobold:
                     self.p("[n] is now "+t+".")
         return True
 
-    def watch_strength(k):
+    def watch_strength(self):
         defense = 0
-        if k.equip:
-            defense += (k.equip.dmg[0]*k.equip.dmg[1])+k.equip.dmg[2]
-            if k.equip.type == "finesse":
-                defense += max(k.smod("str", False),
-                               k.smod("dex", False))+k.skmod("melee")
-            elif k.equip.type == "melee":
-                defense += k.smod("str", False)+k.skmod("melee")
-            elif k.equip.type == "magic":
-                defense += k.smod("int", False)+k.skmod("sorcery")
+        if self.equip:
+            defense += (self.equip.dmg[0]*self.equip.dmg[1])+self.equip.dmg[2]
+            if self.equip.type == "finesse":
+                defense += max(self.smod("str", False),
+                               self.smod("dex", False))+self.skmod("melee")
+            elif self.equip.type == "melee":
+                defense += self.smod("str", False)+self.skmod("melee")
+            elif self.equip.type == "magic":
+                defense += self.smod("int", False)+self.skmod("sorcery")
             else:
-                defense += k.smod("dex", False)+k.skmod("marksman")
+                defense += self.smod("dex", False)+self.skmod("marksman")
         else:
-            defense += max(1, k.smod("str", False)+k.skmod("melee"))
+            defense += max(1, self.smod("str", False)+self.skmod("melee"))
         return defense
 
-    def watch_damage(k, dmg, dmgto):
-        defense = k.watch_strength()
-        if k.equip and k.equip.type == "ranged":
-            k.gain_xp("marksman", (dmg+10)*1.5)
+    def watch_damage(self, dmg, dmgto):
+        defense = self.watch_strength()
+        if self.equip and self.equip.type == "ranged":
+            self.gain_xp("marksman", (dmg+10)*1.5)
         else:
-            k.gain_xp("melee", (dmg+10)*1.5)
-        if str(k.id) in dmgto:
-            if k.equip:
-                k.equip.lower_durability(dmgto[str(k.id)])
-            k.hp_tax(dmgto[str(k.id)], "Killed in action", dmgtype=choice(
+            self.gain_xp("melee", (dmg+10)*1.5)
+        if str(self.id) in dmgto:
+            if self.equip:
+                self.equip.lower_durability(dmgto[str(self.id)])
+            self.hp_tax(dmgto[str(self.id)], "Killed in action", dmgtype=choice(
                 ["bludgeoning", "slashing", "piercing"]))
-            if k.save("wis") < 12:
-                k.add_trait("stressed")
+            if self.save("wis") < 12:
+                self.add_trait("stressed")
         return defense
 
     def spell_strength(self, spell):
@@ -2598,32 +2599,32 @@ class Kobold:
             s = math.ceil(s/2)
         return s
 
-    def age_up(k):
-        console_print("aging up "+k.name)
-        oldmax = k.max_hp
+    def age_up(self):
+        console_print("aging up "+self.name)
+        oldmax = self.max_hp
         stch = list(STATS)
         for st in STATS:
-            k.s[st] += 1
-        if k.color == "silver":
+            self.s[st] += 1
+        if self.color == "silver":
             points = 6
-        elif k.color in ["brown", "orange", "purple"]:
+        elif self.color in ["brown", "orange", "purple"]:
             points = 4
         else:
             points = 3
-            k.s[COLOR_STAT[k.color]] += 1
-        if k.color == "orange":
+            self.s[COLOR_STAT[self.color]] += 1
+        if self.color == "orange":
             stch.extend(["str", "dex", "con"])
-        elif k.color == "purple":
+        elif self.color == "purple":
             stch.extend(["int", "wis", "cha"])
         while points > 0:
             if len(stch) == 0:
                 break  # shouldn't happen, but just in case
             st = choice(stch)
-            if k.s[st] < 14:
-                k.s[st] += 1
+            if self.s[st] < 14:
+                self.s[st] += 1
                 points -= 1
             stch.remove(st)
-        k.hp += k.max_hp-oldmax
+        self.hp += self.max_hp-oldmax
 
     def random_stats(self, color=None):
         points = 24
@@ -4581,18 +4582,18 @@ class Creature:
             ret = str(self.stats[stat])+" ["+ret+"]"
         return ret
 
-    def watch_strength(k):
-        return (k.dmg[0]*k.dmg[1])+k.dmg[2]
+    def watch_strength(self):
+        return (self.dmg[0]*self.dmg[1])+self.dmg[2]
 
-    def watch_damage(k, dmg, dmgto):
-        defense = k.watch_strength()
-        if k.name in dmgto:
-            k.hp_tax(dmgto[k.name], "Killed in action", dmgtype=choice(
+    def watch_damage(self, dmg, dmgto):
+        defense = self.watch_strength()
+        if self.name in dmgto:
+            self.hp_tax(dmgto[self.name], "Killed in action", dmgtype=choice(
                 ["bludgeoning", "slashing", "piercing"]))
         return defense
 
-    def mount_strength(k):
-        return max(0, (k.stats["str"]+k.stats["con"])-8)*3
+    def mount_strength(self):
+        return max(0, (self.stats["str"]+self.stats["con"])-8)*3
 
     def char_info(self, k, pr=True):
         title = "Creature info: "+self.display()
