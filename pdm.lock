@@ -2,11 +2,11 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "formatter"]
+groups = ["default"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:8c51878db40510ea886a1b4065163da10237dc9cdc85c79efd0beb70f83fb0b6"
+content_hash = "sha256:1f9a492555ed27ea61155a7fc415328f0b1dc747c746adc6c679e260a117d2ab"
 
 [[package]]
 name = "aiohttp"
@@ -61,20 +61,6 @@ summary = "Classes Without Boilerplate"
 files = [
     {file = "attrs-23.1.0-py3-none-any.whl", hash = "sha256:1f28b4522cdc2fb4256ac1a020c78acf9cba2c6b461ccd2c126f3aa8e8335d04"},
     {file = "attrs-23.1.0.tar.gz", hash = "sha256:6279836d581513a26f1bf235f9acd333bc9115683f14f7e8fae46c98fc50e015"},
-]
-
-[[package]]
-name = "autopep8"
-version = "2.0.3"
-requires_python = ">=3.6"
-summary = "A tool that automatically formats Python code to conform to the PEP 8 style guide"
-dependencies = [
-    "pycodestyle>=2.10.0",
-    "tomli; python_version < \"3.11\"",
-]
-files = [
-    {file = "autopep8-2.0.3-py2.py3-none-any.whl", hash = "sha256:ca72bd1e3bf0aa40636860fa07e3f1a762a18d0943cf359b3de09221059ffbd9"},
-    {file = "autopep8-2.0.3.tar.gz", hash = "sha256:ba4901621c7f94c6fce134437d577009886d5e3bfa46ee64e1d1d864a5b93cc2"},
 ]
 
 [[package]]
@@ -165,16 +151,6 @@ files = [
 ]
 
 [[package]]
-name = "pycodestyle"
-version = "2.11.0"
-requires_python = ">=3.8"
-summary = "Python style guide checker"
-files = [
-    {file = "pycodestyle-2.11.0-py2.py3-none-any.whl", hash = "sha256:5d1013ba8dc7895b548be5afb05740ca82454fd899971563d2ef625d090326f8"},
-    {file = "pycodestyle-2.11.0.tar.gz", hash = "sha256:259bcc17857d8a8b3b4a2327324b79e5f020a13c16074670f9c8c8f872ea76d0"},
-]
-
-[[package]]
 name = "python-dotenv"
 version = "1.0.0"
 requires_python = ">=3.8"
@@ -182,16 +158,6 @@ summary = "Read key-value pairs from a .env file and set them as environment var
 files = [
     {file = "python-dotenv-1.0.0.tar.gz", hash = "sha256:a8df96034aae6d2d50a4ebe8216326c61c3eb64836776504fcca410e5937a3ba"},
     {file = "python_dotenv-1.0.0-py3-none-any.whl", hash = "sha256:f5971a9226b701070a4bf2c38c89e5a3f0d64de8debda981d1db98583009122a"},
-]
-
-[[package]]
-name = "tomli"
-version = "2.0.1"
-requires_python = ">=3.7"
-summary = "A lil' TOML parser"
-files = [
-    {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
-    {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 
 [[package]]
