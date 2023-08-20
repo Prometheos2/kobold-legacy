@@ -21,6 +21,6 @@ without-hashes = "true"
 
 [tool.pdm.dev-dependencies]
 dev = [
-    # Autopep8 formatter, supposed to fix pycodestyle issues
-    "autopep8>=2.0.2",
+    # Black formatter
+    "black>=23.7.0",
 ]
