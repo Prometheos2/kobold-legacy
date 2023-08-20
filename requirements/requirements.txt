@@ -14,4 +14,5 @@ idna==3.4
 multidict==6.0.4
 pycodestyle==2.11.0
 python-dotenv==1.0.0
+ruff==0.0.285
 yarl==1.9.2

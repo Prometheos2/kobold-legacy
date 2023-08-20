@@ -1,10 +1,8 @@
 import asyncio
 import json
 import math
-import operator
 import os
 import random
-import re
 import shelve
 import time
 import traceback
@@ -133,14 +131,14 @@ def get_json(fname):
 
 
 def has_item(self, name, q=1):
-    #console_print("has item for "+name)
+    # console_print("has item for "+name)
     if name[0] == "*":
         cat = name.replace("*", "")
     else:
         cat = None
     for i in self.items:
         if (cat and i.name in item_cats[cat]) or (not cat and i.name == name):
-            #console_print(i.name+" fits the bill")
+            # console_print(i.name+" fits the bill")
             if i.num >= q:
                 return i
             else:
@@ -167,11 +165,11 @@ def check_req(self, req, k=None):
     for q in req:
         if q[0] == "research":
             if isinstance(self, Tribe) and q[1] in self.research:
-                #console_print("research req good because in tribe research")
+                # console_print("research req good because in tribe research")
                 continue
-            #console_print(k.get_name()+" fam with "+q[1]+" = "+str(k.familiar(q[1])))
+            # console_print(k.get_name()+" fam with "+q[1]+" = "+str(k.familiar(q[1])))
             if k and k.familiar(q[1]) > 0:
-                #console_print("research req good because initiator is familiar")
+                # console_print("research req good because initiator is familiar")
                 continue
             fam = False
             if k:
@@ -180,7 +178,7 @@ def check_req(self, req, k=None):
                         fam = True
                         break
             if fam:
-                #console_print("research req good because kobold with familiarity here")
+                # console_print("research req good because kobold with familiarity here")
                 continue
             if place == self:
                 good = "Research missing: "+q[1]
@@ -1044,7 +1042,6 @@ class Tile:
         mindist = 9999
         if len(self.world.tribes) <= 0:
             return  # can't spawn if no tribes
-        ct = None
         if self.z > 0:
             for t in self.world.tribes:
                 disto = abs(self.x-t.x)+abs(self.y-t.y)
@@ -1081,15 +1078,6 @@ class Tile:
         t = self.world.get_tile(borders[d][0], borders[d][1], borders[d][2])
         return t
 
-    def item_quantities(self):
-        q = {}
-        for i in self.items:
-            if i.name not in q:
-                q[i.name] = i.num
-            else:
-                q[i.name] += i.num
-        return q
-
     def get_available_builds(self, k=None):
         ar = []
         for r in building_data:
@@ -1103,7 +1091,7 @@ class Tile:
                     for l in self.special:
                         if "Farm" in l:
                             good = False
-                allitems = self.item_quantities()
+                self.item_quantities()
                 for m in r.get("materials", []):
                     gra = m.split("/")
                     g = False
@@ -1347,7 +1335,7 @@ class Dungeon:
         elif z > dungeon_data[self.d]["dimensions"][2]:
             return None
         m = str(x)+","+str(y)+","+str(z)
-        #console_print("getting tile "+m)
+        # console_print("getting tile "+m)
         if m in self.map:
             return self.map[m]
         elif gen:
@@ -1719,7 +1707,7 @@ class Tribe:
                 good = False
             if r.get("space", 0) > self.space:
                 good = False
-            allitems = self.item_quantities()
+            self.item_quantities()
             for m in r.get("materials", []):
                 gra = m.split("/")
                 g = False
@@ -1999,13 +1987,13 @@ class Tribe:
             console_print("Tribe "+str(self.id)+" gains "+str(h)+" "+f+" heat")
             if self.heat_faction[f]+h <= self.shc_faction[f]:
                 self.heat_faction[f] += h
-                #console_print("Adding raw heat now "+str(self.heat_faction[faction]))
+                # console_print("Adding raw heat now "+str(self.heat_faction[faction]))
                 continue
             elif self.heat_faction[f] <= self.shc_faction[f]:
                 h -= self.shc_faction[f]-self.heat_faction[f]
                 self.heat_faction[f] = self.shc_faction[f]
             self.heat_faction[f] += h/5
-            #console_print("Adding capped heat now "+str(self.heat_faction[faction]))
+            # console_print("Adding capped heat now "+str(self.heat_faction[faction]))
 
     def violate_truce(self, k, f):
         k.p("This violates the tribe's truce with the "+f +
@@ -2314,7 +2302,7 @@ class Kobold:
         res = find_research(r)
         if r in self.familiarity:
             fam = math.floor(self.familiarity[r]/res["diff"])
-            #console_print(self.get_name()+" familiar with "+r+" = "+str(fam))
+            # console_print(self.get_name()+" familiar with "+r+" = "+str(fam))
             return fam
         return 0
 
@@ -3504,7 +3492,7 @@ class Party:
                     if chance((i.liquid_units/i.liquid_capacity)*100):
                         k.p("[n] spills some of their "+i.liquid+".")
                         i.liquid_units -= 1
-            #console_print("movement cost "+str(hmc))
+            # console_print("movement cost "+str(hmc))
             k.movement += hmc
             if k.movement >= 100:
                 k.ap_tax(min(k.ap, math.floor(k.movement/100)))
@@ -4222,7 +4210,6 @@ class Item:
         lowy = 9999
         highx = -9999
         highy = -9999
-        r = {}
         for m in self.map:
             if self.map[m]['x'] < lowx:
                 lowx = self.map[m]['x']
@@ -4232,19 +4219,18 @@ class Item:
                 lowy = self.map[m]['y']
             if self.map[m]['y'] > highy:
                 highy = self.map[m]['y']
-        ycount = lowy
         msg = []
         row = []
         for a in range((((highx-lowx)+1)*2)+1):
             row.append(" ")
         for b in range((((highy-lowy)+1)*2)+1):
             msg.append(list(row))
-        #console_print("msg and row: "+str(len(msg))+","+str(len(row)))
-        #console_print("lowx and y: "+str(lowx)+","+str(lowy))
+        # console_print("msg and row: "+str(len(msg))+","+str(len(row)))
+        # console_print("lowx and y: "+str(lowx)+","+str(lowy))
         for m in self.map:
             xx = ((self.map[m]['x']-lowx)*2)+1
             yy = ((self.map[m]['y']-lowy)*2)+1
-            #console_print("xx and yy: "+str(xx)+","+str(yy))
+            # console_print("xx and yy: "+str(xx)+","+str(yy))
             if k.x == self.map[m]['x'] and k.y == self.map[m]['y']:
                 msg[yy][xx] = "@"
             else:
@@ -6343,11 +6329,11 @@ def cmd_gift(words, k, target):
                 " folk are intrigued by [n]'s offering. The tribe's heat has decreased.")
             if f == "Goblin":
                 if "Goblin Language" not in k.tribe.research:
-                    i = spawn_item("Goblin Script", k)
+                    spawn_item("Goblin Script", k)
                     k.p("The goblins seem to recognize your willingness to negotiate and hand you something in return. It's a tablet filled with strange symbols.")
             else:
                 if "Common Language" not in k.tribe.research:
-                    i = spawn_item("Common Script", k)
+                    spawn_item("Common Script", k)
                     k.p("The "+f+" folk seem to recognize your willingness to negotiate and hand you something in return. It's a book filled with strange symbols.")
             for e in k.world.encounters:
                 if k.party in e.engaged:
@@ -8214,7 +8200,7 @@ def cmd_move(words, me, cost):
         words[1] = "up"
     elif words[1] == "d":
         words[1] = "down"
-    p = me.get_place()
+    me.get_place()
     if me.dungeon:
         cost = 0
     else:
@@ -8711,7 +8697,7 @@ def cmd_recycle(words, me, target):
     reclaim = []
     for i in target.recycle["into"]:
         if chance(base):
-            rc = spawn_item(i, me)
+            spawn_item(i, me)
             reclaim.append(i)
     if len(reclaim) > 0:
         me.p("[n] recycles the "+target.name +
@@ -9801,7 +9787,7 @@ def get_newbold(user, chan, w, test=False, nt=False):
 async def cmd_refund(words, user, chan, w):
     m = discord.utils.get(guild.members, nick=words[1])
     if m:
-        sp = get_pdata(m.id, "sp", 10)
+        get_pdata(m.id, "sp", 10)
         playerdata[str(m.id)]["sp"] += int(words[2])
         await chan.send(words[1]+" has been refunded "+words[2]+" SP.")
         return True
@@ -9846,7 +9832,6 @@ async def cmd_reroll(words, user, chan, w):
     else:
         await chan.send("You have 4 kobolds in your selection already.")
         return False
-    embeds = []
     await udm.send("Added "+newbold.display()+" to your selection.")
     await show_selection(udm, sel, first=str(newbold.id))
     return True
@@ -10113,7 +10098,7 @@ async def multi_select(chan, search, me, startininv=True, place="any", type=None
 
 
 def find_item_multi(name, me, startininv=True, place="any", type=None, ignore_displays=False):
-    #console_print("searching for "+name+" among items (multi)")
+    # console_print("searching for "+name+" among items (multi)")
     targets = []
     displays = []
     t = me.get_place()
@@ -10149,7 +10134,7 @@ def find_item_multi(name, me, startininv=True, place="any", type=None, ignore_di
 
 
 def find_item(name, me, startininv=True, type=None, hasliquid=False):
-    #console_print("searching for "+name+" among items")
+    # console_print("searching for "+name+" among items")
     t = me.get_place()
     if isinstance(t, Tribe) and me in t.tavern:
         t = me.world.get_tile(me.x, me.y, me.z)
@@ -10186,7 +10171,7 @@ def find_creature_i(name, me):
 def find_kobold(name, area=None, w=None):
     if not w:
         w = world
-    #console_print("looking for "+name)
+    # console_print("looking for "+name)
     for k in w.kobold_list:
         if area and k.get_place() != area:
             continue
@@ -10846,7 +10831,6 @@ async def edit_wanderer(chan, user=None):
     await message.add_reaction('📛')
     await message.add_reaction('⚧')
     await message.add_reaction('❌')
-    i = 0
     emoji = ''
     stat_sort = {}
     sel = 0
@@ -10863,7 +10847,7 @@ async def edit_wanderer(chan, user=None):
             if ed[STATS[sel]] > 6:
                 ed[STATS[sel]] -= 1
         elif emoji == '▶':
-            if ed[STATS[sel]] < 14 and stotal < 60:
+            if ed[STATS[sel]] < 14 and sum(ed.values()) < 60:
                 ed[STATS[sel]] += 1
         elif emoji == '🎲':
             points = 24
@@ -11041,7 +11025,7 @@ async def cmd_task(words, me, chan):
                         await chan.send("'"+str(words[5])+"' (argument2) is not a valid item.")
                         return False
                 try:
-                    am = int(words[4])
+                    int(words[4])
                 except:
                     await chan.send("'"+str(words[4])+"' (argument1) is not a valid number.")
                     return False
@@ -11372,7 +11356,7 @@ async def do_action_queue():
     if not guild:
         return
     for a in action_queue:
-        #console_print("Attempting action: "+a[0])
+        # console_print("Attempting action: "+a[0])
         if a[0] == "embed":
             try:
                 channel = None
@@ -11550,7 +11534,7 @@ def load_game(path='klsave'):
                     leader = p.owner.get_name()
                 else:
                     leader = "none"
-                #console_print(k.get_name()+" is in party "+str(p.id)+" with leader "+leader)
+                # console_print(k.get_name()+" is in party "+str(p.id)+" with leader "+leader)
                 mem = list(p.k_members)
                 for c in p.c_members:
                     if not hasattr(c, "products"):
@@ -11620,7 +11604,7 @@ def save_game(path='klsave'):
     file['playerdata'] = playerdata
     file['action_queue'] = action_queue
     file.close()
-    #console_print("Game saved.")
+    # console_print("Game saved.")
 
 
 def get_pdata(id, data, df=None):
@@ -11771,7 +11755,7 @@ async def handle_tasks(w):
                         sung = None
                         if not worker.shaded:
                             if lastworker and lastworker != worker and lastworker.has_trait("sunglasses"):
-                                cmd_unshade([], lastworker, None)
+                                cmd_wear([], lastworker, None)
                                 for i in lastworker.items:
                                     if i.name == "Sunglasses":
                                         cmd_drop([], worker, i)
@@ -12026,7 +12010,6 @@ async def handle_message(message, num=1):
                         break
             else:
                 me = message.k
-        repeat = False
         if me:
             place = me.get_place()
             dumb = me
@@ -12035,9 +12018,8 @@ async def handle_message(message, num=1):
                     message.content = me.lastcommand
                     words = message.content.split()
                     words[0] = words[0].lower()
-                    repeat = True
             elif message.content == me.lastcommand:
-                repeat = True
+                pass
             if message.content[0] in [">", "!", "-"]:
                 me.lastcommand = message.content
         ordering = False

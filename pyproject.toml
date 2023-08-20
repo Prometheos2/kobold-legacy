@@ -23,4 +23,11 @@ without-hashes = "true"
 dev = [
     # Autopep8 formatter, supposed to fix pycodestyle issues
     "autopep8>=2.0.2",
+    # Ruff linter, written in Rust for performances
+    "ruff>=0.0.285",
+]
+
+[tool.ruff]
+select = [
+    "F", # Pyflakes
 ]

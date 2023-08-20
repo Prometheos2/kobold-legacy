@@ -395,7 +395,7 @@
     "type":"armor",
     "eqslot":"acc",
     "value":120,
-    "desc":"A pair of kobold-sized lenses that will fit over your eyes and shield them from the harshness of the sun. Use them to put them on. !unshade to take them off."
+    "desc":"A pair of kobold-sized lenses that will fit over your eyes and shield them from the harshness of the sun. Use !wear to put them on and to take them off."
   },{
     "name":"Inert Mana Cell",
     "type":"utility",
