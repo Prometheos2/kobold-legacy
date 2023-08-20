@@ -5177,7 +5177,7 @@ def spell_tremor(spell, words, me, target):
         dmg = math.ceil(dmg/2)
     else:
         p.stability -= 5
-        p.cave_in(party.owner)
+        p.cave_in(me.party.owner)
     if me.wearing_nonmage_equipment():
         dmg = math.ceil(dmg/2)
     for t in targets:
@@ -5473,9 +5473,9 @@ def spell_dislocate(spell, words, me, target):
         me.p(m.display()+" manifests on the ground.")
         p.mined[d] += m.veinsize
         if p.mined[d] == 0 and p.resources[d]:
-            k.p("[n] has revealed a node of "+p.resources[d]+"!")
+            me.p("[n] has revealed a node of "+p.resources[d]+"!")
         elif res != "Stone Chunk" and chance(p.mined[d]*5):
-            k.p("The "+res+" vein is depleted.")
+            me.p("The "+res+" vein is depleted.")
             p.resources[d] = None
         p.stability -= 5
         p.cave_in(me, d)
