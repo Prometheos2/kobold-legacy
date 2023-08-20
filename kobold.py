@@ -11,7 +11,6 @@ from pathlib import Path
 import discord
 from dotenv import load_dotenv
 
-
 BOT_NAME = "Lulurnbus#1506"
 STATS = ["str", "dex", "con", "int", "wis", "cha"]
 STAT_COLOR = {
@@ -163,7 +162,7 @@ def kobold_name():
 def tribe_name():
     try:
         f = Path("data/tribe_names.txt").open()
-    except:
+    except OSError:
         console_print("ERROR: Cannot find tribe name list")
         return "Erroneously-named Tribe"
     temp_names = []
@@ -1047,26 +1046,26 @@ class Tile:
                 self.get_border(dir).blocked[OPP_DIR[dir]] = True
             self.stability += 50
 
-    def invasion(t):
+    def invasion(self):
         bolds = []
         neut = True
         chan = None
-        for k in t.world.kobold_list:
-            if k.get_place() == t:
+        for k in self.world.kobold_list:
+            if k.get_place() == self:
                 bolds.append(k)
                 if k.get_chan() != "exception-log":
                     chan = k.get_chan()
             if k.tribe and not k.tribe.shc_faction["Goblin"] < 1:
                 neut = False
-        if t.camp:
+        if self.camp:
             if neut:
                 game_print(
                     "The goblins have passed this camp by thanks to the truce.", chan
                 )
                 return
-            invasion = int(t.camp["heat"] * random.randint(80, 120) / 100)
-            if t.camp.get("magic", False):
-                t.camp = {}
+            invasion = int(self.camp["heat"] * random.randint(80, 120) / 100)
+            if self.camp.get("magic", False):
+                self.camp = {}
                 if chan:
                     game_print("The Tiny Hut vanishes.", chan)
             elif invasion > 0:
@@ -1074,11 +1073,11 @@ class Tile:
                     str(invasion) + " goblins have discovered the camp and attack!",
                     chan,
                 )
-                defense = t.camp["defense"]
+                defense = self.camp["defense"]
                 dmg = 0
                 dmgto = {}
-                if defense + 5 < t.space_in_use:
-                    outside = t.space_in_use - (defense + 5)
+                if defense + 5 < self.space_in_use:
+                    outside = self.space_in_use - (defense + 5)
                     game_print(
                         "Some kobolds were caught sleeping outside! This wouldn't happen if we had enough space for everyone...",
                         chan,
@@ -1092,14 +1091,14 @@ class Tile:
                                 dmgtype=choice(["bludgeoning", "slashing", "piercing"]),
                             )
                             bolds.remove(k)
-                if invasion > defense and len(t.camp["watch"]) > 0:
+                if invasion > defense and len(self.camp["watch"]) > 0:
                     dmg = invasion - defense
                     game_print(
                         "The invaders broke through our outer defenses. Our watchmen are the only thing between us and certain doom.",
                         chan,
                     )
                     for _x in range(dmg):
-                        target = choice(t.camp["watch"])
+                        target = choice(self.camp["watch"])
                         if isinstance(target, Creature):
                             tn = target.name
                         else:
@@ -1108,7 +1107,7 @@ class Tile:
                             dmgto[tn] += 1
                         else:
                             dmgto[tn] = 1
-                    wm = list(t.camp["watch"])
+                    wm = list(self.camp["watch"])
                     for k in wm:
                         defense += k.watch_damage(dmg, dmgto)
                 if invasion > defense:
@@ -1118,8 +1117,8 @@ class Tile:
                     targets = ["kobold", "building", "item"]
                     for _x in range(dmg):
                         hit = choice(targets)
-                        if hit == "item" and len(t.items) > 0:
-                            target = choice(t.items)
+                        if hit == "item" and len(self.items) > 0:
+                            target = choice(self.items)
                             target.destroy("Lost in raid")
                             game_print(
                                 target.display() + " was lost in the raid!", chan
@@ -1131,7 +1130,7 @@ class Tile:
                             else:
                                 dmgto[str(target.id)] = 2
                         else:
-                            t.camp["defense"] -= 1
+                            self.camp["defense"] -= 1
                     for k in bolds:
                         if str(k.id) in dmgto:
                             k.hp_tax(
@@ -1147,22 +1146,24 @@ class Tile:
                         "The invaders could not reach the camp. We have made it through the raid.",
                         chan,
                     )
-                if t.camp["defense"] < 0:
-                    t.camp = {}
+                if self.camp["defense"] < 0:
+                    self.camp = {}
                     game_print("The camp was destroyed!", chan)
-                    console_print("Camp destroyed at " + str((t.x, t.y, t.z)), hp=True)
+                    console_print(
+                        "Camp destroyed at " + str((self.x, self.y, self.z)), hp=True
+                    )
                 else:
                     near = 0
-                    tils = t.world.scan(t, 3, False)
+                    tils = self.world.scan(self, 3, False)
                     for m in tils:
-                        if t.world.map[m] != t and (
-                            t.world.map[m].camp or t.world.map[m].get_tribe()
+                        if self.world.map[m] != self and (
+                            self.world.map[m].camp or self.world.map[m].get_tribe()
                         ):
                             near += 1
-                    t.camp["heat"] += len(bolds) * (1.5**near)
-                    t.camp["watch"] = []
+                    self.camp["heat"] += len(bolds) * (1.5**near)
+                    self.camp["watch"] = []
             else:
-                t.camp["heat"] += 1
+                self.camp["heat"] += 1
         elif len(bolds) > 0:
             if chan:
                 game_print(
@@ -1177,7 +1178,7 @@ class Tile:
                     k.die("Unprotected traveler")
                 else:
                     k.p("[n] survived the night completely undetected.")
-                    ct = k.world.find_tile_feature(10, t, "Goblin Camp", "special")
+                    ct = k.world.find_tile_feature(10, self, "Goblin Camp", "special")
                     if ct:
                         dir = get_dir(ct, k)
                         if dir != "same":
@@ -1187,34 +1188,36 @@ class Tile:
                                 + " back to their camp."
                             )
                         k.gain_xp("stealth", 100)
-        if t.farm_cap > 0:
-            if "Scarecrow" in t.special and chance(34):
+        if self.farm_cap > 0:
+            if "Scarecrow" in self.special and chance(34):
                 return
-            oldspace = t.farm_cap
-            decay = max(math.floor(t.farm_cap / 4), 50)
-            if "Farm Fencing" in t.special:
+            oldspace = self.farm_cap
+            decay = max(math.floor(self.farm_cap / 4), 50)
+            if "Farm Fencing" in self.special:
                 decay = math.floor(decay / 2)
-            t.farm_cap -= decay
-            tribe = t.get_tribe()
+            self.farm_cap -= decay
+            tribe = self.get_tribe()
             if tribe:
-                sp = math.floor(oldspace / 100) - math.floor(max(t.farm_cap, 0) / 100)
+                sp = math.floor(oldspace / 100) - math.floor(
+                    max(self.farm_cap, 0) / 100
+                )
                 tribe.space += sp
-            if t.farm_cap <= 0:
+            if self.farm_cap <= 0:
                 if chan:
                     game_print("The farm was destroyed!", chan)
-                for l in t.special:
+                for l in self.special:
                     if "Farm" in l:
-                        t.special.remove(l)
+                        self.special.remove(l)
             elif chan:
                 game_print("The farm was damaged!", chan)
-            if "Scarecrow" in t.special and chance(50 - (t.farm_cap / 10)):
+            if "Scarecrow" in self.special and chance(50 - (self.farm_cap / 10)):
                 if chan:
                     game_print("The Scarecrow was destroyed!", chan)
-                t.special.remove("Scarecrow")
-            if "Farm Fencing" in t.special and chance(50 - (t.farm_cap / 10)):
+                self.special.remove("Scarecrow")
+            if "Farm Fencing" in self.special and chance(50 - (self.farm_cap / 10)):
                 if chan:
                     game_print("The Farm Fencing was destroyed!", chan)
-                t.special.remove("Farm Fencing")
+                self.special.remove("Farm Fencing")
 
     def spawn_encounter(self, force=None, n=0):
         for e in self.world.encounters:
@@ -2212,13 +2215,13 @@ class Tribe:
                 if self.building_prog[thing["name"]] >= thing["work"]:
                     self.finish_building(thing)
 
-    def election(t):
+    def election(self):
         tally = {}
-        for k in t.kobolds:
+        for k in self.kobolds:
             if k.age < 6 or not k.nick or k.vote < 0:
                 continue
             bad = False
-            for j in t.kobolds:
+            for j in self.kobolds:
                 if j.id == k.vote and j.has_trait("inactive"):
                     bad = True
             if bad:
@@ -2240,22 +2243,22 @@ class Tribe:
                 ties += 1
         console_print("election time. best=" + str(best) + ", ties=" + str(ties))
         if ties == 1 and int(best) != -1:
-            for k in t.kobolds:
-                if k.id == int(best) and t.chieftain != k:
+            for k in self.kobolds:
+                if k.id == int(best) and self.chieftain != k:
                     game_print(
                         "The people have spoken. "
                         + k.display()
                         + " will be our new Chieftain.",
-                        t.get_chan(),
+                        self.get_chan(),
                     )
-                    if t.chieftain:
+                    if self.chieftain:
                         action_queue.append(
-                            ["delrole", "Chieftain", t.chieftain.d_user_id]
+                            ["delrole", "Chieftain", self.chieftain.d_user_id]
                         )
-                    t.chieftain = k
+                    self.chieftain = k
                     action_queue.append(["addrole", "Chieftain", k.d_user_id])
-                    if t.overseer == k:
-                        t.overseer = None
+                    if self.overseer == k:
+                        self.overseer = None
 
     def has_item(self, name, q=1):
         return has_item(self, name, q)
@@ -2298,61 +2301,62 @@ class Tribe:
         self.shc_faction[f] = abs(self.shc_faction[f])
         self.heat_faction[f] = max(self.heat_faction[f], int(self.shc_faction[f] / 2))
 
-    def invasion(t, faction="Goblin"):
-        invasion = int(t.heat_faction[faction] * random.randint(80, 120) / 100)
+    def invasion(self, faction="Goblin"):
+        invasion = int(self.heat_faction[faction] * random.randint(80, 120) / 100)
         game_print(
             "A raid consisting of "
             + str(invasion)
             + " "
             + faction
             + " invaders attacks!",
-            t.get_chan(),
+            self.get_chan(),
         )
         if faction == "Human":
             builds = []
-            for b in t.buildings:
+            for b in self.buildings:
                 r = find_building(b)
                 if r.get("defense", 0) > 0 and r.get("destructible", True):
                     builds.append(b)
             siege = invasion
             if siege > 10 and len(builds) > 0:
                 game_print(
-                    "The humans fire a volley from their siege weaponry!", t.get_chan()
+                    "The humans fire a volley from their siege weaponry!",
+                    self.get_chan(),
                 )
             while siege > 10 and len(builds) > 0:
                 b = choice(builds)
                 dmg = random.randint(10, siege)
-                t.building_damage(b, dmg)
+                self.building_damage(b, dmg)
                 siege -= dmg
                 builds.remove(b)
-        defense = t.defense
+        defense = self.defense
         if faction == "Ant":
             game_print(
                 "The ants crawl all over the walls and ceiling, rendering our constructed defenses half as effective...",
-                t.get_chan(),
+                self.get_chan(),
             )
             defense = math.floor(defense / 2)
-        if faction == "Dwarf" and t.z > 0 and len(t.kobolds) > 0:
-            tile = t.world.get_tile(t.x, t.y, t.z)
+        if faction == "Dwarf" and self.z > 0 and len(self.kobolds) > 0:
+            tile = self.world.get_tile(self.x, self.y, self.z)
             game_print(
                 "The cavern rumbles as dwarves tunnel into the vicinity from all directions...",
-                t.get_chan(),
+                self.get_chan(),
             )
             tile.stability -= random.randint(
                 math.floor(invasion / 4), math.floor(invasion / 3)
             )
-            tile.cave_in(t.kobolds[0])
+            tile.cave_in(self.kobolds[0])
         dmg = 0
         dmgto = {}
         bolds = []
-        for k in t.kobolds:
-            if k.age >= 6 or not t.has_building("Nursery"):
+        for k in self.kobolds:
+            if k.age >= 6 or not self.has_building("Nursery"):
                 bolds.append(k)
-        if t.space < t.space_in_use:
-            outside = t.space_in_use - t.space
+        if self.space < self.space_in_use:
+            outside = self.space_in_use - self.space
             game_print(
                 "Some kobolds were caught sleeping outside! This wouldn't happen if we had enough space for everyone...",
-                t.get_chan(),
+                self.get_chan(),
             )
             for _x in range(outside):
                 k = choice(bolds)
@@ -2363,14 +2367,14 @@ class Tribe:
                         dmgtype=choice(["bludgeoning", "slashing", "piercing"]),
                     )
                     bolds.remove(k)
-        if invasion > defense and len(t.watchmen) > 0:
+        if invasion > defense and len(self.watchmen) > 0:
             dmg = invasion - defense
             game_print(
                 "The invaders broke through our outer defenses. Our watchmen are the only thing between us and certain doom.",
-                t.get_chan(),
+                self.get_chan(),
             )
             for _x in range(dmg):
-                target = choice(t.watchmen)
+                target = choice(self.watchmen)
                 if isinstance(target, Creature):
                     tn = target.name
                 else:
@@ -2381,18 +2385,18 @@ class Tribe:
                     dmgto[tn] = 1
                 if faction == "Gnoll":
                     dmgto[tn] += 1
-            wm = list(t.watchmen)
+            wm = list(self.watchmen)
             for k in wm:
                 defense += k.watch_damage(dmg, dmgto)
         if invasion > defense:
             game_print(
                 "The invaders have breached our defenses and are running amok in the den!",
-                t.get_chan(),
+                self.get_chan(),
             )
             dmg = invasion - defense
             dmgto = {}
             targets = ["kobold", "building", "item"]
-            builds = list(t.buildings)
+            builds = list(self.buildings)
             for b in building_data:
                 if not b.get("destructible", True):
                     while b["name"] in builds:
@@ -2401,14 +2405,14 @@ class Tribe:
                 hit = choice(targets)
                 if hit == "building" and len(builds) > 0:
                     target = choice(builds)
-                    t.building_damage(target, random.randint(1, 10))
-                    if target not in t.buildings:
+                    self.building_damage(target, random.randint(1, 10))
+                    if target not in self.buildings:
                         builds.remove(target)
-                elif hit == "item" and len(t.items) > 0:
-                    target = choice(t.items)
+                elif hit == "item" and len(self.items) > 0:
+                    target = choice(self.items)
                     target.destroy("Lost in raid")
                     game_print(
-                        target.display() + " was lost in the raid!", t.get_chan()
+                        target.display() + " was lost in the raid!", self.get_chan()
                     )
                 elif len(bolds) > 0:
                     target = choice(bolds)
@@ -2427,30 +2431,32 @@ class Tribe:
                     )
                 if k.save("wis") < 12:
                     k.add_trait("stressed")
-            game_print("The attack is finally over.", t.get_chan())
+            game_print("The attack is finally over.", self.get_chan())
         else:
             game_print(
                 "The invaders could not reach the den. We have made it through the raid.",
-                t.get_chan(),
+                self.get_chan(),
             )
         near = 0
-        tils = t.world.scan(t, 3, False)
+        tils = self.world.scan(self, 3, False)
         for m in tils:
-            if t.world.map[m] != t and (
-                t.world.map[m].camp or t.world.map[m].get_tribe()
+            if self.world.map[m] != self and (
+                self.world.map[m].camp or self.world.map[m].get_tribe()
             ):
                 near += 1
         if faction == "Ant":
-            t.gain_heat(5, faction)
+            self.gain_heat(5, faction)
         else:
-            t.gain_heat(((len(t.kobolds) / 2) + (t.month * 2)) * (1.1**near), faction)
+            self.gain_heat(
+                ((len(self.kobolds) / 2) + (self.month * 2)) * (1.1**near), faction
+            )
         if (
-            t.has_building("Marble Statues")
+            self.has_building("Marble Statues")
             and faction in ["Goblin", "Human", "Elf", "Dwarf"]
-            and t.heat_faction[faction] > 5
+            and self.heat_faction[faction] > 5
         ):
-            t.heat_faction[faction] -= 5
-        t.shc_faction[faction] *= 2
+            self.heat_faction[faction] -= 5
+        self.shc_faction[faction] *= 2
 
 
 class Kobold:
@@ -2828,7 +2834,7 @@ class Kobold:
         if self.encounter:
             try:
                 return self.encounter.get_party().get_chan()
-            except:
+            except TypeError:  # potential None
                 pass
         place = self.get_place()
         if isinstance(place, Tribe):
@@ -2852,8 +2858,8 @@ class Kobold:
     def consume_item(self, name, q=1):
         return consume_item(self, name, q)
 
-    def auto_eat(k):
-        area = list(k.items) + list(k.get_place().items)
+    def auto_eat(self):
+        area = list(self.items) + list(self.get_place().items)
         food = None
         fprio = -999
         for i in area:
@@ -2863,17 +2869,17 @@ class Kobold:
                 prio = 100 - (i.ap * 10)
             if i.hp < 0:
                 prio -= 200
-            elif k.hp < k.max_hp:
+            elif self.hp < self.max_hp:
                 prio += i.hp * 5
-            if k.mp < k.max_mp:
+            if self.mp < self.max_mp:
                 prio += i.mp * 5
-            if prio < 0 and not k.has_trait("starving"):
+            if prio < 0 and not self.has_trait("starving"):
                 continue
             if i.type == "food" and prio > fprio:
                 food = i
                 fprio = prio
         if food:
-            food.use(k)
+            food.use(self)
             return True
         return False
 
@@ -2925,40 +2931,40 @@ class Kobold:
                     self.p("[n] is now " + t + ".")
         return True
 
-    def watch_strength(k):
+    def watch_strength(self):
         defense = 0
-        if k.equip:
-            defense += (k.equip.dmg[0] * k.equip.dmg[1]) + k.equip.dmg[2]
-            if k.equip.type == "finesse":
-                defense += max(k.smod("str", False), k.smod("dex", False)) + k.skmod(
-                    "melee"
-                )
-            elif k.equip.type == "melee":
-                defense += k.smod("str", False) + k.skmod("melee")
-            elif k.equip.type == "magic":
-                defense += k.smod("int", False) + k.skmod("sorcery")
+        if self.equip:
+            defense += (self.equip.dmg[0] * self.equip.dmg[1]) + self.equip.dmg[2]
+            if self.equip.type == "finesse":
+                defense += max(
+                    self.smod("str", False), self.smod("dex", False)
+                ) + self.skmod("melee")
+            elif self.equip.type == "melee":
+                defense += self.smod("str", False) + self.skmod("melee")
+            elif self.equip.type == "magic":
+                defense += self.smod("int", False) + self.skmod("sorcery")
             else:
-                defense += k.smod("dex", False) + k.skmod("marksman")
+                defense += self.smod("dex", False) + self.skmod("marksman")
         else:
-            defense += max(1, k.smod("str", False) + k.skmod("melee"))
+            defense += max(1, self.smod("str", False) + self.skmod("melee"))
         return defense
 
-    def watch_damage(k, dmg, dmgto):
-        defense = k.watch_strength()
-        if k.equip and k.equip.type == "ranged":
-            k.gain_xp("marksman", (dmg + 10) * 1.5)
+    def watch_damage(self, dmg, dmgto):
+        defense = self.watch_strength()
+        if self.equip and self.equip.type == "ranged":
+            self.gain_xp("marksman", (dmg + 10) * 1.5)
         else:
-            k.gain_xp("melee", (dmg + 10) * 1.5)
-        if str(k.id) in dmgto:
-            if k.equip:
-                k.equip.lower_durability(dmgto[str(k.id)])
-            k.hp_tax(
-                dmgto[str(k.id)],
+            self.gain_xp("melee", (dmg + 10) * 1.5)
+        if str(self.id) in dmgto:
+            if self.equip:
+                self.equip.lower_durability(dmgto[str(self.id)])
+            self.hp_tax(
+                dmgto[str(self.id)],
                 "Killed in action",
                 dmgtype=choice(["bludgeoning", "slashing", "piercing"]),
             )
-            if k.save("wis") < 12:
-                k.add_trait("stressed")
+            if self.save("wis") < 12:
+                self.add_trait("stressed")
         return defense
 
     def spell_strength(self, spell):
@@ -2969,32 +2975,32 @@ class Kobold:
             s = math.ceil(s / 2)
         return s
 
-    def age_up(k):
-        console_print("aging up " + k.name)
-        oldmax = k.max_hp
+    def age_up(self):
+        console_print("aging up " + self.name)
+        oldmax = self.max_hp
         stch = list(STATS)
         for st in STATS:
-            k.s[st] += 1
-        if k.color == "silver":
+            self.s[st] += 1
+        if self.color == "silver":
             points = 6
-        elif k.color in ["brown", "orange", "purple"]:
+        elif self.color in ["brown", "orange", "purple"]:
             points = 4
         else:
             points = 3
-            k.s[COLOR_STAT[k.color]] += 1
-        if k.color == "orange":
+            self.s[COLOR_STAT[self.color]] += 1
+        if self.color == "orange":
             stch.extend(["str", "dex", "con"])
-        elif k.color == "purple":
+        elif self.color == "purple":
             stch.extend(["int", "wis", "cha"])
         while points > 0:
             if len(stch) == 0:
                 break  # shouldn't happen, but just in case
             st = choice(stch)
-            if k.s[st] < 14:
-                k.s[st] += 1
+            if self.s[st] < 14:
+                self.s[st] += 1
                 points -= 1
             stch.remove(st)
-        k.hp += k.max_hp - oldmax
+        self.hp += self.max_hp - oldmax
 
     def random_stats(self, color=None):
         points = 24
@@ -4936,7 +4942,7 @@ class Encounter:
             if spawned > 1:
                 try:
                     cr.name += " " + chr(a)
-                except:
+                except ValueError:
                     cr.name += "error"
             a += 1
             n -= max(1, cr.cr)
@@ -5221,21 +5227,21 @@ class Creature:
             ret = str(self.stats[stat]) + " [" + ret + "]"
         return ret
 
-    def watch_strength(k):
-        return (k.dmg[0] * k.dmg[1]) + k.dmg[2]
+    def watch_strength(self):
+        return (self.dmg[0] * self.dmg[1]) + self.dmg[2]
 
-    def watch_damage(k, dmg, dmgto):
-        defense = k.watch_strength()
-        if k.name in dmgto:
-            k.hp_tax(
-                dmgto[k.name],
+    def watch_damage(self, dmg, dmgto):
+        defense = self.watch_strength()
+        if self.name in dmgto:
+            self.hp_tax(
+                dmgto[self.name],
                 "Killed in action",
                 dmgtype=choice(["bludgeoning", "slashing", "piercing"]),
             )
         return defense
 
-    def mount_strength(k):
-        return max(0, (k.stats["str"] + k.stats["con"]) - 8) * 3
+    def mount_strength(self):
+        return max(0, (self.stats["str"] + self.stats["con"]) - 8) * 3
 
     def char_info(self, k, pr=True):
         title = "Creature info: " + self.display()
@@ -5355,7 +5361,7 @@ class Creature:
                 return self.party.owner.get_chan()
             else:
                 return self.get_place().get_chan()
-        except:
+        except TypeError:  # potential None or out of bound
             return "exception-log"
 
     def p(self, msg):
@@ -6812,7 +6818,7 @@ def cmd_cpgive(words, me, target):
     if len(words) > 1:
         try:
             am = int(words[2])
-        except:
+        except ValueError:
             am = 0
         if am <= 0:
             me.p("Please enter a positive number.")
@@ -8384,7 +8390,7 @@ async def cmd_me(words, me, chan):
     if len(words[1]) > 1000:
         await chan.send("Message must be 1000 characters or less.")
         return False
-    words[1] = words[1].replace("*", "\*")
+    words[1] = words[1].replace("*", r"\*")
     msg = "*" + me.display() + " " + words[1] + "*"
     await chan.send(msg)
     if me.party:
@@ -10318,13 +10324,13 @@ def cmd_roll(words, me, target):
             elif "+" in a:
                 try:
                     m += int(a.replace("+", ""))
-                except:
+                except ValueError:
                     me.p("'" + a + "' is not a number.")
                     return False
             elif "-" in a:
                 try:
                     m -= int(a.replace("-", ""))
-                except:
+                except ValueError:
                     me.p("'" + a + "' is not a number.")
                     return False
             else:
@@ -10432,7 +10438,7 @@ def cmd_spar(words, me, k):
 def cmd_tribe(words, me, target):
     try:
         k = find_kobold(words[2], me.get_place(), me.world)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound
         k = None
     cmds = ["new", "join", "leave", "invite"]
     if len(words) < 2 or words[1] not in cmds:
@@ -10579,7 +10585,7 @@ def cmd_party(words, me, target):
         k = find_kobold(words[2], place, me.world)
         if not k:
             k = find_creature_i(words[2], me)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     cmds = ["new", "join", "leave", "members", "invite", "kick", "leader"]
     if len(words) < 2 or words[1] not in cmds:
@@ -11209,8 +11215,8 @@ async def cmd_info(words, user, chan, w):
                 msg.append(b + ": " + dstr)
             elif b != "name" and b != "result" and b != "cmd":
                 m = b + ": " + str(a[0][b])
-                m = m.replace("*", "\*")
-                m = m.replace(":", "\:")
+                m = m.replace("*", r"\*")
+                m = m.replace(":", r"\:")
                 msg.append(m)
         embeds.append(
             discord.Embed(type="rich", title=title, description="\n".join(msg))
@@ -11572,8 +11578,8 @@ async def cmd_name(words, user, chan, w, wand=None):
     newbold.cp = newbold.max_cp
     if w != sandbox:
         try:
-            await user.edit(nick=name)
-        except:
+            await user.edit(nick=name)  # raises HTTPException, ValueError
+        except (discord.HTTPException, ValueError):
             pass
         for c in guild.channels:
             if "party" in c.name or "tribe" in c.name:
@@ -11868,7 +11874,7 @@ def find_building(name, lax=True):
 async def cmd_spawn(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         i = spawn_item(words[2], k)
@@ -11892,12 +11898,12 @@ async def cmd_unlockall(words, user, chan, w):
 async def cmd_spencounter(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         try:
             n = int(words[2])
-        except:
+        except (ValueError, IndexError):  # potential non-integer or out of bound index
             n = 1
         Encounter(w, k.get_place(), n, k.z, words[3])
     else:
@@ -11907,7 +11913,7 @@ async def cmd_spencounter(words, user, chan, w):
 async def cmd_tribefix(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         tribe = None
@@ -11936,7 +11942,7 @@ async def cmd_partyfix(words, user, chan, w):
 async def cmd_givespell(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         if words[2] in k.spells:
@@ -11954,7 +11960,7 @@ async def cmd_givespell(words, user, chan, w):
 async def cmd_familiarize(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         for r in research_data:
@@ -11967,12 +11973,12 @@ async def cmd_familiarize(words, user, chan, w):
 async def cmd_kvar(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         try:
             v = int(words[3])
-        except:
+        except (ValueError, IndexError):  # potential non-integer or out of bound index
             if words[3][0] == "t":
                 v = True
             elif words[3][0] == "f":
@@ -12010,7 +12016,7 @@ async def cmd_setheat(words, user, chan, w):
     if tribe:
         try:
             v = int(words[2])
-        except:
+        except (ValueError, IndexError):  # potential non-integer or out of bound index
             await chan.send("Invalid heat amount")
             return False
         tribe.heat_faction[words[3]] = v
@@ -12052,7 +12058,7 @@ async def cmd_tvar(words, user, chan, w):
     if tribe:
         try:
             v = int(words[3])
-        except:
+        except (ValueError, IndexError):  # potential non-integer or out of bound index
             if words[3][0] == "t":
                 v = True
             elif words[3][0] == "f":
@@ -12080,7 +12086,7 @@ async def cmd_tvar(words, user, chan, w):
 async def cmd_trait(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         if k.has_trait(words[2]):
@@ -12129,7 +12135,7 @@ async def cmd_landmark(words, user, chan, w):
     else:
         try:
             k = find_kobold(words[1], w=w)
-        except:
+        except (TypeError, IndexError):  # potential None or out of bound index
             k = None
         if k:
             t = k.get_place()
@@ -12151,7 +12157,7 @@ async def cmd_landmark(words, user, chan, w):
 async def cmd_findbold(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         await chan.send("Found " + k.get_name() + " at " + f"{k.x},{k.y},{k.z}")
@@ -12162,7 +12168,7 @@ async def cmd_findbold(words, user, chan, w):
 async def cmd_spawne(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         t = k.get_place()
@@ -12175,7 +12181,7 @@ async def cmd_spawne(words, user, chan, w):
 async def cmd_makechief(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k and k.tribe:
         k.tribe.chieftain = k
@@ -12187,7 +12193,7 @@ async def cmd_makechief(words, user, chan, w):
 async def cmd_ageup(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         while k.age < 6:
@@ -12201,7 +12207,7 @@ async def cmd_ageup(words, user, chan, w):
 async def cmd_forcetunnel(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         p = w.get_tile(k.x, k.y, k.z)
@@ -12230,12 +12236,12 @@ async def cmd_forcehatch(words, user, chan, w):
 async def cmd_forceegg(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         try:
             l = find_kobold(words[2], w=w)
-        except:
+        except (TypeError, IndexError):  # potential None or out of bound index
             l = None
         if l:
             egg = spawn_item("Kobold Egg", l)
@@ -12248,12 +12254,12 @@ async def cmd_forceegg(words, user, chan, w):
 async def cmd_forcebreed(words, user, chan, w):
     try:
         k = find_kobold(words[1], w=w)
-    except:
+    except (TypeError, IndexError):  # potential None or out of bound index
         k = None
     if k:
         try:
             l = find_kobold(words[2], w=w)
-        except:
+        except (TypeError, IndexError):  # potential None or out of bound index
             l = None
         if l:
             k.breed(l, force=True)
@@ -12304,7 +12310,7 @@ async def cmd_reset(words, user, chan, w):
             if k.d_user_id and k.nick:
                 try:
                     k.die("Big Crunch")
-                except:
+                except Exception:  # figure it out when documenting
                     console_print("Couldn't kill " + k.get_name())
                     await log_exception()
         for p in playerdata:
@@ -12402,9 +12408,9 @@ async def confirm_prompt(chan, msg, confirm=None):
             to = 180.0
         try:
             res = await clive.wait_for("reaction_add", timeout=to, check=check)
-        except:
+        except asyncio.TimeoutError:
             res = None
-        if res == None:
+        if res is None:
             break
         # Example: 'MyBot#1111'
         if str(res[1]) != BOT_NAME and (not confirm or res[1] == confirm):
@@ -12412,8 +12418,8 @@ async def confirm_prompt(chan, msg, confirm=None):
             if not isinstance(chan, discord.DMChannel):
                 await message.remove_reaction(res[0].emoji, res[1])
     try:
-        await message.delete()
-    except:
+        await message.delete()  # raises discord.HTTPException
+    except discord.HTTPException:
         pass
     return conf
 
@@ -12431,25 +12437,33 @@ async def embed_group(chan, embeds, confirm=None):
     while True:
         if emoji == "⏮":
             i = 0
-            await message.edit(embed=embeds[i])
+            await message.edit(
+                embed=embeds[i]
+            )  # raises discord.HTTPException, TypeError
         elif emoji == "◀":
             i -= 1
             if i < 0:
                 i = len(embeds) - 1
-            await message.edit(embed=embeds[i])
+            await message.edit(
+                embed=embeds[i]
+            )  # raises discord.HTTPException, TypeError
         elif emoji == "▶":
             i += 1
             if i > len(embeds) - 1:
                 i = 0
-            await message.edit(embed=embeds[i])
+            await message.edit(
+                embed=embeds[i]
+            )  # raises discord.HTTPException, TypeError
         elif emoji == "⏭":
             i = len(embeds) - 1
-            await message.edit(embed=embeds[i])
+            await message.edit(
+                embed=embeds[i]
+            )  # raises discord.HTTPException, TypeError
         elif emoji == "✅":
-            await message.delete()
+            await message.delete()  # raises discord.HTTPException
             return i
         elif emoji == "❌":
-            await message.delete()
+            await message.delete()  # raises discord.HTTPException
             return None
 
         def check(m, shrug):
@@ -12460,9 +12474,9 @@ async def embed_group(chan, embeds, confirm=None):
             to = 180.0
         try:
             res = await clive.wait_for("reaction_add", timeout=to, check=check)
-        except:
+        except asyncio.TimeoutError:
             res = None
-        if res == None:
+        if res is None:
             break
         # Example: 'MyBot#1111'
         if str(res[1]) != BOT_NAME and (not confirm or res[1] == confirm):
@@ -12471,13 +12485,15 @@ async def embed_group(chan, embeds, confirm=None):
                 await message.remove_reaction(res[0].emoji, res[1])
     try:
         if not isinstance(chan, discord.DMChannel):
-            await message.clear_reactions()
+            await message.clear_reactions()  # raises discord.HTTPException, TypeError
         if confirm:
-            await message.delete()
+            await message.delete()  # raises discord.HTTPException
         else:
             embeds[i].set_footer(text="")
-            await message.edit(embed=embeds[i])
-    except:
+            await message.edit(
+                embed=embeds[i]
+            )  # raises discord.HTTPException, TypeError
+    except (discord.HTTPException, TypeError):
         pass
     return None
 
@@ -12581,16 +12597,16 @@ async def edit_wanderer(chan, user=None):
         msg += "Info: Click :arrow_up:/:arrow_down: to select a stat, and :arrow_backward:/:arrow_forward: to decrease or increase that stat. Color is determined based on the highest stat, or brown if there's a tie. Stats must be in the range of 6-14 inclusive.\n:game_die: - Randomize stats\n:name_badge: - Randomize birth name\n:transgender_symbol: - Switch sex\n:x: - Close this screen (edits will remain intact but not be saved)\nTo finalize and give your wanderer a tribal name, use `!wanderer save <name>`. If this times out, use `!wanderer edit` to bring this screen back up (current edits will remain intact)."
         e = discord.Embed(type="rich", title="Editing wanderer", description=msg)
         e.set_footer(text="React to make changes.")
-        await message.edit(embed=e)
+        await message.edit(embed=e)  # raises discord.HTTPException, TypeError
 
         def check(m, shrug):
             return m.message == message
 
         try:
             res = await clive.wait_for("reaction_add", timeout=180.0, check=check)
-        except:
+        except asyncio.TimeoutError:
             res = None
-        if res == None:
+        if res is None:
             break
         if str(res[1]) != BOT_NAME and (
             not user or res[1] == user
@@ -12601,7 +12617,7 @@ async def edit_wanderer(chan, user=None):
     if not isinstance(chan, discord.DMChannel):
         await message.clear_reactions()
     e.set_footer(text="")
-    await message.edit(embed=e)
+    await message.edit(embed=e)  # raises discord.HTTPException, TypeError
     return None
 
 
@@ -12685,7 +12701,10 @@ async def cmd_task(words, me, chan):
             s = None
             try:
                 s = int(words[2])
-            except:
+            except (
+                ValueError,
+                IndexError,
+            ):  # potential non-integer or out of bound index
                 for a in me.tribe.tasks:
                     if words[2] in a[0]:
                         s = me.tribe.tasks.index(a)
@@ -12729,7 +12748,10 @@ async def cmd_task(words, me, chan):
                         return False
                 try:
                     int(words[4])
-                except:
+                except (
+                    ValueError,
+                    IndexError,
+                ):  # potential non-integer or out of bound index
                     await chan.send(
                         "'" + str(words[4]) + "' (argument1) is not a valid number."
                     )
@@ -12749,7 +12771,10 @@ async def cmd_task(words, me, chan):
             s = None
             try:
                 s = int(words[2])
-            except:
+            except (
+                ValueError,
+                IndexError,
+            ):  # potential non-integer or out of bound index
                 for a in me.tribe.tasks:
                     if words[2] in a[0]:
                         s = me.tribe.tasks.index(a)
@@ -12774,7 +12799,10 @@ async def cmd_task(words, me, chan):
             s = None
             try:
                 s = int(words[2])
-            except:
+            except (
+                ValueError,
+                IndexError,
+            ):  # potential non-integer or out of bound index
                 for a in me.tribe.tasks:
                     if words[2] in a[0]:
                         s = me.tribe.tasks.index(a)
@@ -12788,11 +12816,17 @@ async def cmd_task(words, me, chan):
         elif words[1] == "move":
             try:
                 s = int(words[2])
-            except:
+            except (
+                ValueError,
+                IndexError,
+            ):  # potential non-integer or out of bound index
                 s = None
             try:
                 t = int(words[3])
-            except:
+            except (
+                ValueError,
+                IndexError,
+            ):  # potential non-integer or out of bound index
                 t = None
             if s is not None and t is not None:
                 (me.tribe.tasks[s], me.tribe.tasks[t]) = (
@@ -12949,7 +12983,7 @@ async def cmd_routine(words, user, chan, w):
         s = None
         try:
             s = int(words[2])
-        except:
+        except (ValueError, IndexError):  # potential non-integer or out of bound index
             for a in playerdata[pid]["rediting"]:
                 if a == words[2]:
                     s = playerdata[pid]["rediting"].index(a)
@@ -12964,11 +12998,11 @@ async def cmd_routine(words, user, chan, w):
     elif words[1] == "move":
         try:
             s = int(words[2])
-        except:
+        except (ValueError, IndexError):  # potential non-integer or out of bound index
             s = None
         try:
             t = int(words[3])
-        except:
+        except (ValueError, IndexError):  # potential non-integer or out of bound index
             t = None
         if s is not None and t is not None:
             (playerdata[pid]["rediting"][s], playerdata[pid]["rediting"][t]) = (
@@ -13116,7 +13150,7 @@ async def do_action_queue():
                 if channel and len(a) > 2:
                     await channel.send(None, embed=a[2])
                 toremove.append(a)
-            except:
+            except Exception:  # figure it out when documenting
                 console_print("Couldn't send embed")
                 await log_exception()
         if a[0] == "newchan":
@@ -13141,7 +13175,7 @@ async def do_action_queue():
                         a[1], overwrites=overwrites
                     )
                 toremove.append(a)
-            except:
+            except Exception:  # figure it out when documenting
                 console_print("Couldn't make a channel")
                 await log_exception()
         if a[0] == "delchan":
@@ -13149,9 +13183,9 @@ async def do_action_queue():
                 if len(a) < 2 or time.time() > a[2]:
                     channel = discord.utils.get(guild.channels, name=a[1])
                     if channel:
-                        await channel.delete()
+                        await channel.delete()  # raises discord.HTTPException
                     toremove.append(a)
-            except:
+            except discord.HTTPException:
                 console_print("Couldn't delete a channel")
                 # await log_exception()
         if a[0] == "addrole":
@@ -13161,7 +13195,7 @@ async def do_action_queue():
                     role = discord.utils.get(guild.roles, name=a[1])
                     await m.add_roles(role)
                 toremove.append(a)
-            except:
+            except (discord.Forbidden, discord.HTTPException):
                 console_print("Couldn't add role to member")
                 await log_exception()
         if a[0] == "delrole":
@@ -13171,7 +13205,7 @@ async def do_action_queue():
                     role = discord.utils.get(guild.roles, name=a[1])
                     await m.remove_roles(role)
                 toremove.append(a)
-            except:
+            except Exception:  # figure it out when documenting
                 console_print("Couldn't add role to member")
                 await log_exception()
         if a[0] == "addmember":
@@ -13184,7 +13218,11 @@ async def do_action_queue():
                             m, overwrite=discord.PermissionOverwrite(read_messages=True)
                         )
                 toremove.append(a)
-            except:
+            except (
+                TypeError,
+                ValueError,
+                discord.HTTPException,
+            ):
                 console_print("Couldn't add member to channel")
                 await log_exception()
         if a[0] == "delmember":
@@ -13198,7 +13236,11 @@ async def do_action_queue():
                             overwrite=discord.PermissionOverwrite(read_messages=False),
                         )
                 toremove.append(a)
-            except:
+            except (
+                TypeError,
+                ValueError,
+                discord.HTTPException,
+            ):
                 console_print("Couldn't remove member from channel")
                 await log_exception()
     for x in toremove:
@@ -13623,7 +13665,7 @@ async def handle_tasks(w):
                                 break
                         if "expand" in cmd and tile.farm_cap >= 1000:
                             break
-                    except:
+                    except Exception:  # figure it out when documenting
                         await log_exception(
                             "Task for tribe " + str(t.id) + ": `" + cmd + "`"
                         )
@@ -13653,7 +13695,7 @@ async def main_loop():
                     await handle_final_orders(world)
                     await handle_tasks(world)
                     world.month_change()
-        except:
+        except Exception:  # figure it out when documenting
             await log_exception()
             if sta:
                 for t in world.tribes:
@@ -13755,7 +13797,7 @@ async def on_message(message):
     try:
         num = int(teest[0])
         message.content = message.content.replace(str(num), "", 1)
-    except:
+    except ValueError:
         num = 1
     me = None
     allmembers = [None]
@@ -14213,7 +14255,7 @@ async def handle_message(message, num=1):
                         for b in wordwords:
                             try:
                                 num = int(b)
-                            except:
+                            except ValueError:
                                 pass
                             if num > 0:
                                 wordwords.remove(b)
@@ -14372,14 +14414,14 @@ async def handle_message(message, num=1):
                             if alldone:
                                 engage.enemy_turn(me.party)
                     try:
-                        await message.delete()
-                    except:
+                        await message.delete()  # raises discord.HTTPException
+                    except discord.HTTPException:
                         pass
                     return True
             else:
                 await chan.send("Command not found.")
                 return
-    except:
+    except Exception:  # figure it out when documenting
         if chan:
             await chan.send(
                 "Your command resulted in an error. The dev has been notified."
@@ -14408,7 +14450,7 @@ async def handle_message(message, num=1):
 
 try:
     load_game()
-except:
+except Exception:  # figure it out when documenting
     console_print("There was a problem running load_game")
     m = traceback.format_exc().split("\n")
     console_print(m)
