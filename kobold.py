@@ -13025,7 +13025,7 @@ async def do_action_queue():
                     await m.add_roles(role)
                 toremove.append(a)
             except (discord.Forbidden, discord.HTTPException):
-                console_print("Couldn't add role to member")
+                console_print(f"Couldn't add role {a[1]} to member")
                 await log_exception()
         if a[0] == "delrole":
             try:
@@ -13035,7 +13035,7 @@ async def do_action_queue():
                     await m.remove_roles(role)
                 toremove.append(a)
             except Exception:  # figure it out when documenting
-                console_print("Couldn't add role to member")
+                console_print(f"Couldn't remove role {a[1]} from member")
                 await log_exception()
         if a[0] == "addmember":
             try:
