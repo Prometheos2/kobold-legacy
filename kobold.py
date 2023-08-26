@@ -1516,17 +1516,14 @@ class Dungeon:
         self.generate()
 
     def get_tile(self, x, y, z, gen=True):
-        if x < 0:
-            return None
-        elif x > dungeon_data[self.d]["dimensions"][0]:
-            return None
-        elif y < 0:
-            return None
-        elif y > dungeon_data[self.d]["dimensions"][1]:
-            return None
-        elif z < 0:
-            return None
-        elif z > dungeon_data[self.d]["dimensions"][2]:
+        if (
+            x < 0
+            or x > dungeon_data[self.d]["dimensions"][0]
+            or y < 0
+            or y > dungeon_data[self.d]["dimensions"][1]
+            or z < 0
+            or z > dungeon_data[self.d]["dimensions"][2]
+        ):
             return None
         m = str(x) + "," + str(y) + "," + str(z)
         # console_print("getting tile "+m)
@@ -1780,11 +1777,10 @@ class Tribe:
     def has_building(self, build):
         has = False
         for b in self.buildings:
-            if b not in self.building_health or self.building_health[b] > 50:
-                if b == build:
-                    has = True
-                elif find_building(b).get("counts_as", "none") == build:
-                    has = True
+            if (b not in self.building_health or self.building_health[b] > 50) and (
+                b == build or find_building(b).get("counts_as", "none") == build
+            ):
+                has = True
         return has
 
     def get_population(self):
@@ -2568,10 +2564,11 @@ class Kobold:
 
     @property
     def shaded(self):
-        if self.z != 0 or self.dungeon:
-            return True
-        elif self.has_trait("shade") or (
-            self.equip and self.equip.name == "Silk Parasol"
+        if (
+            self.z != 0
+            or self.dungeon
+            or self.has_trait("shade")
+            or (self.equip and self.equip.name == "Silk Parasol")
         ):
             return True
         else:
@@ -2584,9 +2581,7 @@ class Kobold:
     @property
     def stealth(self):
         st = self.smod("dex") + self.skmod("stealth")
-        if self.has_trait("invisible"):
-            st += 10
-        elif self.has_trait("notrace"):
+        if self.has_trait("invisible") or self.has_trait("notrace"):
             st += 10
         return st
 
@@ -11035,9 +11030,7 @@ async def cmd_info(words, user, chan, w):
             words[1] in r["cmd"].lower() or words[1] in r.get("synonyms", [])
         ) and not r.get("console", False):
             info.append([r, "Command"])
-        if words[1] in r.lower():
-            info.append([skill_data[r], "Skill"])
-        elif words[1] == skill_data[r]["stat"].lower():
+        if words[1] in r.lower() or words[1] == skill_data[r]["stat"].lower():
             info.append([skill_data[r], "Skill"])
     embeds = []
     for a in info:
@@ -11669,9 +11662,7 @@ def find_kobold(name, area=None, w=None):
 
 def find_spell(name, lax=True):
     for s in spell_data:
-        if s["name"] == name:
-            return s
-        elif lax and name.lower() in s["name"].lower():
+        if s["name"] == name or (lax and name.lower() in s["name"].lower()):
             return s
     return None
 
@@ -11692,27 +11683,21 @@ def find_craft(name, lax=True):
 
 def find_creature(name, lax=True):
     for c in creature_data:
-        if c["name"] == name:
-            return c
-        elif lax and name.lower() in c["name"].lower():
+        if c["name"] == name or (lax and name.lower() in c["name"].lower()):
             return c
     return None
 
 
 def find_research(name, lax=True):
     for r in research_data:
-        if r["name"] == name:
-            return r
-        elif lax and name.lower() in r["name"].lower():
+        if r["name"] == name or (lax and name.lower() in r["name"].lower()):
             return r
     return None
 
 
 def find_building(name, lax=True):
     for r in building_data:
-        if r["name"] == name:
-            return r
-        elif lax and name.lower() in r["name"].lower():
+        if r["name"] == name or (lax and name.lower() in r["name"].lower()):
             return r
     return None
 
@@ -13452,25 +13437,23 @@ async def handle_tasks(w):
                         break
                     times += 1
                     try:
-                        if d[1]:
-                            if d[1] == "times" and times >= int(d[2]):
-                                break
-                            elif (
+                        if (
+                            d[1]
+                            and (d[1] == "times" and times >= int(d[2]))
+                            or (
                                 hasattr(t, d[1])
                                 and isinstance(getattr(t, d[1]), int)
                                 and getattr(t, d[1]) >= int(d[2])
-                            ):
-                                break
-                            elif (
+                            )
+                            or (
                                 d[1] == "farm_prog"
                                 and d[3] in tile.farming_prog
                                 and tile.farming_prog[d[3]] >= int(d[2])
-                            ):
-                                break
-                            elif d[1] == "farm_cap" and tile.farm_cap >= int(d[2]):
-                                break
-                            elif d[1] == "items" and t.has_item(d[3], int(d[2])):
-                                break
+                            )
+                            or (d[1] == "farm_cap" and tile.farm_cap >= int(d[2]))
+                            or (d[1] == "items" and t.has_item(d[3], int(d[2])))
+                        ):
+                            break
                         if len(words) > 1 and words[1].lower() in t.justbuilt.lower():
                             b = {}
                             if "build" in cmd:
@@ -13999,9 +13982,9 @@ async def handle_message(message, num=1):
                     words[len(words) - 1] += " -first"
                 if targ == "living":
                     s = args[a.get("targ_arg", len(args) - 1)].lower()
-                    if len(args) <= 1 and a.get("target_self_if_omitted", False):
-                        target = me
-                    elif s in ["self", "me", "myself"]:
+                    if (
+                        len(args) <= 1 and a.get("target_self_if_omitted", False)
+                    ) or s in ["self", "me", "myself"]:
                         target = me
                     elif s in [
                         "anyone",
@@ -14037,9 +14020,9 @@ async def handle_message(message, num=1):
                         return
                 if targ == "kobold":
                     s = args[a.get("targ_arg", len(args) - 1)].lower()
-                    if len(args) <= 1 and a.get("target_self_if_omitted", False):
-                        target = me
-                    elif s in ["self", "me", "myself"]:
+                    if (
+                        len(args) <= 1 and a.get("target_self_if_omitted", False)
+                    ) or s in ["self", "me", "myself"]:
                         target = me
                     elif s in [
                         "anyone",
