@@ -1775,13 +1775,12 @@ class Tribe:
         self.building_health[build] -= dmg
 
     def has_building(self, build):
-        has = False
         for b in self.buildings:
             if (b not in self.building_health or self.building_health[b] > 50) and (
                 b == build or find_building(b).get("counts_as", "none") == build
             ):
-                has = True
-        return has
+                return True
+        return False
 
     def get_population(self):
         p = 0
