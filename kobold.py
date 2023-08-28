@@ -180,8 +180,8 @@ def tribe_name():
 def choice(ch):
     if len(ch) == 0:
         return None
-    else:
-        return random.choice(ch)
+
+    return random.choice(ch)
 
 
 def chance(ch):
@@ -212,8 +212,8 @@ def has_item(self, name, q=1):
             # console_print(i.name+" fits the bill")
             if i.num >= q:
                 return i
-            else:
-                q -= i.num
+
+            q -= i.num
     return None
 
 
@@ -320,14 +320,15 @@ def get_dir(ct, k):
     if abs(ct.x - k.x) > abs(ct.y - k.y):
         if ct.x < k.x:
             return "west"
-        elif ct.x > k.x:
+        if ct.x > k.x:
             return "east"
-    elif ct.y < k.y:
+        return None
+    if ct.y < k.y:
         return "north"
-    elif ct.y > k.y:
+    if ct.y > k.y:
         return "south"
-    else:
-        return "same"
+
+    return "same"
 
 
 class World:
@@ -351,7 +352,7 @@ class World:
         c = ",".join([str(x), str(y), str(z)])
         if c in self.map:
             return self.map[c]
-        elif gen:
+        if gen:
             self.map[c] = Tile(self, x, y, z)
             return self.map[c]
         return None
@@ -1226,8 +1227,7 @@ class Tile:
             "s": (self.x, self.y + 1, self.z),
             "n": (self.x, self.y - 1, self.z),
         }
-        t = self.world.get_tile(borders[d][0], borders[d][1], borders[d][2])
-        return t
+        return self.world.get_tile(borders[d][0], borders[d][1], borders[d][2])
 
     def get_available_builds(self, k=None):
         ar = []
@@ -1318,15 +1318,11 @@ class Tile:
                 if place.has_item(arg[0], int(arg[1])):
                     place.consume_item(arg[0], int(arg[1]))
                     break
-                else:
-                    console_print(
-                        "Could not consume "
-                        + b
-                        + " when building "
-                        + res["name"]
-                        + ".",
-                        True,
-                    )
+
+                console_print(
+                    "Could not consume " + b + " when building " + res["name"] + ".",
+                    True,
+                )
         if " Farm" in res["name"]:
             self.farm_cap = (
                 200  # silly but effective fix for "farm fencing" resetting cap
@@ -1374,6 +1370,7 @@ class Tile:
         for k in self.world.kobold_list:
             if k.get_place() == self:
                 return k.get_chan()
+        return None
 
     def examine(self, me):
         dgn = me.dungeon
@@ -1516,7 +1513,7 @@ class Dungeon:
         # console_print("getting tile "+m)
         if m in self.map:
             return self.map[m]
-        elif gen:
+        if gen:
             self.map[m] = Tile(self.world, x, y, z, self)
             if chance(50):
                 forage(self.map[m], dgn=self)
@@ -1536,8 +1533,8 @@ class Dungeon:
                         if not done:
                             spawn_item("Dungeon Key", self.map[kr])
             return self.map[m]
-        else:
-            return None
+
+        return None
 
     def extend(self, gpos):
         ot = self.get_tile(gpos[0], gpos[1], gpos[2])
@@ -1748,9 +1745,7 @@ class Tribe:
             game_print(build + " was destroyed!", self.get_chan())
             self.unfinish_building(find_building(build))
             return
-        elif (
-            self.building_health[build] >= 50 and self.building_health[build] - dmg < 50
-        ):
+        if self.building_health[build] >= 50 and self.building_health[build] - dmg < 50:
             game_print(
                 build
                 + " took "
@@ -2062,15 +2057,11 @@ class Tribe:
                 if self.has_item(arg[0], int(arg[1])):
                     self.consume_item(arg[0], int(arg[1]))
                     break
-                else:
-                    console_print(
-                        "Could not consume "
-                        + b
-                        + " when building "
-                        + res["name"]
-                        + ".",
-                        True,
-                    )
+
+                console_print(
+                    "Could not consume " + b + " when building " + res["name"] + ".",
+                    True,
+                )
         if res["name"] == "Reservoir":
             self.water_max += 25
         if (
@@ -2227,7 +2218,7 @@ class Tribe:
                 self.heat_faction[f] += h
                 # console_print("Adding raw heat now "+str(self.heat_faction[faction]))
                 continue
-            elif self.heat_faction[f] <= self.shc_faction[f]:
+            if self.heat_faction[f] <= self.shc_faction[f]:
                 h -= self.shc_faction[f] - self.heat_faction[f]
                 self.heat_faction[f] = self.shc_faction[f]
             self.heat_faction[f] += h / 5
@@ -2494,8 +2485,8 @@ class Kobold:
     def max_mp(self):
         if len(self.spells) > 0:
             return self.s["int"] + self.skmod("arcana") + self.skmod("sorcery")
-        else:
-            return 0
+
+        return 0
 
     @property
     def max_ap(self):
@@ -2552,12 +2543,12 @@ class Kobold:
             or (self.equip and self.equip.name == "Silk Parasol")
         ):
             return True
-        else:
-            for w in self.worn_items():
-                if w.name in ["Sunglasses", "Outback Hat"]:
-                    return True
-            p = self.get_place()
-            return bool(isinstance(p, Tribe) and "Thatched Roof" in p.buildings)
+
+        for w in self.worn_items():
+            if w.name in ["Sunglasses", "Outback Hat"]:
+                return True
+        p = self.get_place()
+        return bool(isinstance(p, Tribe) and "Thatched Roof" in p.buildings)
 
     @property
     def stealth(self):
@@ -2577,9 +2568,8 @@ class Kobold:
     def familiar(self, r):
         res = find_research(r)
         if r in self.familiarity:
-            fam = math.floor(self.familiarity[r] / res["diff"])
+            return math.floor(self.familiarity[r] / res["diff"])
             # console_print(self.get_name()+" familiar with "+r+" = "+str(fam))
-            return fam
         return 0
 
     def get_familiar(self, r, n):
@@ -2619,14 +2609,14 @@ class Kobold:
                         dmgtype="poison",
                     )
             return True
-        else:
-            self.p(
-                "[n] doesn't have enough AP. (need "
-                + str(n)
-                + ", have "
-                + str(self.ap)
-                + ")"
-            )
+
+        self.p(
+            "[n] doesn't have enough AP. (need "
+            + str(n)
+            + ", have "
+            + str(self.ap)
+            + ")"
+        )
         return False
 
     def stat_str(self, stat):
@@ -2717,8 +2707,9 @@ class Kobold:
             self.dungeon = None
             tile = self.world.get_tile(self.x, self.y, self.z)
         tribe = tile.get_tribe()
-        t = tribe if tribe and (self in tribe.kobolds or self in tribe.tavern) else tile
-        return t
+        return (
+            tribe if tribe and (self in tribe.kobolds or self in tribe.tavern) else tile
+        )
 
     def show_wares(self, multi, sale=False):
         wares = []
@@ -2732,8 +2723,8 @@ class Kobold:
                 )
         if sale:
             return self.display() + "'s items (sell price):\n" + ", ".join(wares)
-        else:
-            return self.display() + "'s items (buy price):\n" + ", ".join(wares)
+
+        return self.display() + "'s items (buy price):\n" + ", ".join(wares)
 
     def get_wares(self, worth=100):
         wares = {}
@@ -2766,18 +2757,18 @@ class Kobold:
         place = self.get_place()
         if isinstance(place, Tribe):
             return "tribe-" + str(place.id) + "-log"
-        elif self.party:
+        if self.party:
             return self.party.chan
-        elif self.commandedby and self.commandedby.get_place() == place:
+        if self.commandedby and self.commandedby.get_place() == place:
             return self.commandedby.get_chan()
-        else:
-            return "exception-log"
+
+        return "exception-log"
 
     def get_name(self):
         if self.nick:
             return self.nick
-        else:
-            return self.name
+
+        return self.name
 
     def has_item(self, name, q=1):
         return has_item(self, name, q)
@@ -2824,19 +2815,19 @@ class Kobold:
             if self.has_trait("hydrated"):
                 self.p("[n] is already well-hydrated.")
                 return False
+
+            self.add_trait("hydrated")
+            if l.get("ap", 0) > 0:
+                self.p(
+                    "[n] guzzles down their "
+                    + liquid
+                    + " and gains "
+                    + str(l["ap"])
+                    + " AP. Refreshing!"
+                )
+                self.ap_gain(l["ap"], False)
             else:
-                self.add_trait("hydrated")
-                if l.get("ap", 0) > 0:
-                    self.p(
-                        "[n] guzzles down their "
-                        + liquid
-                        + " and gains "
-                        + str(l["ap"])
-                        + " AP. Refreshing!"
-                    )
-                    self.ap_gain(l["ap"], False)
-                else:
-                    self.p("[n] guzzles down their " + liquid + ". Refreshing!")
+                self.p("[n] guzzles down their " + liquid + ". Refreshing!")
         if l.get("hp", 0) > 0:
             self.hp_gain(l["hp"])
         elif l.get("hp", 0) < 0:
@@ -2964,13 +2955,13 @@ class Kobold:
         purple = self.s["int"] + self.s["wis"] + self.s["cha"]
         if orange > purple + 10:
             return "orange"
-        elif purple > orange + 10:
+        if purple > orange + 10:
             return "purple"
         m = sorted(self.s.items(), key=lambda kv: kv[1])
         if m[4][1] == m[5][1]:
             return "brown"
-        else:
-            return STAT_COLOR[m[5][0]]
+
+        return STAT_COLOR[m[5][0]]
 
     def random_skills(self):
         pass
@@ -3225,8 +3216,8 @@ class Kobold:
                 n = math.ceil(n / 2)
             self.hp_tax(n, "Accident")
             return True
-        else:
-            return False
+
+        return False
 
     def mp_gain(self, n):
         self.mp += n
@@ -3241,14 +3232,14 @@ class Kobold:
             self.mp -= n
             self.p("[n] spends " + str(n) + " mana (remaining: " + str(self.mp) + ")")
             return True
-        else:
-            self.p(
-                "[n] doesn't have enough mana. (need "
-                + str(n)
-                + ", have "
-                + str(self.mp)
-                + ")"
-            )
+
+        self.p(
+            "[n] doesn't have enough mana. (need "
+            + str(n)
+            + ", have "
+            + str(self.mp)
+            + ")"
+        )
         return False
 
     def hp_gain(self, n):
@@ -3352,12 +3343,11 @@ class Kobold:
             + str(playerdata[str(self.d_user_id)]["sp"])
             + " Soul Points."
         )
-        embed = discord.Embed(
+        return discord.Embed(
             type="rich",
             title=":skull_crossbones: **You are dead!** Cause: " + cause,
             description=msg,
         )
-        return embed
 
     def despawn(self):
         if self in self.world.kobold_list:
@@ -3698,8 +3688,8 @@ class Party:
             result = self.members[self.member_index]
             self.member_index += 1
             return result
-        else:
-            raise StopIteration
+
+        raise StopIteration
 
     @property
     def k_members(self):
@@ -4134,8 +4124,8 @@ class Item:
                 ]
             )
             return d
-        else:
-            return discord.Embed(type="rich", title=title, description=d)
+
+        return discord.Embed(type="rich", title=title, description=d)
 
     def move(self, to, tumble=False):
         if not isinstance(to, Item) and not isinstance(to, list):
@@ -4243,9 +4233,9 @@ class Item:
                 "exception-log",
             )
             return True
-        elif self.type == "container":
+        if self.type == "container":
             return self.drink_from(k)
-        elif self.name == "Thesis":
+        if self.name == "Thesis":
             if not isinstance(k.get_place(), Tribe):
                 k.p("Must be used in a den.")
                 return False
@@ -4265,7 +4255,7 @@ class Item:
             )
             self.destroy("Knowledge applied")
             return True
-        elif self.type == "food":
+        if self.type == "food":
             if not k.has_trait("fed"):
                 k.add_trait("fed")
                 k.del_trait("starving")
@@ -4315,8 +4305,8 @@ class Item:
                 if self.num <= 0:
                     self.destroy("Eaten")
                 return True
-            else:
-                k.p("[n] has already eaten recently.")
+
+            k.p("[n] has already eaten recently.")
         elif self.name == "Peg Leg":
             if k.has_trait("oneleg"):
                 k.del_trait("oneleg")
@@ -4343,7 +4333,7 @@ class Item:
             else:
                 k.p(self.note)
             return True
-        elif self.name == "Crude Map":
+        if self.name == "Crude Map":
             self.map_update(k)
             for i in k.items:
                 if i.name == "Crude Map" and i != self:
@@ -4351,7 +4341,7 @@ class Item:
                     k.p("[n] copies information from each of their maps to the other.")
             self.map_render(k)
             return True
-        elif self.name == "Manacite":
+        if self.name == "Manacite":
             sp = []
             if not k.has_trait("manacite"):
                 k.p(
@@ -4392,7 +4382,7 @@ class Item:
             k.add_trait("manacite")
             self.destroy("Manacite used")
             return True
-        elif self.name == "Charged Mana Cell":
+        if self.name == "Charged Mana Cell":
             ma = min(10, math.floor(k.skmod("arcana") / 2) + 5)
             if len(k.spells) == 0 or k.has_trait("manacite"):
                 k.p(
@@ -4413,7 +4403,7 @@ class Item:
             self.destroy("Took in mana")
             spawn_item("Inert Mana Cell", k)
             return True
-        elif self.name == "Inert Mana Cell":
+        if self.name == "Inert Mana Cell":
             if k.mp_tax(10):
                 k.p(
                     "[n] presses the Mana Cell between their hands and the blue energy flows from their body into the cell, charging it."
@@ -4423,7 +4413,7 @@ class Item:
                 k.gain_xp("arcana", 10)
                 return True
             return False
-        elif self.name == "Ant Pheromonal Gland":
+        if self.name == "Ant Pheromonal Gland":
             place = k.get_place()
             if isinstance(place, Tribe):
                 k.p("You do NOT want to use that in the den, trust me on this.")
@@ -4460,7 +4450,7 @@ class Item:
                 k.p("The Ant Pheromonal Gland is depleted.")
                 self.destroy("Depleted")
             return True
-        elif self.name == "Tin Rod":
+        if self.name == "Tin Rod":
             ct = k.world.find_tile_feature(10, k, "Raw Manacite", "resources", gen=True)
             k.p("[n] holds out the Tin Rod and feels out the vibrations within...")
             if ct:
@@ -4476,7 +4466,7 @@ class Item:
             else:
                 k.p("The rod is completely still.")
             return True
-        elif self.name == "Flare Wand":
+        if self.name == "Flare Wand":
             tribes = [
                 t for t in k.world.tribes if get_tri_distance(k.x, k.y, t.x, t.y) < 15
             ]
@@ -4510,7 +4500,7 @@ class Item:
                     "The flare wand is warm but unresponsive. There must not be anyone nearby to receive the signal..."
                 )
             return True
-        elif self.name == "Crystal Ball":
+        if self.name == "Crystal Ball":
             k.p("[n] peers into the crystal ball...")
             ct = None
             if chance(50):
@@ -5201,15 +5191,15 @@ class Creature:
     def get_place(self):
         if self.encounter:
             return self.encounter.place
-        elif self.party:
+        if self.party:
             return self.party.owner.get_place()
-        else:
-            for t in self.world.tribes:
-                if self in t.kennel:
-                    return t
-            for m in self.world.map:
-                if self in self.world.map[m].pasture:
-                    return self.world.map[m]
+
+        for t in self.world.tribes:
+            if self in t.kennel:
+                return t
+        for m in self.world.map:
+            if self in self.world.map[m].pasture:
+                return self.world.map[m]
         return None
 
     def smod(self, stat, rand=True):  # this is the CREATURE smod
@@ -5237,8 +5227,8 @@ class Creature:
         try:
             if self.party:
                 return self.party.owner.get_chan()
-            else:
-                return self.get_place().get_chan()
+
+            return self.get_place().get_chan()
         except TypeError:  # potential None or out of bound
             return "exception-log"
 
@@ -5419,6 +5409,7 @@ class Creature:
             return self.attack(target)
         self.p("[n] casts Cure Wounds!")
         worst.hp_gain(droll(1, 8) + self.smod("wis"))
+        return None
 
     def smite(self, target):
         if self.attack(target):
@@ -5481,11 +5472,11 @@ def attack_roll(self, target, bonus=0, guarding=False, sparring=False):
         if self.save("dex") < 11:
             game_print(self.display() + " slips on the grease and falls prone!", chan)
             return 0
-        else:
-            game_print(
-                self.display() + " manages to work their way out of the grease.", chan
-            )
-            self.del_trait("greased")
+
+        game_print(
+            self.display() + " manages to work their way out of the grease.", chan
+        )
+        self.del_trait("greased")
     for t in target.traits:
         if trait_data[t].get("target_adv", 0) != 0:
             adv += trait_data[t]["target_adv"]
@@ -5600,8 +5591,8 @@ def droll(dice, sides, adv=0):
         roll.append(r)
     if adv == 1:
         return max(roll)
-    else:
-        return min(roll)
+
+    return min(roll)
 
 
 def spawn_item(name, place, num=1, force=False, quality=None):
@@ -5674,12 +5665,12 @@ def spell_generic_trait(spell, words, me, target):
     if not target.has_trait(spell["grant_trait"]):
         target.add_trait(spell["grant_trait"])
         return True
-    else:
-        me.p(
-            "That kobold already has "
-            + trait_data[spell["grant_trait"]].get("display", spell["grant_trait"])
-            + "."
-        )
+
+    me.p(
+        "That kobold already has "
+        + trait_data[spell["grant_trait"]].get("display", spell["grant_trait"])
+        + "."
+    )
     return False
 
 
@@ -5913,9 +5904,9 @@ def spell_energy(spell, words, me, target):
             "[n] has already been energized today. Any more and their body might give out..."
         )
         return False
-    else:
-        target.ap_gain(s)
-        target.add_trait("overworked")
+
+    target.ap_gain(s)
+    target.add_trait("overworked")
     return True
 
 
@@ -5934,9 +5925,9 @@ def spell_transfusion(spell, words, me, target):
             me.hp_tax(s, "Gave their life away", dmgtype="arcane")
         target.hp_gain(s)
         return True
-    else:
-        me.p("That won't have any effect.")
-        return False
+
+    me.p("That won't have any effect.")
+    return False
 
 
 def spell_soulbind(spell, words, me, target):
@@ -6005,8 +5996,8 @@ def spell_condensate(spell, words, me, target):
         target.liquid_units += 1
         me.p("The " + target.display() + " fills with water.")
         return True
-    else:
-        me.p("Target must be a container that can hold 1 additional unit of water.")
+
+    me.p("Target must be a container that can hold 1 additional unit of water.")
     return False
 
 
@@ -6033,8 +6024,8 @@ def spell_dislocate(spell, words, me, target):
         p.stability -= 5
         p.cave_in(me, d)
         return True
-    else:
-        me.p("There's nothing to dislocate here.")
+
+    me.p("There's nothing to dislocate here.")
     return False
 
 
@@ -6065,9 +6056,9 @@ def spell_hotfix(spell, words, me, target):
             + ", making it like new - but abusing the item in the process."
         )
         return True
-    else:
-        me.p("That cannot be hotfixed.")
-        return False
+
+    me.p("That cannot be hotfixed.")
+    return False
 
 
 def spell_mending(spell, words, me, target):
@@ -6084,9 +6075,9 @@ def spell_mending(spell, words, me, target):
             + " points of durability."
         )
         return True
-    else:
-        me.p("That cannot be mended.")
-        return False
+
+    me.p("That cannot be mended.")
+    return False
 
 
 def spell_goodberry(spell, words, me, target):
@@ -6209,16 +6200,16 @@ def spell_sexchange(spell, words, me, target):
         if target.has_trait("nonbinary"):
             me.p("This won't have any effect; " + target.display() + " is non-binary.")
             return False
+
+        if target.male:
+            target.male = False
         else:
-            if target.male:
-                target.male = False
-            else:
-                target.male = True
-            target.p("[n] feels a bit strange...")
-            return True
-    else:
-        me.p("Can't cast this on a pregnant kobold.")
-        return False
+            target.male = True
+        target.p("[n] feels a bit strange...")
+        return True
+
+    me.p("Can't cast this on a pregnant kobold.")
+    return False
 
 
 def spell_message(spell, words, me, target):
@@ -6250,16 +6241,16 @@ def spell_message(spell, words, me, target):
                 + '"'
             )
         return True
-    else:
-        me.p("Can't find a kobold in the world by that name.")
-        return False
+
+    me.p("Can't find a kobold in the world by that name.")
+    return False
 
 
 def spell_recall(spell, words, me, target):
     if not me.tribe:
         me.p("You do not have a home den to recall to.")
         return False
-    elif me.get_place() == me.tribe:
+    if me.get_place() == me.tribe:
         me.p("You are already in your den.")
         return False
     cost = len(me.party.members)
@@ -6272,8 +6263,8 @@ def spell_recall(spell, words, me, target):
             if me.party in e.engaged:
                 e.disengage(me.party)
         return True
-    else:
-        return False
+
+    return False
 
 
 async def cmd_cast(words, me, chan):
@@ -6372,7 +6363,7 @@ async def cmd_cast(words, me, chan):
                         me.display()
                         + " has already used their action for this combat round."
                     )
-                    return
+                    return None
                 engage = e
                 break
         if engage:
@@ -6400,6 +6391,7 @@ async def cmd_cast(words, me, chan):
         me.mp_tax(cost)
         me.gain_xp("sorcery", cost * 5)
         return True
+    return None
 
 
 async def cmd_graveyard(words, me, chan):
@@ -6867,8 +6859,8 @@ def cmd_bury(words, k, target):
         )
         k.tribe.graveyard[target.owner] = "Nothing written"
         return True
-    else:
-        k.p("Must be a kobold corpse or skeleton.")
+
+    k.p("Must be a kobold corpse or skeleton.")
     return False
 
 
@@ -6919,7 +6911,7 @@ async def cmd_pacify(words, k, target):
     if target.encounter.pacified:
         k.p(target.display() + " will not play this game with you.")
         return False
-    elif not isinstance(target, Kobold) and target.language == "none":
+    if not isinstance(target, Kobold) and target.language == "none":
         if target.stats["int"] < 6 and target.companion:
             bait = await multi_select(
                 discord.utils.get(guild.channels, name=k.get_chan()),
@@ -6971,12 +6963,12 @@ async def cmd_pacify(words, k, target):
                     exp = roll
                 k.gain_xp("animals", max(0, exp) + 5)
                 return True
-            else:
-                k.p(
-                    "You don't have anything "
-                    + target.display()
-                    + " would be interested in."
-                )
+
+            k.p(
+                "You don't have anything "
+                + target.display()
+                + " would be interested in."
+            )
         else:
             k.p("You can't pacify " + target.display() + ".")
     else:
@@ -7238,7 +7230,7 @@ def cmd_break(words, k, target):
     if not target.has_trait("bound"):
         k.p("That kobold is not a prisoner.")
         return False
-    elif target.has_trait("broken"):
+    if target.has_trait("broken"):
         k.p("That kobold is already broken.")
         return False
     exp = 20
@@ -7276,9 +7268,9 @@ def cmd_release(words, k, target):
         )
         target.despawn()
         return True
-    else:
-        k.p("Must be a prisoner.")
-        return False
+
+    k.p("Must be a prisoner.")
+    return False
 
 
 def cmd_capture(words, k, target):
@@ -7374,12 +7366,14 @@ def cmd_capture(words, k, target):
                     target.despawn()
             k.gain_xp("intimidation", exp)
             return True
-        else:
-            k.p(
-                "Cannot capture this kobold: Named kobolds do not stand for that kind of abuse!"
-            )
-    else:
-        k.p("Cannot capture this kobold: they are in another tribe.")
+
+        k.p(
+            "Cannot capture this kobold: Named kobolds do not stand for that kind of abuse!"
+        )
+        return None
+
+    k.p("Cannot capture this kobold: they are in another tribe.")
+    return None
 
 
 def cmd_rename(words, k, target):
@@ -7513,8 +7507,8 @@ def cmd_train(words, k, target):
                     exp *= 2
                 k.gain_xp("animals", exp)
                 return True
-            else:
-                k.p(target.display() + " is unable to learn any more tricks.")
+
+            k.p(target.display() + " is unable to learn any more tricks.")
         else:
             k.p(target.display() + " is already trained in " + tr + ".")
     else:
@@ -7638,12 +7632,12 @@ async def cmd_tame(words, k, target):
                 target.encounter.start(k.party)
             k.gain_xp("animals", max(0, exp) + 10)
             return True
-        else:
-            k.p(
-                "[n] doesn't have any bait that "
-                + target.display()
-                + " would be interested in."
-            )
+
+        k.p(
+            "[n] doesn't have any bait that "
+            + target.display()
+            + " would be interested in."
+        )
     return False
 
 
@@ -7720,18 +7714,20 @@ def cmd_recruit(words, k, target):
                             target.despawn()
                     k.gain_xp("negotiation", exp)
                     return True
-                else:
-                    k.p(
-                        "Cannot recruit this kobold: their will has already been broken."
-                    )
-            else:
-                k.p("Cannot recruit this kobold: they are a trader.")
-        else:
-            k.p(
-                "Cannot recruit this kobold: they are named. If you want to add this kobold to your tribe, your chieftain must invite them with `!tribe invite`."
-            )
-    else:
-        k.p("Cannot recruit this kobold: they are in another tribe.")
+
+                k.p("Cannot recruit this kobold: their will has already been broken.")
+                return None
+
+            k.p("Cannot recruit this kobold: they are a trader.")
+            return None
+
+        k.p(
+            "Cannot recruit this kobold: they are named. If you want to add this kobold to your tribe, your chieftain must invite them with `!tribe invite`."
+        )
+        return None
+
+    k.p("Cannot recruit this kobold: they are in another tribe.")
+    return None
 
 
 def cmd_sell(words, k, target):
@@ -7758,9 +7754,9 @@ def cmd_sell(words, k, target):
                         i.sold = True
                         best[2].gain_xp("negotiation", v)
                         return True
-                    else:
-                        k.p("The trader will not buy that.")
-                        return False
+
+                    k.p("The trader will not buy that.")
+                    return False
             k.p("[n] doesn't have that.")
         else:
             k.p("The trader can't carry any more stuff.")
@@ -7776,45 +7772,44 @@ def cmd_buy(words, k, target):
                 if i.sold:
                     k.p(target.display() + ': "Sorry, I have plans for this."')
                     return False
-                elif len(k.items) >= k.inv_size:
+                if len(k.items) >= k.inv_size:
                     k.p("You have no room in your inventory to buy this.")
                     return False
+                if i.inv_size > 0:
+                    for h in k.items:
+                        if h.inv_size > 0:
+                            k.p(
+                                "Can only carry one item that increases inventory size."
+                            )
+                            return False
+                best = k.party.best_trader() if k.party else k.best_trader()
+                multi = best[0]
+                if target.has_trait("charmed"):
+                    multi *= 1.1
+                v = int(multi * i.realvalue)
+                if k.has_trait("polished") and k.has_item("Stone Pebble", v):
+                    money = "Stone Pebble"
+                    k.p(
+                        "[n]'s enchantment makes their ordinary stone pebbles shimmer like marble..."
+                    )
                 else:
-                    if i.inv_size > 0:
-                        for h in k.items:
-                            if h.inv_size > 0:
-                                k.p(
-                                    "Can only carry one item that increases inventory size."
-                                )
-                                return False
-                    best = k.party.best_trader() if k.party else k.best_trader()
-                    multi = best[0]
-                    if target.has_trait("charmed"):
-                        multi *= 1.1
-                    v = int(multi * i.realvalue)
-                    if k.has_trait("polished") and k.has_item("Stone Pebble", v):
-                        money = "Stone Pebble"
-                        k.p(
-                            "[n]'s enchantment makes their ordinary stone pebbles shimmer like marble..."
-                        )
-                    else:
-                        money = "Marble Pebble"
-                    if k.has_item(money, v):
-                        k.consume_item(money, v)
-                        i.move(k)
-                        k.p(
-                            "[n] has purchased a "
-                            + i.display()
-                            + " for <:marblecoin:933132540926111814>"
-                            + str(v)
-                            + "."
-                        )
-                        k.p(target.display() + ': "Pleasure doing business with you!"')
-                        best[2].gain_xp("negotiation", v)
-                        return True
-                    else:
-                        k.p("Can't afford " + i.display() + ".")
-                        return False
+                    money = "Marble Pebble"
+                if k.has_item(money, v):
+                    k.consume_item(money, v)
+                    i.move(k)
+                    k.p(
+                        "[n] has purchased a "
+                        + i.display()
+                        + " for <:marblecoin:933132540926111814>"
+                        + str(v)
+                        + "."
+                    )
+                    k.p(target.display() + ': "Pleasure doing business with you!"')
+                    best[2].gain_xp("negotiation", v)
+                    return True
+
+                k.p("Can't afford " + i.display() + ".")
+                return False
         k.p("The trader doesn't have that.")
     else:
         k.p("Can't buy from this kobold.")
@@ -7878,8 +7873,8 @@ def cmd_tavkick(words, k, target):
                 k.display() + " has kicked you and your party from the tavern.", True
             )
         return True
-    else:
-        k.p("The target must be in a different tribe and in your tavern.")
+
+    k.p("The target must be in a different tribe and in your tavern.")
     return False
 
 
@@ -7895,8 +7890,8 @@ def cmd_tavban(words, k, target):
             )
         k.tribe.banned.append(target.id)
         return True
-    else:
-        k.p("The target must be in a different tribe and in your tavern.")
+
+    k.p("The target must be in a different tribe and in your tavern.")
     return False
 
 
@@ -7907,8 +7902,8 @@ def cmd_tavunban(words, k, target):
             target.p(k.display() + " has unbanned you from their tavern.", True)
         k.tribe.banned.remove(target.id)
         return True
-    else:
-        k.p("Must target a kobold banned from your tavern.")
+
+    k.p("Must target a kobold banned from your tavern.")
     return False
 
 
@@ -7961,10 +7956,10 @@ def cmd_exile(words, k, target):
                         exed.append(k.tribe.id)
                         target.lastchief = k
                         return True
-                    else:
-                        k.p(
-                            "You must either execute this action from the den, or in the same area as the target."
-                        )
+
+                    k.p(
+                        "You must either execute this action from the den, or in the same area as the target."
+                    )
                 else:
                     k.p("You have already exiled a named kobold this month.")
             else:
@@ -7991,14 +7986,14 @@ def cmd_lock(words, k, target):
                     + " is locked and can no longer be named by a new player."
                 )
                 return True
-            else:
-                k.p(
-                    "Your tribe has already reached the maximum amount of locked kobolds (have "
-                    + str(p[1])
-                    + ", max is "
-                    + str(math.floor(p[0] / 3))
-                    + "). Unlock some kobolds first."
-                )
+
+            k.p(
+                "Your tribe has already reached the maximum amount of locked kobolds (have "
+                + str(p[1])
+                + ", max is "
+                + str(math.floor(p[0] / 3))
+                + "). Unlock some kobolds first."
+            )
         else:
             k.p("Can't lock this kobold (they belong to another player who quit)")
     else:
@@ -8018,8 +8013,8 @@ def cmd_overseer(words, k, target):
                 )
                 k.add_trait("chief_overseer")
                 return True
-            else:
-                k.p("You have already appointed an overseer this month.")
+
+            k.p("You have already appointed an overseer this month.")
         else:
             k.p("That kobold is already the overseer.")
     else:
@@ -8056,8 +8051,8 @@ def cmd_elect(words, k, target):
         k.vote = target.id
         k.p("[n] wants " + target.display() + " to be the Chieftain.")
         return True
-    else:
-        k.p("Must vote for a named kobold in your tribe.")
+
+    k.p("Must vote for a named kobold in your tribe.")
     return False
 
 
@@ -8266,16 +8261,16 @@ def cmd_mount(words, k, me):
     if len(me.items) >= me.inv_size:
         k.p(me.display() + "'s inventory is full.")
         return False
-    elif me.carry:
+    if me.carry:
         k.p(me.display() + " is already carrying a kobold.")
         return False
-    elif me.owner.tribe != k.tribe:
+    if me.owner.tribe != k.tribe:
         k.p("Can't mount a creature from another tribe.")
         return False
-    elif k.carry:
+    if k.carry:
         k.p("Can't mount a creature if you're carrying a kobold.")
         return False
-    elif k.party and k.party != me.party:
+    if k.party and k.party != me.party:
         k.p("Can't mount a creature in a party that is not yours.")
         return False
     me.carry = k
@@ -8295,23 +8290,23 @@ def cmd_carry(words, me, k):
     if len(me.items) >= me.inv_size:
         me.p("[n]'s inventory is full.")
         return False
-    elif me.carry:
+    if me.carry:
         me.p("[n] is already carrying a kobold.")
         return False
-    elif (isinstance(me, Creature) and me.owner.tribe != k.tribe) or (
+    if (isinstance(me, Creature) and me.owner.tribe != k.tribe) or (
         isinstance(me, Kobold) and me.tribe != k.tribe
     ):
         me.p("Can't pick up a kobold from another tribe.")
         return False
-    elif k.carry:
+    if k.carry:
         me.p("Can't pick up a kobold who is themselves carrying someone.")
         return False
-    elif k.nick and not k.has_trait("rescues"):
+    if k.nick and not k.has_trait("rescues"):
         me.p(
             "Can't pick up a named kobold who doesn't want to be rescued. (The target needs to allow rescues with `!rescues` first)"
         )
         return False
-    elif k.party and k.party != me.party:
+    if k.party and k.party != me.party:
         me.p("Can't pick up a kobold in a party that is not yours.")
         return False
     for l in me.world.kobold_list:
@@ -8338,9 +8333,11 @@ def cmd_empty(words, me, i):
         )
         if len(me.items) < me.inv_size:
             i.contains.move(me)
-        else:
-            i.contains.move(me.get_place())
-    elif i.liquid:
+            return None
+
+        i.contains.move(me.get_place())
+        return None
+    if i.liquid:
         p = me.get_place()
         if i.liquid == "Water" and isinstance(p, Tribe) and p.has_building("Well"):
             p.water += i.liquid_units
@@ -8352,9 +8349,9 @@ def cmd_empty(words, me, i):
         i.liquid = False
         i.liquid_units = 0
         return True
-    else:
-        me.p("There is nothing to empty.")
-        return False
+
+    me.p("There is nothing to empty.")
+    return False
 
 
 def get_liquid_source(liq, p, me):
@@ -8393,10 +8390,10 @@ def cmd_drink(words, me, lol):
         me.p("Fluid source not found.")
     elif isinstance(p, Tribe) and me in p.tavern and (not i or i not in me.items):
         me.p("While in a tavern, you can only drink from containers in your inventory.")
-        return
-    elif i:
+        return None
+    if i:
         return i.drink_from(me)
-    elif me.drink(liquid):
+    if me.drink(liquid):
         if liquid == "Water" and isinstance(p, Tribe) and source > -1:
             p.water -= 1
             if p.water <= 0:
@@ -8469,7 +8466,7 @@ def cmd_give(words, me, i):
         if not target:
             me.p("Kobold '" + words[1] + "' not found.")
             return False
-        elif "haul" not in target.training:
+        if "haul" not in target.training:
             me.p(target.display() + " needs haul training to be able to carry items.")
             return False
     if len(target.items) >= target.inv_size:
@@ -8492,8 +8489,8 @@ def cmd_give(words, me, i):
                 "If specifying a number, must be above 0 and below the amount contained in the item stack."
             )
             return False
-        else:
-            am = words[3]
+
+        am = words[3]
     if i in me.items:
         msg = me.display() + " gives " + target.display() + " the " + i.display() + "."
         if am >= i.num:
@@ -8515,8 +8512,8 @@ def cmd_give(words, me, i):
         if me.party:
             me.party.broadcast(msg)
         return True
-    else:
-        me.p("[n] doesn't have that.")
+
+    me.p("[n] doesn't have that.")
     return False
 
 
@@ -8542,8 +8539,8 @@ def cmd_get(words, me, i):
                 "If specifying a number, must be above 0 and below the amount contained in the item stack."
             )
             return False
-        else:
-            am = words[2]
+
+        am = words[2]
     if len(me.items) >= me.inv_size:
         good = False
         for h in me.items:
@@ -8572,8 +8569,8 @@ def cmd_get(words, me, i):
         if me.party:
             me.party.broadcast(msg)
         return True
-    else:
-        me.p("[n] already has that.")
+
+    me.p("[n] already has that.")
     return False
 
 
@@ -8601,8 +8598,8 @@ def cmd_drop(words, me, i):
                 "If specifying a number, must be above 0 and below the amount contained in the item stack."
             )
             return False
-        else:
-            am = words[2]
+
+        am = words[2]
     t = me.get_place()
     if isinstance(t, Tribe) and me in t.tavern:
         t = me.world.get_tile(me.x, me.y, me.z)
@@ -8618,8 +8615,8 @@ def cmd_drop(words, me, i):
         if me.party:
             me.party.broadcast(msg)
         return True
-    else:
-        me.p("[n] doesn't have that.")
+
+    me.p("[n] doesn't have that.")
     return False
 
 
@@ -8677,7 +8674,7 @@ def cmd_cheer(words, me, target):
             "Only a named kobold can do this, and the target must be another named kobold."
         )
         return False
-    elif target.cp >= target.max_cp:
+    if target.cp >= target.max_cp:
         me.p(target.display() + " is at max CP.")
         return False
     base = me.smod("cha") + me.skmod("willpower")
@@ -8769,8 +8766,8 @@ def cmd_heal(words, me, target):
                     )
         me.gain_xp("medicine", exp)
         return True
-    else:
-        me.p(target.display() + " is at full HP.")
+
+    me.p(target.display() + " is at full HP.")
     return False
 
 
@@ -8854,6 +8851,7 @@ def cmd_fight(words, me, target):
     enc.start(me.party)
     for k in me.party.k_members:
         k.gain_xp("stealth", exp)
+    return None
 
 
 def cmd_attack(words, me, target):
@@ -8861,7 +8859,7 @@ def cmd_attack(words, me, target):
     if isinstance(me, Creature):
         me.attack(target)
         return True
-    elif me.equip and me.equip.type in ["melee", "ranged", "magic", "finesse"]:
+    if me.equip and me.equip.type in ["melee", "ranged", "magic", "finesse"]:
         me.dmg = list(me.equip.dmg)
         eqtype = me.equip.type
         if me.equip.quality != 0:
@@ -8985,9 +8983,9 @@ def cmd_demolish(words, me, target):
                     + ". The kobolds make short work of it, freeing up the space."
                 )
                 return True
-            else:
-                me.p("The " + b + " cannot be destroyed.")
-                return False
+
+            me.p("The " + b + " cannot be destroyed.")
+            return False
     me.p(
         "Building not found. Must type in the exact name of the building (not case sensitive)."
     )
@@ -8999,7 +8997,7 @@ def cmd_equip(words, me, target):
     if me.has_trait("noarms"):
         me.p("You need at least one hand to equip that...")
         return False
-    elif target.twohands and me.has_trait("onearm"):
+    if target.twohands and me.has_trait("onearm"):
         me.p("You need two hands to equip that.")
         return False
     if target in me.items:
@@ -9010,9 +9008,9 @@ def cmd_equip(words, me, target):
             me.p("[n] equips their " + target.display() + ".")
             me.equip = target
         return True
-    else:
-        me.p("[n] doesn't have that.")
-        return False
+
+    me.p("[n] doesn't have that.")
+    return False
 
 
 def cmd_wear(words, me, target):
@@ -9035,9 +9033,9 @@ def cmd_wear(words, me, target):
             if target in me.items:
                 me.items.remove(target)
         return True
-    else:
-        me.p("That cannot be worn.")
-        return False
+
+    me.p("That cannot be worn.")
+    return False
 
 
 def cmd_leave(words, me, target):
@@ -9080,26 +9078,20 @@ def cmd_leave(words, me, target):
         if me.party:
             me.party.broadcast(me.display() + " and their party have left the den.")
         return True
-    else:
-        dgn = me.dungeon
-        if dgn and "Dungeon Exit" in tribe.special:
-            me.p(
-                "[n] and their party emerge from the "
-                + dungeon_data[dgn.d]["name"]
-                + "."
-            )
-            for k in me.party.k_members:
-                k.dungeon = None
-                (k.x, k.y, k.z) = (dgn.x, dgn.y, dgn.z)
-            me.get_place().examine(me)
-            me.broadcast(
-                "[n] and their party emerge from the "
-                + dungeon_data[dgn.d]["name"]
-                + "."
-            )
-            return True
-        else:
-            me.p("There's nowhere to leave to from here.")
+
+    dgn = me.dungeon
+    if dgn and "Dungeon Exit" in tribe.special:
+        me.p("[n] and their party emerge from the " + dungeon_data[dgn.d]["name"] + ".")
+        for k in me.party.k_members:
+            k.dungeon = None
+            (k.x, k.y, k.z) = (dgn.x, dgn.y, dgn.z)
+        me.get_place().examine(me)
+        me.broadcast(
+            "[n] and their party emerge from the " + dungeon_data[dgn.d]["name"] + "."
+        )
+        return True
+
+    me.p("There's nowhere to leave to from here.")
     return False
 
 
@@ -9150,19 +9142,18 @@ def cmd_enter(words, me, target):
                 me.display() + " and their party have arrived.", tribe.get_chan()
             )
             return True
-        else:
-            if tribe.has_building("Tavern") and not tribe.tavern_open:
-                me.p(
-                    "[n] discovers that the gates are locked and the tavern is closed... so they knock."
-                )
-            else:
-                me.p(
-                    "[n] discovers that the gates are locked and there is no tavern... so they knock."
-                )
-            game_print(
-                "There's a knock at the gates. Someone is right outside...",
-                tribe.get_chan(),
+        if tribe.has_building("Tavern") and not tribe.tavern_open:
+            me.p(
+                "[n] discovers that the gates are locked and the tavern is closed... so they knock."
             )
+        else:
+            me.p(
+                "[n] discovers that the gates are locked and there is no tavern... so they knock."
+            )
+        game_print(
+            "There's a knock at the gates. Someone is right outside...",
+            tribe.get_chan(),
+        )
     else:
         dgn = p.get_dungeon()
         if not dgn:
@@ -9442,8 +9433,8 @@ def forage(me, lm=None, dgn=None, mm=None):
                     me.p("[n] has found: " + item.name)
             exp = mwt - forages[f] + 5
             break
-        else:
-            found -= forages[f]
+
+        found -= forages[f]
     if not item:
         item = spawn_item("Kobold Egg", me)
         if isinstance(me, Kobold):
@@ -9674,20 +9665,19 @@ async def cmd_use(words, me, chan):
             if not conf:
                 return False
         return target.use(me)
-    else:
-        if target in ("Hot Spring", "Artificial Hot Spring"):
-            if me.ap_tax(1):
-                if me.has_trait("stressed"):
-                    me.del_trait("stressed")
-                    me.p("[n]'s stress ebbs away...")
-                if not me.has_trait("relaxed"):
-                    me.add_trait("relaxed")
-            else:
-                return False
+    if target in ("Hot Spring", "Artificial Hot Spring"):
+        if me.ap_tax(1):
+            if me.has_trait("stressed"):
+                me.del_trait("stressed")
+                me.p("[n]'s stress ebbs away...")
+            if not me.has_trait("relaxed"):
+                me.add_trait("relaxed")
         else:
-            me.p("You can't use the " + target + " in any meaningful way.")
             return False
-        return True
+    else:
+        me.p("You can't use the " + target + " in any meaningful way.")
+        return False
+    return True
 
 
 def cmd_extend(words, me, target):
@@ -9699,7 +9689,7 @@ def cmd_extend(words, me, target):
     if p.farm_cap <= 0:
         me.p("There's nothing to expand here.")
         return False
-    elif p.farm_cap >= 1000:
+    if p.farm_cap >= 1000:
         me.p("The farm is already as big as it can get in this tile.")
         return False
     for l in p.special:
@@ -9754,8 +9744,8 @@ def cmd_repair(words, me, target):
         if me.accident(10 - me.smod("dex")):
             me.p("[n] clumsily injured themselves!")
         return True
-    else:
-        me.p("No building called '" + words[1] + "' needs repair.")
+
+    me.p("No building called '" + words[1] + "' needs repair.")
     return False
 
 
@@ -9795,7 +9785,7 @@ def cmd_build(words, me, target):
             if isinstance(p, Tribe):
                 p.justbuilt = res["name"]
             return False
-        elif res.get("landmark", False):
+        if res.get("landmark", False):
             if res["name"] not in tile.special or res.get("repeatable", False):
                 tile.do_building(me, res)
             else:
@@ -9809,8 +9799,8 @@ def cmd_build(words, me, target):
         if me.accident(10 - me.smod("dex")):
             me.p("[n] clumsily injured themselves!")
         return True
-    else:
-        me.p("Can't find available building project called '" + words[1] + "'")
+
+    me.p("Can't find available building project called '" + words[1] + "'")
     return False
 
 
@@ -9820,9 +9810,9 @@ def cmd_research(words, me, target):
     if res and res["name"] in p.get_available_research():
         p.do_research(me, res)
         return True
-    else:
-        me.p("Can't find available research called '" + words[1] + "'")
-        p.justbuilt = words[1]
+
+    me.p("Can't find available research called '" + words[1] + "'")
+    p.justbuilt = words[1]
     return False
 
 
@@ -10267,8 +10257,8 @@ def cmd_tribe(words, me, target):
                         me.add_trait("tribe_join")
                         me.cp = me.max_cp
                         return True
-                    else:
-                        me.p("Can't make a tribe: You must be on a tile with a camp.")
+
+                    me.p("Can't make a tribe: You must be on a tile with a camp.")
                 else:
                     me.p("You already have a tribe.")
             else:
@@ -10292,8 +10282,8 @@ def cmd_tribe(words, me, target):
                             me.tribe.tavern.remove(me)
                             me.tribe.add_bold(me)
                         return True
-                    else:
-                        me.p("You have not been invited to this tribe.")
+
+                    me.p("You have not been invited to this tribe.")
                 else:
                     me.p("You must select a kobold who is the chieftain of a tribe.")
             else:
@@ -10312,8 +10302,8 @@ def cmd_tribe(words, me, target):
                 me.p("[n] has officially left their tribe.")
                 me.add_trait("tribe_leave")
                 return True
-            else:
-                me.p("You have left a tribe too recently.")
+
+            me.p("You have left a tribe too recently.")
         else:
             me.p("You are not in a tribe.")
     elif words[1] == "invite":
@@ -10346,10 +10336,10 @@ def cmd_tribe(words, me, target):
                             if me.tribe.id in exed:
                                 exed.remove(me.tribe.id)
                             return True
-                        else:
-                            me.p(
-                                "Can't invite a nameless kobold in this way. You must use `!recruit`."
-                            )
+
+                        me.p(
+                            "Can't invite a nameless kobold in this way. You must use `!recruit`."
+                        )
                     else:
                         me.p(
                             "Can't invite a kobold from another tribe; they must leave their own first."
@@ -10385,8 +10375,8 @@ def cmd_party(words, me, target):
                 p.join(me.carry)
             me.p("You have made a new party.", True)
             return True
-        else:
-            me.p("You already have a party.", True)
+
+        me.p("You already have a party.", True)
     elif words[1] == "join":
         if not me.party or place != me.tribe:
             if k and me != k:
@@ -10398,8 +10388,8 @@ def cmd_party(words, me, target):
                             k.party.invites.remove(me.id)
                             k.party.join(me)
                             return True
-                        else:
-                            me.p("You have not been invited to this party.", True)
+
+                        me.p("You have not been invited to this party.", True)
                     else:
                         me.p("You can't join a party that isn't in your area.", True)
                 else:
@@ -10453,7 +10443,7 @@ def cmd_party(words, me, target):
                 me.display() + " has invited " + k.display() + " to their party."
             )
             return True
-        elif k.party == me.party:
+        if k.party == me.party:
             me.p("That kobold is already in your party.")
         elif k.party and time.time() - k.party.owner.lasttime < 1800:
             me.p(
@@ -10652,7 +10642,7 @@ def cmd_farm(words, k, target):
     if not tribe:
         k.p("You are not in a tribe, so you don't have access to a seed cache.")
         return False
-    elif f["name"] not in tribe.farmable:
+    if f["name"] not in tribe.farmable:
         k.p("You haven't domesticated " + f["name"] + " yet.")
         return False
     for l in t.special:
@@ -10914,7 +10904,7 @@ async def cmd_info(words, user, chan, w):
     words[1] = words[1].lower()
     if len(words[1]) < 3 and words[1] not in ["cp", "ce", "me", "sp"]:
         await chan.send("Search terms must be at least 3 characters in length.")
-        return
+        return None
     cat = words[1].replace("*", "") if words[1][0] == "*" else None
     info.extend(
         [[r, "Building"] for r in building_data if words[1] in r["name"].lower()]
@@ -11060,7 +11050,7 @@ def get_newbold(user, chan, w, test=False, nt=False):
             if k.d_user_id and user.id == k.d_user_id:  # returning player who left/quit
                 nameless = [k]
                 break
-            elif (
+            if (
                 k.tribe
                 and k.tribe.id not in exed
                 and not k.d_user_id
@@ -11178,7 +11168,7 @@ async def cmd_newtribe(words, user, chan, w):
     if not test:
         await chan.send("You already have a kobold.")
         return False
-    elif test.d_user_id == user.id:
+    if test.d_user_id == user.id:
         await chan.send(
             "Your soul is still bound to a kobold in this world. Use `!join` to reclaim them."
         )
@@ -11214,9 +11204,9 @@ async def cmd_join(words, user, chan, w):
             if me:
                 cmd_party(words, me, None)
                 return False
-            else:
-                await chan.send("You already have a kobold.")
-                return False
+
+            await chan.send("You already have a kobold.")
+            return False
         sel[str(newbold.id)] = newbold.char_info(newbold, pr=False)
     await udm.send(
         "The following are the kobolds you can choose from. The info shown was retrieved at the time it was added to your selection and may not reflect their current status. You can take control of one by assigning them a name.\nYou can type `!reroll` to spend 10 Soul Points to add another kobold to your selection. You can have up to 4 kobolds in your selection at a time.\nWhen you've made a decision, type `!name <birth name> <new name>` to join!"
@@ -11271,7 +11261,7 @@ async def cmd_name(words, user, chan, w, wand=None):
                 )
             del sel[nid]
             return False
-        elif not newbold:
+        if not newbold:
             await chan.send(
                 "Kobold not found. Ensure that you have spelled their birth name correctly."
             )
@@ -11432,8 +11422,8 @@ async def multi_select(
     if not chan:
         if len(targets) == 0:
             return None
-        else:
-            return targets[0]
+
+        return targets[0]
     if len(targets) == 0:
         await chan.send("Item '" + search + "' not found.")
     elif first:
@@ -11558,6 +11548,7 @@ def find_creature_i(name, me):
     for c in crs:
         if name.lower() in c.name.lower():
             return c
+    return None
 
 
 def find_kobold(name, area=None, w=None):
@@ -11590,7 +11581,7 @@ def find_craft(name, lax=True):
     for c in craft_data:
         if c["result"].lower() == name.lower():
             return c
-        elif lax:
+        if lax:
             wrs = c["result"].lower().split()
             for w in wrs:
                 if " " + name.lower() in " " + w.lower():
@@ -11682,8 +11673,10 @@ async def cmd_tribefix(words, user, chan, w):
         k.tribe = tribe
         (k.x, k.y, k.z) = (tribe.x, tribe.y, tribe.z)
         await chan.send("Kobold tribe reassigned and moved.")
-    else:
-        await chan.send("Kobold " + words[1] + " not found")
+        return None
+
+    await chan.send("Kobold " + words[1] + " not found")
+    return None
 
 
 async def cmd_partyfix(words, user, chan, w):
@@ -11784,8 +11777,10 @@ async def cmd_setheat(words, user, chan, w):
             + ") to "
             + str(v)
         )
-    else:
-        await chan.send("Tribe " + words[1] + " not found")
+        return None
+
+    await chan.send("Tribe " + words[1] + " not found")
+    return None
 
 
 async def cmd_clone(words, user, chan, w):
@@ -12003,6 +11998,7 @@ async def cmd_forceegg(words, user, chan, w):
             l.p("[n] has discovered an egg.")
             return True
     await chan.send("One or both kobolds not found")
+    return None
 
 
 async def cmd_forcebreed(words, user, chan, w):
@@ -12019,6 +12015,7 @@ async def cmd_forcebreed(words, user, chan, w):
             k.breed(l, force=True)
             return True
     await chan.send("One or both kobolds not found")
+    return None
 
 
 async def cmd_backup(words, user, chan, w):
@@ -12149,7 +12146,7 @@ async def confirm_prompt(chan, msg, confirm=None):
         if emoji == "👍":
             conf = True
             break
-        elif emoji == "👎":
+        if emoji == "👎":
             break
 
         def check(m, shrug):
@@ -12432,7 +12429,7 @@ async def cmd_task(words, me, chan):
             if a:
                 if not a.get("task", False):
                     await chan.send("Can't add that command to a task.")
-                    return
+                    return None
                 me.tribe.tasks.extend([words[2], None, None, None, True])
                 await chan.send("Added " + words[2] + " to task list.")
             else:
@@ -12581,6 +12578,7 @@ async def cmd_task(words, me, chan):
             else:
                 await chan.send("One or both actions not found.")
     await print_tasks(me.tribe, chan)
+    return None
 
 
 async def cmd_routine(words, user, chan, w):
@@ -12589,7 +12587,8 @@ async def cmd_routine(words, user, chan, w):
         playerdata[pid]["rediting"] = []
         await chan.send("Creating new routine for editing.")
         await print_routine(playerdata[pid]["rediting"], chan)
-    elif words[1] == "edit":
+        return None
+    if words[1] == "edit":
         if len(words) < 3:
             await chan.send("Please specify a routine to edit.")
             return False
@@ -12597,35 +12596,43 @@ async def cmd_routine(words, user, chan, w):
             playerdata[pid]["rediting"] = list(playerdata[pid]["routines"][words[2]])
             await chan.send("Opened routine '" + words[2] + "' for editing.")
             await print_routine(playerdata[pid]["rediting"], chan)
-        else:
-            await chan.send("Routine '" + words[2] + "' not found.")
-    elif words[1] == "delete":
+            return None
+
+        await chan.send("Routine '" + words[2] + "' not found.")
+        return None
+    if words[1] == "delete":
         if len(words) < 3:
             await chan.send("Please specify a routine to delete.")
             return False
         if words[2] in get_pdata(pid, "routines", {}):
             del playerdata[pid]["routines"][words[2]]
             await chan.send("Routine '" + words[2] + "' deleted.")
-        else:
-            await chan.send("Routine '" + words[2] + "' not found.")
-    elif words[1] == "view":
+            return None
+
+        await chan.send("Routine '" + words[2] + "' not found.")
+        return None
+    if words[1] == "view":
         if len(words) < 3:
             await chan.send("Please specify a routine to view.")
             return False
         if words[2] in get_pdata(pid, "routines", {}):
             await print_routine(playerdata[pid]["routines"][words[2]], chan)
-        else:
-            await chan.send("Routine '" + words[2] + "' not found.")
-    elif words[1] == "list":
+            return None
+
+        await chan.send("Routine '" + words[2] + "' not found.")
+        return None
+    if words[1] == "list":
         if len(get_pdata(pid, "routines", {}).keys()) == 0:
             await chan.send(
                 "You have no routines. You can create one with `!routine new`."
             )
-        else:
-            await chan.send(
-                "Your routines:\n" + ", ".join(list(playerdata[pid]["routines"].keys()))
-            )
-    elif words[1] == "run":
+            return None
+
+        await chan.send(
+            "Your routines:\n" + ", ".join(list(playerdata[pid]["routines"].keys()))
+        )
+        return None
+    if words[1] == "run":
         if len(words) < 3:
             await chan.send("Please specify a routine to run.")
             return False
@@ -12635,11 +12642,13 @@ async def cmd_routine(words, user, chan, w):
         k = find_kobold(words[3].lower(), me.get_place(), w) if len(words) > 3 else me
         if not k:
             await chan.send("Kobold not found.")
-        elif k.nick and k != me and (not me.tribe or me.tribe.overseer != me):
+            return None
+        if k.nick and k != me and (not me.tribe or me.tribe.overseer != me):
             await chan.send(
                 "Can't run a routine on a named kobold unless you're the Overseer."
             )
-        elif words[2] in get_pdata(pid, "routines", {}):
+            return None
+        if words[2] in get_pdata(pid, "routines", {}):
             for a in playerdata[pid]["routines"][words[2]]:
                 if w == sandbox:
                     a = a.replace("!", "?")
@@ -12648,12 +12657,13 @@ async def cmd_routine(words, user, chan, w):
                     await chan.send(
                         "Could not complete the routine. Aborted at action: `" + a + "`"
                     )
-                    return
+                    return None
             await chan.send("Routine completed.")
             return True
-        else:
-            await chan.send("Routine '" + words[2] + "' not found.")
-    elif words[1] in ["fo", "final", "finalorders", "final_orders"]:
+
+        await chan.send("Routine '" + words[2] + "' not found.")
+        return None
+    if words[1] in ["fo", "final", "finalorders", "final_orders"]:
         if len(words) < 3:
             await chan.send("Please specify a routine to use as final orders.")
             return False
@@ -12663,15 +12673,16 @@ async def cmd_routine(words, user, chan, w):
         k = find_kobold(words[3].lower(), me.get_place(), w) if len(words) > 3 else me
         if not k:
             await chan.send("Kobold not found.")
-        elif not k.orders and k != me:
+            return None
+        if not k.orders and k != me:
             await chan.send(
                 "Can't set final orders for this kobold (they have orders disabled)."
             )
-        elif k != me and (
-            not me.tribe or k.tribe != me.tribe or me.tribe.overseer != me
-        ):
+            return None
+        if k != me and (not me.tribe or k.tribe != me.tribe or me.tribe.overseer != me):
             await chan.send("Only a kobold's overseer can set final orders.")
-        elif words[2] in get_pdata(pid, "routines", {}):
+            return None
+        if words[2] in get_pdata(pid, "routines", {}):
             k.fo = list(playerdata[pid]["routines"][words[2]])
             await chan.send(
                 k.display()
@@ -12679,11 +12690,13 @@ async def cmd_routine(words, user, chan, w):
                 + words[2]
                 + "'."
             )
-        else:
-            await chan.send("Routine '" + words[2] + "' not found.")
-    elif "rediting" not in playerdata[pid] or playerdata[pid]["rediting"] is None:
+            return None
+        await chan.send("Routine '" + words[2] + "' not found.")
+        return None
+    if "rediting" not in playerdata[pid] or playerdata[pid]["rediting"] is None:
         await chan.send("You are not editing a routine.")
-    elif words[1] == "add":
+        return None
+    if words[1] == "add":
         if len(words) < 3:
             await chan.send("Please specify a command to add.")
             return False
@@ -12705,13 +12718,15 @@ async def cmd_routine(words, user, chan, w):
                 or not a.get("os_order", True)
             ):
                 await chan.send("Can't add that command to a routine.")
-                return
+                return None
             playerdata[pid]["rediting"].append(words[2])
             await chan.send("Added `" + words[2] + "` to current routine.")
             await print_routine(playerdata[pid]["rediting"], chan)
-        else:
-            await chan.send("Command not found.")
-    elif words[1] == "remove":
+            return None
+
+        await chan.send("Command not found.")
+        return None
+    if words[1] == "remove":
         s = None
         try:
             s = int(words[2])
@@ -12725,9 +12740,11 @@ async def cmd_routine(words, user, chan, w):
                 "Action " + str(s) + " (`" + rem + "`) removed from current routine."
             )
             await print_routine(playerdata[pid]["rediting"], chan)
-        else:
-            await chan.send("Action not found.")
-    elif words[1] == "move":
+            return None
+
+        await chan.send("Action not found.")
+        return None
+    if words[1] == "move":
         try:
             s = int(words[2])
         except (ValueError, IndexError):  # potential non-integer or out of bound index
@@ -12743,18 +12760,23 @@ async def cmd_routine(words, user, chan, w):
             )
             await chan.send("Actions " + str(s) + " and " + str(t) + " swapped places.")
             await print_routine(playerdata[pid]["rediting"], chan)
-        else:
-            await chan.send("One or both actions not found.")
-    elif words[1] == "save":
+            return None
+
+        await chan.send("One or both actions not found.")
+        return None
+    if words[1] == "save":
         if len(words) < 3:
             await chan.send("Please specify a name.")
             return False
         get_pdata(pid, "routines", {})
         playerdata[pid]["routines"][words[2]] = list(playerdata[pid]["rediting"])
         await chan.send("Routine " + words[2] + " saved.")
-    elif words[1] == "close":
+        return None
+    if words[1] == "close":
         playerdata[pid]["rediting"] = None
         await chan.send("Routine closed.")
+        return None
+    return None
 
 
 async def cmd_wanderer(words, user, chan, w):
@@ -13557,9 +13579,9 @@ async def handle_message(message, num=1):
     try:
         global world, sandbox
         if message.author == clive.user:
-            return
+            return None
         if len(message.content) <= 0:
-            return
+            return None
         user = message.author
         words = message.content.split()
         words[0] = words[0].lower()
@@ -13569,7 +13591,7 @@ async def handle_message(message, num=1):
                 user = discord.utils.get(guild.members, id=user.id)
             w = world
             if words[0] == "!d":
-                return
+                return None
             if "?" in words[0] or (
                 ">" in words[0] and len(words) > 1 and "?" in words[1]
             ):
@@ -13590,9 +13612,9 @@ async def handle_message(message, num=1):
                 await chan.send(
                     "Kobold not found. Make sure you've spelled their name correctly."
                 )
-                return
-            else:
-                me = k
+                return None
+
+            me = k
             words.pop(0)
             message.content = " ".join(words)
             superforce = True
@@ -13641,7 +13663,7 @@ async def handle_message(message, num=1):
                         + s
                         + "' not found. Make sure you've spelled their name correctly and they're in the same area as you."
                     )
-                    return
+                    return None
             if k.nick:
                 if (
                     not me.tribe
@@ -13659,29 +13681,29 @@ async def handle_message(message, num=1):
                     await chan.send(
                         "You can only order a named kobold under the following conditions: you must be the Overseer, or you must be the leader of that kobold's party and in the overworld."
                     )
-                    return
-                elif not k.orders and not k.has_trait("inactive"):
+                    return None
+                if not k.orders and not k.has_trait("inactive"):
                     await chan.send(
                         "That player has opted out of allowing Overseer/Party leader commands."
                     )
-                    return
+                    return None
             if not isinstance(k, Creature):
                 if me.tribe and k not in me.tribe.prison:
                     if not k.tribe and k.party != me.party:
                         await chan.send(
                             "Can't command a tribeless kobold, unless they are a prisoner."
                         )
-                        return
+                        return None
                     if k.tribe != me.tribe and (
                         not me.party or k not in me.party.members
                     ):
                         await chan.send("Can't command a kobold from another tribe.")
-                        return
+                        return None
                 if k.has_trait("bound") and not k.has_trait("broken"):
                     await chan.send(
                         "The prisoner will not follow your orders until their will has been broken."
                     )
-                    return
+                    return None
             oldme = me
             me.lastfollower = k.get_name()
             k.commandedby = me
@@ -13690,7 +13712,7 @@ async def handle_message(message, num=1):
             words.pop(0)
             message.content = " ".join(words)
         if len(words) == 0:
-            return  # clearly not a command
+            return None  # clearly not a command
         if ordering and words[0][0] not in ["!", "-"]:
             words[0] = "!" + words[0]
         # this is a command
@@ -13698,7 +13720,7 @@ async def handle_message(message, num=1):
             cmd = words[0].replace("!", "").lower()
             cmd = cmd.replace("-", "").lower()
             if len(cmd) == 0:
-                return
+                return None
             a = None
             for c in cmd_data:
                 if c["cmd"] == cmd or cmd in c.get("synonyms", []):
@@ -13718,7 +13740,7 @@ async def handle_message(message, num=1):
                                     me.display()
                                     + " has already used their action for this combat round."
                                 )
-                                return
+                                return None
                             engage = e
                             break
                 bwcheck = False
@@ -13735,8 +13757,8 @@ async def handle_message(message, num=1):
                         cname == user.id
                         or ("tribe" not in cname and "party" not in cname)
                     ):
-                        return  # ignore channels that aren't game channels
-                    elif not me:
+                        return None  # ignore channels that aren't game channels
+                    if not me:
                         await chan.send("You do not have a kobold in this world.")
                     elif ordering and not a.get("nameless", True):
                         await chan.send("A kobold cannot be ordered to do this.")
@@ -13869,7 +13891,7 @@ async def handle_message(message, num=1):
                     else:
                         if engage and not a.get("combat", True):
                             await chan.send("That command cannot be done in combat.")
-                            return
+                            return None
                         if isinstance(place, Tribe) and me in place.prison:
                             t = place
                         elif isinstance(me, Kobold):
@@ -13884,7 +13906,7 @@ async def handle_message(message, num=1):
                 else:
                     bwcheck = True
                 if not bwcheck:
-                    return
+                    return None
                 args = message.content.split(" ", a.get("args", 1))
                 targ = a.get("target", None)
                 target = None
@@ -13919,16 +13941,16 @@ async def handle_message(message, num=1):
                         target = find_creature_i(s, me)
                     if not target:
                         await chan.send("Kobold/Creature '" + s + "' not found.")
-                        return
+                        return None
                     if target == me and not a.get("can_target_self", False):
                         await chan.send("Cannot target self with that command.")
-                        return
+                        return None
                 if targ == "creature":
                     s = args[a.get("targ_arg", len(args) - 1)].lower()
                     target = find_creature_i(s, me)
                     if not target:
                         await chan.send("Creature '" + s + "' not found.")
-                        return
+                        return None
                 if targ == "kobold":
                     s = args[a.get("targ_arg", len(args) - 1)].lower()
                     if (
@@ -13955,10 +13977,10 @@ async def handle_message(message, num=1):
                         target = find_kobold(s, place, w)
                     if not target:
                         await chan.send("Kobold '" + s + "' not found.")
-                        return
+                        return None
                     if target == me and not a.get("can_target_self", False):
                         await chan.send("Cannot target self with that command.")
-                        return
+                        return None
                 if targ == "item":
                     search = args[a.get("targ_arg", len(args) - 1)]
                     if a.get("numbers", False):
@@ -13992,7 +14014,7 @@ async def handle_message(message, num=1):
                         if targets:
                             target = targets[0]
                     if not target:
-                        return
+                        return None
                 if targ == "enemy":
                     if engage:
                         if len(engage.creatures) == 1:
@@ -14013,13 +14035,13 @@ async def handle_message(message, num=1):
                             await chan.send(
                                 "Use the letter corresponding to the target you want. (A, B, C)"
                             )
-                            return
+                            return None
                     else:
                         await chan.send("That command can only be done in combat.")
-                        return
+                        return None
                 if a.get("combatonly", False) and not engage:
                     await chan.send("That command can only be done in combat.")
-                    return
+                    return None
                 cost = a.get("cost", 0)
                 if cost > 0 and me.ap < cost:
                     await chan.send(
@@ -14029,7 +14051,7 @@ async def handle_message(message, num=1):
                         + str(cost)
                         + ")"
                     )
-                    return
+                    return None
                 sp = a.get("sp", 0)
                 if sp > 0:
                     havesp = get_pdata(user.id, "sp", 10)
@@ -14041,14 +14063,14 @@ async def handle_message(message, num=1):
                             + str(sp)
                             + ")"
                         )
-                        return
+                        return None
                 if num > 0:
                     args.append(num)
                 if user:
                     if a.get("confirm_prompt", None):
                         if not await confirm_prompt(chan, a["confirm_prompt"], user):
                             await chan.send("Action aborted.")
-                            return
+                            return None
                     elif me and me.hp <= a.get("danger", 0):
                         if not await confirm_prompt(
                             chan,
@@ -14058,7 +14080,7 @@ async def handle_message(message, num=1):
                             user,
                         ):
                             await chan.send("Action aborted.")
-                            return
+                            return None
                     elif me and me.has_trait("tool_broke"):
                         me.del_trait("tool_broke")
                         if not await confirm_prompt(
@@ -14067,7 +14089,7 @@ async def handle_message(message, num=1):
                             user,
                         ):
                             await chan.send("Action aborted.")
-                            return
+                            return None
                 if a.get("informational", False):
                     done = await globals()[a.get("function", "sorry nothing")](
                         args, me, chan
@@ -14127,7 +14149,7 @@ async def handle_message(message, num=1):
                     return True
             else:
                 await chan.send("Command not found.")
-                return
+                return None
     except Exception:  # figure it out when documenting
         if chan:
             await chan.send(

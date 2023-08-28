@@ -12,6 +12,7 @@ select = [
 	"ISC",   # flake8-implicit-str-concat 
 	"ICN",   # flake8-import-conventions
 	"PIE",   # flake8-pie           # Misc. unneeded or duplicated elements
+	"RET",   # flake8-return
 	"SIM",   # flake8-simplify
 	"TID",   # flake8-tidy-imports
 	"TCH",   # flake8-type-checking # libraries only invoked for type annotations
@@ -23,6 +24,8 @@ select = [
 	"PERF",  # Perflint 
 	"RUF",   # Ruff-specific rules
 ]
+
+include = ["*.py", "*.pyi", "pyproject.toml", "rust.toml"]
 ignore = [
 	"E501",    # "Line too long"; if Black doesn't fix it, we don't really care
 	"PLW2901", # `for` loop variable overwritten by assignment target; not really important
