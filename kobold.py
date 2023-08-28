@@ -405,15 +405,14 @@ class World:
         coords = self.scan(place, dist, gen)
         for m in coords:
             if feature == "resources":
-                search = []
-                for d in self.map[m].resources:
-                    search.append(self.map[m].resources[d])
+                search = [self.map[m].resources[d] for d in self.map[m].resources]
             elif feature == "factionbase":
-                search = []
-                for l in self.map[m].special:
-                    if landmark_data[l].get("faction", None):
-                        search.append(l)
-                        thing = l
+                search = [
+                    l
+                    for l in self.map[m].special
+                    if landmark_data[l].get("faction", None)
+                ]
+                thing = search[:1]
             else:
                 search = getattr(self.map[m], feature, [])
             if thing in search:
@@ -468,10 +467,7 @@ class World:
         spoiling = []
         contained = []
         creatures = []
-        diseases = []
-        for t in trait_data:
-            if trait_data[t].get("mc_disease", False):
-                diseases.append(t)
+        diseases = [t for t in trait_data if trait_data[t].get("mc_disease", False)]
         console_crosspost = False
         console_print("Pruning encounters", True)
         toremove = []
@@ -762,10 +758,7 @@ class World:
             if not p:
                 continue
             if not c.owner or c.owner.hp <= 0:
-                newowners = []
-                for k in klist:
-                    if k.get_place() == p:
-                        newowners.append(k)
+                newowners = [k for k in klist if k.get_place() == p]
                 c.owner = choice(newowners)
                 if c.owner:
                     game_print(
@@ -832,9 +825,7 @@ class World:
             for a in list(c.traits):
                 if trait_data[a].get("mc_reset", False):
                     c.del_trait(a)
-        for c in contained:
-            if c.perishable:
-                spoiling.append(c)
+        spoiling += [c for c in contained if c.perishable]
         for e in eggs:
             e.hatch()
         for i in spoiling:
@@ -929,10 +920,7 @@ class Tile:
             ml = i.get("minelevel", 0)
             if ml > 0 and ml <= self.z:
                 possible[i["name"]] = i["chance"]
-        reses = []
-        for p in possible:
-            if chance(possible[p]):
-                reses.append(p)
+        reses = [p for p in possible if chance(possible[p])]
         while len(reses) < 4:
             reses.append(None)
         random.shuffle(reses)
@@ -1433,13 +1421,15 @@ class Tile:
         if len(self.special) > 0:
             msg += "\n\nLandmarks here: " + ", ".join(self.special)
         if "Road" in self.special or "Paved Road" in self.special:
-            roadirs = []
-            for d in DIR_FULL:
+            roadirs = [
+                DIR_FULL[d]
+                for d in DIR_FULL
                 if (
                     "Road" in self.get_border(d).special
                     or "Paved Road" in self.get_border(d).special
-                ) and not self.blocked[d]:
-                    roadirs.append(DIR_FULL[d])
+                )
+                and not self.blocked[d]
+            ]
             if len(roadirs) > 0:
                 msg += "\nRoad directions: " + ", ".join(roadirs)
             else:
@@ -1458,9 +1448,7 @@ class Tile:
         if len(cs) > 0:
             msg += "\nTamed creatures here:\n" + ", ".join(cs)
         msg += "\n\nItems here:\n"
-        ks = []
-        for i in self.items:
-            ks.append(i.display())
+        ks = [i.display() for i in self.items]
         msg += ", ".join(ks)
         thing = self.get_tribe()
         if thing:
@@ -1552,7 +1540,7 @@ class Dungeon:
         else:
             return None
 
-    def expand(self, gpos):
+    def extend(self, gpos):
         ot = self.get_tile(gpos[0], gpos[1], gpos[2])
         dirs = ["n", "e", "w", "s", "u", "d"]
         if gpos[0] == 0:
@@ -1608,17 +1596,17 @@ class Dungeon:
         firstile.special.append("Dungeon Exit")
         gpos = list(self.entry)
         for _x in range(dungeon_data[self.d]["bosslength"]):
-            npos = self.expand(gpos)
+            npos = self.extend(gpos)
             if chance(50):
                 for _xx in range(
                     random.randint(1, math.ceil(dungeon_data[self.d]["bosslength"] / 2))
                 ):
-                    self.expand(gpos)
+                    self.extend(gpos)
             if chance(50):
                 for _xx in range(
                     random.randint(1, math.ceil(dungeon_data[self.d]["bosslength"] / 2))
                 ):
-                    self.expand(gpos)
+                    self.extend(gpos)
             gpos = npos
         bosstile = self.get_tile(gpos[0], gpos[1], gpos[2])
         for e in self.world.encounters:
@@ -1722,10 +1710,11 @@ class Tribe:
                 choice(self.kobolds).male = True
             if not hasfemale:
                 choice(self.kobolds).male = False
-        toremove = []
-        for e in world.encounters:
-            if e.place.x == self.x and e.place.y == self.y and e.place.z == self.z:
-                toremove.append(e)
+        toremove = [
+            e
+            for e in world.encounters
+            if e.place.x == self.x and e.place.y == self.y and e.place.z == self.z
+        ]
         for e in toremove:
             world.encounters.remove(e)
 
@@ -1831,9 +1820,9 @@ class Tribe:
             + "\n"
         )
         msg += "Base Defense: " + str(self.defense) + "\nHeat: "
-        heats = []
-        for f in self.heat_faction:
-            heats.append(f + ": %.1f" % round(self.heat_faction[f], 1))
+        heats = [
+            f + ": %.1f" % round(self.heat_faction[f], 1) for f in self.heat_faction
+        ]
         msg += ", ".join(heats) + "\nWatchmen: "
         watch = []
         wdef = 0
@@ -2120,13 +2109,10 @@ class Tribe:
             console_print("community effort failed: no votes")
             return  # no kobolds voting
         best = None
-        ties = []
         for x in tally:
             if not best or tally[x] > tally[best]:
                 best = x
-        for x in tally:
-            if tally[x] == tally[best]:
-                ties.append(x)
+        ties = [x for x in tally if tally[x] == tally[best]]
         if len(ties) <= 0:
             console_print("community effort failed: unable to tally ties")
             return  # probably won't happen but just in case
@@ -2306,10 +2292,9 @@ class Tribe:
             tile.cave_in(self.kobolds[0])
         dmg = 0
         dmgto = {}
-        bolds = []
-        for k in self.kobolds:
-            if k.age >= 6 or not self.has_building("Nursery"):
-                bolds.append(k)
+        bolds = [
+            k for k in self.kobolds if k.age >= 6 or not self.has_building("Nursery")
+        ]
         if self.space < self.space_in_use:
             outside = self.space_in_use - self.space
             game_print(
@@ -2590,11 +2575,7 @@ class Kobold:
         return False
 
     def worn_items(self):
-        i = []
-        for w in self.worns:
-            if self.worns[w]:
-                i.append(self.worns[w])
-        return i
+        return [w for w in self.worns.values() if w]
 
     def familiar(self, r):
         res = find_research(r)
@@ -2771,10 +2752,11 @@ class Kobold:
             if item.liquid_capacity > 0 and item.sealable:
                 item.liquid_units = random.randint(0, item.liquid_capacity)
                 if item.liquid_units > 0:
-                    liqs = []
-                    for l in liquid_data:
-                        if not liquid_data[l].get("foreign", False):
-                            liqs.append(l)
+                    liqs = [
+                        l
+                        for l in liquid_data
+                        if not liquid_data[l].get("foreign", False)
+                    ]
                     item.liquid = choice(liqs)
             worth -= item.realvalue
 
@@ -3155,9 +3137,11 @@ class Kobold:
         sts = []
         if len(self.eggs) > 0:
             sts.append("Pregnant")
-        for t in trait_data:
-            if self.has_trait(t) and trait_data[t].get("visible", False):
-                sts.append(trait_data[t].get("display", t))
+        sts += [
+            trait_data[t].get("display", t)
+            for t in trait_data
+            if self.has_trait(t) and trait_data[t].get("visible", False)
+        ]
         if len(sts) > 0:
             msg += ", ".join(sts)
         else:
@@ -3169,26 +3153,19 @@ class Kobold:
         if len(self.spells) > 0:
             msg += "\nMana: " + str(self.mp) + "/" + str(self.max_mp)
             msg += "\nSpells known: " + ", ".join(self.spells)
-        inv = []
-        for i in self.items:
-            inv.append(i.display())
+        inv = [i.display() for i in self.items]
         isize = len(inv)
         if self.carry:
             inv.append(self.carry.display())
         msg += "\n\nInventory (" + str(isize) + "/" + str(self.inv_size) + ")\n"
-        if len(inv) == 0:
+        if isize == 0:
             inv.append("Empty")
         msg += ", ".join(inv) + "\nWorn: "
-        worn = []
-        for w in self.worns:
-            if self.worns[w]:
-                worn.append(self.worns[w].display())
+        worn = [w.display() for w in self.worns.values if w]
         if len(worn) == 0:
             worn.append("None")
         msg += ", ".join(worn) + "\n\nStats:\n"
-        statblock = []
-        for st in STATS:
-            statblock.append(st + ": " + self.stat_str(st))
+        statblock = [st + ": " + self.stat_str(st) for st in STATS]
         msg += " / ".join(statblock)
         msg += "\n\nSkills (total level: "
         sktotal = 0
@@ -3298,13 +3275,15 @@ class Kobold:
                 and n >= min(10, math.ceil(self.max_hp / 2))
                 and self.save("con") < n + 5
             ):
-                inj = []
-                for t in trait_data:
-                    if trait_data[t].get("injury", False) and (
+                inj = [
+                    t
+                    for t in trait_data
+                    if trait_data[t].get("injury", False)
+                    and (
                         not self.has_trait(t)
                         or not self.has_trait(trait_data[t].get("worse", t))
-                    ):
-                        inj.append(t)
+                    )
+                ]
                 injury = choice(inj)
                 if injury:
                     if self.has_trait(injury):
@@ -3489,14 +3468,15 @@ class Kobold:
                 self.get_familiar(r[1], exp)
 
     def learn_spell(self, lv, c):
-        sp = []
-        for s in spell_data:
+        sp = [
+            s["name"]
+            for s in spell_data
             if (
                 s["name"] not in self.spells
                 and s["level"] <= lv
                 and (not c or c in s["spell_class"])
-            ):
-                sp.append(s["name"])
+            )
+        ]
         newspell = choice(sp)
         if newspell:
             self.spells.append(newspell)
@@ -3726,19 +3706,11 @@ class Party:
 
     @property
     def k_members(self):
-        m = []
-        for k in self.members:
-            if isinstance(k, Kobold):
-                m.append(k)
-        return m
+        return [k for k in self.members if isinstance(k, Kobold)]
 
     @property
     def c_members(self):
-        m = []
-        for k in self.members:
-            if not isinstance(k, Kobold):
-                m.append(k)
-        return m
+        return [k for k in self.members if not isinstance(k, Kobold)]
 
     def get_chan(self):
         return self.chan
@@ -4137,9 +4109,7 @@ class Item:
         if self.type == "corpse":
             d += "\nOwner: " + str(self.owner)
             d += "\nSize (AP cost to butcher): " + str(self.size)
-            g = []
-            for y in self.gain:
-                g.append(y[0] + " x" + str(y[1]))
+            g = [y[0] + " x" + str(y[1]) for y in self.gain]
             d += "\nPossible yield: " + ", ".join(g) + "\n"
         elif self.kobold:
             d += "\nEgg color: " + self.kobold.color + "\n"
@@ -4398,7 +4368,9 @@ class Item:
                 if k.hp <= 0:
                     self.destroy("Manacite used")
                     return True
-            for s in spell_data:
+            sp = [
+                s["name"]
+                for s in spell_data
                 if (
                     (
                         s["name"] not in k.spells
@@ -4407,8 +4379,8 @@ class Item:
                     )
                     and (self.school == "open" or self.school == s["school"])
                     and s["level"] >= self.attunelevel - 1
-                ):
-                    sp.append(s["name"])
+                )
+            ]
             newspell = choice(sp)
             if newspell:
                 if len(k.spells) == 0:
@@ -4508,10 +4480,9 @@ class Item:
                 k.p("The rod is completely still.")
             return True
         elif self.name == "Flare Wand":
-            tribes = []
-            for t in k.world.tribes:
-                if get_tri_distance(k.x, k.y, t.x, t.y) < 15:
-                    tribes.append(t)
+            tribes = [
+                t for t in k.world.tribes if get_tri_distance(k.x, k.y, t.x, t.y) < 15
+            ]
             if len(tribes) > 0:
                 k.p(
                     "[n] holds up the Flare Wand, which begins to spark and glow a brilliant red. Yellow streaks fly off of it and travel into the distance."
@@ -4602,10 +4573,11 @@ class Item:
                 elif isinstance(self.place, Tribe):
                     t = self.place
                 else:  # see which kobolds are present, pick one of them
-                    bolds = []
-                    for k in self.place.world.kobold_list:
-                        if k.tribe and k.get_place() == self.place:
-                            bolds.append(k)
+                    bolds = [
+                        k
+                        for k in self.place.world.kobold_list
+                        if k.tribe and k.get_place() == self.place
+                    ]
                     t = choice(bolds).tribe
                 if t:
                     self.kobold = Kobold(t)
@@ -4745,12 +4717,8 @@ class Item:
                 lowy = self.map[m]["y"]
             if self.map[m]["y"] > highy:
                 highy = self.map[m]["y"]
-        msg = []
-        row = []
-        for _a in range((((highx - lowx) + 1) * 2) + 1):
-            row.append(" ")
-        for _b in range((((highy - lowy) + 1) * 2) + 1):
-            msg.append(list(row))
+        row = [" " for _a in range((((highx - lowx) + 1) * 2) + 1)]
+        msg = [list(row) for _b in range((((highy - lowy) + 1) * 2) + 1)]
         # console_print("msg and row: "+str(len(msg))+","+str(len(row)))
         # console_print("lowx and y: "+str(lowx)+","+str(lowy))
         for m in self.map:
@@ -4769,9 +4737,7 @@ class Item:
                 msg[yy][xx + 1] = "-"
             if not self.map[m]["s"]:
                 msg[yy + 1][xx] = "|"
-        lines = []
-        for y in msg:
-            lines.append("".join(y))
+        lines = ["".join(y) for y in msg]
         k.p("```" + "\n".join(lines) + "```")
 
 
@@ -4847,13 +4813,15 @@ class Encounter:
             if force:
                 mob = force
             else:
-                for c in creature_data:
+                [
+                    c["name"]
+                    for c in creature_data
                     if (
                         c["level"][0] <= level
                         and c["level"][1] >= level
                         and (c["cr"] * 2 < n or c["cr"] <= 1)
-                    ):
-                        creatures.append(c["name"])
+                    )
+                ]
                 console_print("spawning from " + str(n) + ": " + str(creatures))
                 mob = choice(creatures)
             if not mob:
@@ -4926,9 +4894,7 @@ class Encounter:
                 "The Ant Queen and her subjects fall, leaving behind the heavy stench of alarm pheromones. The nest rumbles as ants scramble to evacuate. These ants surely won't bother the tribe anytime soon.",
                 p.get_chan(),
             )
-            tiles = []
-            for m in d.map:
-                tiles.append(d.map[m])
+            tiles = [d.map[m] for m in d.map]
             re = []
             for e in self.world.encounters:
                 if e.place in tiles:
@@ -5206,18 +5172,17 @@ class Creature:
         if "mount" in self.training:
             msg += "Mount strength: " + str(self.mount_strength()) + "\n"
         msg += "\nStatus: "
-        sts = []
-        for t in trait_data:
-            if self.has_trait(t) and trait_data[t].get("visible", False):
-                sts.append(trait_data[t].get("display", t))
+        sts = [
+            trait_data[t].get("display", t)
+            for t in trait_data
+            if self.has_trait(t) and trait_data[t].get("visible", False)
+        ]
         if len(sts) > 0:
             msg += ", ".join(sts)
         else:
             msg += "Fine"
         msg += "\n\nHP: " + str(self.hp) + "/" + str(self.max_hp)
-        inv = []
-        for i in self.items:
-            inv.append(i.display())
+        inv = [i.display() for i in self.items]
         isize = len(inv)
         if self.carry:
             inv.append(self.carry.display())
@@ -5225,9 +5190,7 @@ class Creature:
         if len(inv) == 0:
             inv.append("Empty")
         msg += ", ".join(inv) + "\n\nStats:\n"
-        statblock = []
-        for st in STATS:
-            statblock.append(st + ": " + self.stat_str(st))
+        statblock = [st + ": " + self.stat_str(st) for st in STATS]
         msg += " / ".join(statblock)
         if pr:
             action_queue.append(
@@ -5406,9 +5369,7 @@ class Creature:
                 if not summoned:
                     self.p("[n] calls upon her subjects.")
                     summoned = True
-                current = []
-                for c in self.encounter.creatures:
-                    current.append(c.name[-1])
+                current = [c.name[-1] for c in self.encounter.creatures]
                 a = ord("A")
                 while chr(a) in current:
                     a += 1
@@ -5422,9 +5383,7 @@ class Creature:
     def summon(self, enemy):
         self.p("[n] calls for help...")
         if chance(40 + self.stats["cha"]):
-            current = []
-            for c in self.encounter.creatures:
-                current.append(c.name[-1])
+            current = [c.name[-1] for c in self.encounter.creatures]
             a = ord("A")
             while chr(a) in current:
                 a += 1
@@ -5492,10 +5451,7 @@ class Creature:
     def attack(self, target):
         guard = False
         if isinstance(target, Kobold) and target.age < 6 and chance(95):
-            adults = []
-            for k in target.party.k_members:
-                if k.age >= 6:
-                    adults.append(k)
+            adults = [k for k in target.party.k_members if k.age >= 6]
             tank = choice(adults)
             if tank:
                 tank.p("[n] moves to protect " + target.display() + " from harm!")
@@ -6489,9 +6445,7 @@ async def cmd_crafts(words, me, chan):
             continue
         good = check_req(me.tribe, c.get("req", []), me)
         if good == "good":
-            mats = []
-            for m in c["materials"]:
-                mats.append(m)
+            mats = c["materials"].copy()
             msg += "\n" + c["result"] + ": "
             if c.get("mana", 0) > 0:
                 msg += str(c["mana"]) + " Mana."
@@ -6677,9 +6631,7 @@ def cmd_farming(words, me, target):
         msg += "None\n\nYou'll have to build a farm before you can grow anything here."
     else:
         msg += "\nCapacity: " + str(p.farm_cap) + "/1000"
-        fs = []
-        for f in farms:
-            fs.append(f + " x" + str(farms[f]))
+        fs = [f + " x" + str(farms[f]) for f in farms]
         msg += ", ".join(fs) + "\n\nCrop progress:"
         for f in p.farming_prog:
             msg += "\n" + f + ": " + str(p.farming_prog[f]) + " (Yield: "
@@ -6744,17 +6696,16 @@ def cmd_kennel(words, me, chan):
     else:
         cl = p.pasture
         cln = "Pasture"
-    kl = []
-    for k in cl:
-        kl.append(
-            k.display()
-            + " - "
-            + str(k.hp)
-            + "/"
-            + str(k.max_hp)
-            + " HP - Training: "
-            + ", ".join(k.training)
-        )
+    kl = [
+        k.display()
+        + " - "
+        + str(k.hp)
+        + "/"
+        + str(k.max_hp)
+        + " HP - Training: "
+        + ", ".join(k.training)
+        for k in cl
+    ]
     e = discord.Embed(type="rich", title=cln, description="\n".join(kl))
     action_queue.append(["embed", me.get_chan(), e])
     return True
@@ -6781,10 +6732,7 @@ async def cmd_kobolds(words, me, chan):
             return False
         pages.remove(start)
         pages.insert(0, start)
-    bolds = []
-    for k in me.world.kobold_list:
-        if k.get_place() == me.get_place():
-            bolds.append(k)
+    bolds = [k for k in me.world.kobold_list if k.get_place() == me.get_place()]
     for p in pages:
         l = []
         pdesc = ""
@@ -6808,10 +6756,11 @@ async def cmd_kobolds(words, me, chan):
                 if k.nick:
                     m += str(k.cp) + "/" + str(k.max_cp) + " CP, "
                 m += "Status: "
-                st = []
-                for t in k.traits:
-                    if trait_data[t].get("high", False):
-                        st.append(trait_data[t]["display"])
+                st = [
+                    trait_data[t]["display"]
+                    for t in k.traits
+                    if trait_data[t].get("high", False)
+                ]
                 if len(st) > 0:
                     m += ", ".join(st)
                 else:
@@ -6819,10 +6768,11 @@ async def cmd_kobolds(words, me, chan):
                 l.append(m)
             elif p == "status":
                 m = k.display() + " - "
-                st = []
-                for t in k.traits:
-                    if trait_data[t].get("visible", False):
-                        st.append(trait_data[t]["display"])
+                st = [
+                    trait_data[t]["display"]
+                    for t in k.traits
+                    if trait_data[t].get("visible", False)
+                ]
                 if len(st) > 0:
                     m += ", ".join(st)
                 else:
@@ -6841,8 +6791,7 @@ async def cmd_kobolds(words, me, chan):
                 n = []
                 if k.carry:
                     n.append(k.carry.display())
-                for i in k.items:
-                    n.append(i.display())
+                n.extend([i.display() for i in k.items])
                 m = (
                     k.display()
                     + "("
@@ -8138,7 +8087,7 @@ def cmd_familiarity(words, k, target):
     msg = ""
     for f in fams:
         msg += f + ":\n" + "; ".join(fams[f]) + "\n\n"
-    action_queue.append(
+    action_queue.extend(
         [
             "embed",
             k.get_chan(),
@@ -8178,10 +8127,7 @@ async def cmd_look(words, k, chan):
 
 async def cmd_lookall(words, me, chan):
     p = me.get_place()
-    bolds = []
-    for k in me.world.kobold_list:
-        if k.get_place() == p:
-            bolds.append(k)
+    bolds = [k for k in me.world.kobold_list if k.get_place() == p]
     embeds = []
     for k in bolds:
         e = discord.Embed(
@@ -8686,10 +8632,9 @@ def cmd_drop(words, me, i):
 
 
 def cmd_comfort(words, me, target):
-    saves = []
-    for t in target.traits:
-        if trait_data[t].get("comfort_save_to_cure", False):
-            saves.append(t)
+    saves = [
+        t for t in target.traits if trait_data[t].get("comfort_save_to_cure", False)
+    ]
     base = max(me.smod("cha"), me.smod("wis")) + me.skmod("willpower")
     exp = (base + 4) * 4
     if len(saves) > 0:
@@ -9343,7 +9288,8 @@ def cmd_flee(words, me, target):
     for c in e.creatures:
         for t in c.traits:
             if not trait_data[t].get("turn_block", False):
-                ao.append(c)
+                ao.append(c)  # noqa: PERF401
+                # sorry, chief; no clue how to make a comprehension here
     for k in me.party.members:
         if chance(25) and len(ao) > 0:
             c = choice(ao)
@@ -9755,7 +9701,7 @@ async def cmd_use(words, me, chan):
         return True
 
 
-def cmd_expand(words, me, target):
+def cmd_extend(words, me, target):
     p = me.get_place()
     tribe = None
     if isinstance(p, Tribe):
@@ -10928,14 +10874,10 @@ def cmd_chop(words, k, target):
         exp += (logs * 5) + branches + 5
         t.stability -= 1
         if chance(10 + t.stability - k.skmod("woodcutting")):
-            bolds = []
-            for l in k.world.kobold_list:
-                if l.get_place() == t:
-                    bolds.append(l)
+            bolds = [l for l in k.world.kobold_list if l.get_place() == t]
             target = choice(bolds)
-            if (
-                target
-            ):  # there should be at least one, the lumberjack themselves, but you never know
+            if target:
+                # there should be at least one, the lumberjack themselves, but you never know
                 target.p("[n] was crushed by the falling tree!")
                 target.hp_tax(random.randint(5, 15), "Timber!", dmgtype="bludgeoning")
     k.gain_xp("woodcutting", exp)
@@ -10988,34 +10930,30 @@ async def cmd_info(words, user, chan, w):
         await chan.send("Search terms must be at least 3 characters in length.")
         return
     cat = words[1].replace("*", "") if words[1][0] == "*" else None
-    for r in building_data:
-        if words[1] in r["name"].lower():
-            info.append([r, "Building"])
-    for r in research_data:
-        if words[1] in r["name"].lower():
-            info.append([r, "Research"])
-    for r in spell_data:
-        if words[1] in r["name"].lower():
-            info.append([r, "Spell"])
-    for r in creature_data:
-        if words[1] in r["name"].lower():
-            info.append([r, "Creature"])
+    info.extend(
+        [[r, "Building"] for r in building_data if words[1] in r["name"].lower()]
+    )
+    info.extend(
+        [[r, "Research"] for r in research_data if words[1] in r["name"].lower()]
+    )
+    info.extend([[r, "Spell"] for r in spell_data if words[1] in r["name"].lower()])
+    info.extend(
+        [[r, "Creature"] for r in creature_data if words[1] in r["name"].lower()]
+    )
     for i in item_data:
         if words[1] in i["name"].lower():
             info.append([i, "Item"])
         if cat and cat in i.get("cat", []):
             info.append([i, "Item"])
-    for i in item_cats:
-        if words[1] in i.lower():
-            info.append(
-                [{"name": i, "items": ", ".join(item_cats[i])}, "Item Category"]
-            )
-    for r in craft_data:
-        if words[1] in r["result"].lower():
-            info.append([r, "Craft"])
-    for r in landmark_data:
-        if words[1] in r.lower():
-            info.append([landmark_data[r], "Landmark"])
+    info.extend(
+        [
+            [{"name": i, "items": ", ".join(item_cats[i])}, "Item Category"]
+            for i in item_cats
+            if words[1] in i.lower()
+        ]
+    )
+    info.extend([[r, "Craft"] for r in craft_data if words[1] in r["result"].lower()])
+    info.extend([[r, "Landmark"] for r in landmark_data if words[1] in r.lower()])
     for r in liquid_data:
         if words[1] in r.lower():
             liquid_data[r]["name"] = r
@@ -11089,10 +11027,7 @@ def cmd_quit(words, me, p, force=False):
     if me.party:
         action_queue.append(["delmember", me.party.get_chan(), me.d_user_id])
         if me.party.owner == me:
-            eligible = []
-            for m in me.party.k_members:
-                if m.nick:
-                    eligible.append(m)
+            eligible = [m for m in me.party.k_members if m.nick]
             me.party.owner = choice(eligible)
             if me.party.owner:
                 game_print(
@@ -11133,8 +11068,7 @@ def get_newbold(user, chan, w, test=False, nt=False):
         if p == str(user.id):
             continue
         if len(playerdata[p].get("selection", {})) > 0:
-            for s in playerdata[p]["selection"]:
-                inselection.append(s)
+            inselection.append(playerdata[p]["selection"].copy())
     for k in w.kobold_list:
         if not k.nick:
             if k.d_user_id and user.id == k.d_user_id:  # returning player who left/quit
@@ -11419,9 +11353,11 @@ async def cmd_name(words, user, chan, w, wand=None):
     if w != sandbox:
         with contextlib.suppress(discord.HTTPException, ValueError):
             await user.edit(nick=name)
-        for c in guild.channels:
-            if "party" in c.name or "tribe" in c.name:
-                action_queue.append(["delmember", c.name, user.id])
+        action_queue.extend(
+            [["delmember", c.name, user.id]]
+            for c in guild.channels
+            if "party" in c.name or "tribe" in c.name
+        )
         action_queue.append(["addrole", ROLENAMES[newbold.color], user.id])
         action_queue.append(["delrole", "Lost Soul", user.id])
     if newbold.party:
@@ -11506,9 +11442,7 @@ async def multi_select(
     targets = find_item_multi(search.lower(), me, startininv, place, type)
     if landmarks:
         tile = me.world.get_tile(me.x, me.y, me.z)
-        for l in tile.special:
-            if search in l.lower():
-                targets.append(l)
+        targets.extend([l for l in tile.special if search in l.lower()])
     if not chan:
         if len(targets) == 0:
             return None
@@ -11716,12 +11650,16 @@ async def cmd_spawn(words, user, chan, w):
 
 async def cmd_unlockall(words, user, chan, w):
     for t in w.tribes:
-        for r in research_data:
-            if r["name"] not in t.research:
-                t.research.append(r["name"])
-        for b in building_data:
-            if b["name"] not in t.buildings and not b.get("landmark", False):
-                t.buildings.append(b["name"])
+        t.research.extend(
+            [r["name"] for r in research_data if r["name"] not in t.research]
+        )
+        t.buildings.extend(
+            [
+                b["name"]
+                for b in building_data
+                if b["name"] not in t.buildings and not b.get("landmark", False)
+            ]
+        )
     await chan.send("Research and buildings unlocked")
 
 
@@ -12187,9 +12125,7 @@ async def do_post_queue():
     keys = list(post_queue.keys())
     for p in keys:
         channel = discord.utils.get(guild.channels, name=p)
-        msg = []
-        for m in post_queue[p]:
-            msg.append(m)
+        msg = post_queue[p].copy()
         if channel:
             s = ""
             for m in msg:
@@ -12512,14 +12448,13 @@ async def cmd_task(words, me, chan):
                 if not a.get("task", False):
                     await chan.send("Can't add that command to a task.")
                     return
-                me.tribe.tasks.append([words[2], None, None, None, True])
+                me.tribe.tasks.extend([words[2], None, None, None, True])
                 await chan.send("Added " + words[2] + " to task list.")
             else:
                 await chan.send("Command not found.")
         elif words[1] in ["until", "condition", "conditional", "stop", "break"]:
             words = " ".join(words).split(" ", 5)
-            for _x in range(5):
-                words.append(None)
+            words.extend([None] * 5)
             s = None
             try:
                 s = int(words[2])
@@ -13142,8 +13077,7 @@ def load_game(path="klsave"):
                 tribolds[str(k.tribe.id)] += 1
                 if k in k.tribe.tavern:
                     k.tribe.tavern.remove(k)
-            for i in k.items:
-                allitems.append(i)
+            allitems.append(k.items.copy())
             if k.party:
                 p = k.party
                 if k.has_trait("bound") and k not in p.owner.tribe.prison:
@@ -13172,8 +13106,7 @@ def load_game(path="klsave"):
                 t.name = tribe_name()
             if not hasattr(t, "kennel_items"):
                 t.kennel_items = []
-            for i in t.items:
-                allitems.append(i)
+            allitems.append(t.items.copy())
             for task in t.tasks:
                 if len(task) < 5:
                     task.append(True)
@@ -13201,8 +13134,7 @@ def load_game(path="klsave"):
                     + " left in the world"
                 )
         for m in w.map:
-            for i in w.map[m].items:
-                allitems.append(i)
+            allitems.append(w.map[m].items.copy())
             if not hasattr(w.map[m], "pasture"):
                 w.map[m].pasture = []
         df = {}

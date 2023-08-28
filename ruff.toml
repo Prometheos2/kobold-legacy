@@ -19,9 +19,12 @@ select = [
 	"PTH",   # flake8-use-pathlib   # Use pathlib over os/inbuilt
 	"TRY",   # tryceratops          # Exceptions
 	"FLY",   # flynt                # str join alternatives
+	"PERF",  # Perflint 
 	"RUF",   # Ruff-specific rules
 ]
 ignore = [
 	"E501", # "Line too long"; if Black doesn't fix it, we don't really care
-	"E741", # "Ambiguous variable name"; will need fixing once we understand the code throughly; a bunch of "_l" is not better.
+	"E741", # "Ambiguous variable name"; will need fixing once we understand the code thoroughly; a bunch of "_l" is not better.
 ]
+target-version = "py38"
+isort.force-single-line = true
