@@ -1143,11 +1143,11 @@ class Tile:
                     k.p("[n] survived the night completely undetected.")
                     ct = k.world.find_tile_feature(10, self, "Goblin Camp", "special")
                     if ct:
-                        dir = get_dir(ct, k)
-                        if dir != "same":
+                        _dir = get_dir(ct, k)
+                        if _dir != "same":
                             k.p(
                                 "[n] watches the goblins head "
-                                + dir
+                                + _dir
                                 + " back to their camp."
                             )
                         k.gain_xp("stealth", 100)
