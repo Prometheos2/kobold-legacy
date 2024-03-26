@@ -2789,11 +2789,11 @@ class Kobold:
             d = ":link: "+d
         if self.color == "black":
             if self.has_trait("nonbinary"):
-                d = "<:actual_black_heart:971518820445487104> "+d
+                d = BLACK_HEART_EMOJI + " " + d
             elif self.male:
-                d = "<:actual_black_square:927082316675813416> "+d
+                d = BLACK_SQUARE_EMOJI + " " + d
             else:
-                d = "<:actual_black_circle:927082316369641524> "+d
+                d = BLACK_CIRCLE_EMOJI + " " + d
         elif self.color == "red" and self.has_trait("nonbinary"):
             d = ":heart: "+d
         else:
@@ -11867,6 +11867,9 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILDN = os.getenv('DISCORD_GUILD')
 BOT_NAME = os.getenv('BOT_NAME')
+BLACK_HEART_EMOJI = os.getenv("BLACK_HEART_EMOJI")
+BLACK_SQUARE_EMOJI = os.getenv("BLACK_SQUARE_EMOJI")
+BLACK_CIRCLE_EMOJI = os.getenv("BLACK_CIRCLE_EMOJI")
 guild = None
 
 intents = discord.Intents.all()
