@@ -2804,11 +2804,11 @@ class Kobold:
             d = ":link: " + d
         if self.color == "black":
             if self.has_trait("nonbinary"):
-                d = "<:actual_black_heart:971518820445487104> " + d
+                d = "<:actual_black_heart:1222225665143603330> " + d
             elif self.male:
-                d = "<:actual_black_square:927082316675813416> " + d
+                d = "<:actual_black_square:1222225681543331911> " + d
             else:
-                d = "<:actual_black_circle:927082316369641524> " + d
+                d = "<:actual_black_circle:1222225645275451403> " + d
         elif self.color == "red" and self.has_trait("nonbinary"):
             d = ":heart: " + d
         else:
