@@ -1062,7 +1062,11 @@ class Tile:
                 n = math.floor((math.sqrt((8*mindist)+1)-1)/2)
                 console_print([mindist, n])
             else:
-                n = random.randint(self.z*3, self.z*8)
+                # Z can be negative, but randint refuses negative arguments
+                absolute_z = abs(self.z)
+                n = random.randint(absolute_z * 3, absolute_z * 8)
+                if self.z < 0:
+                    n = -n
             if "Warding Lantern" in self.special:
                 n = math.floor(n/2)
         e = Encounter(self.world, self, random.randint(
