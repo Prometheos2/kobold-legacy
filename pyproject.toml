@@ -25,10 +25,8 @@ add = ["--no-self"]
 install = ["--no-self"]
 update = ["--no-self"]
 sync = ["--no-self"]
+remove = ["--no-self"]
 
 [tool.pdm.dev-dependencies]
-# Autopep8 formatter, supposed to fix pycodestyle issues
-formatter = ["autopep8>=2.0.3"]
-lint = [
-    "ruff>=0.3.2",
-]
+# Ruff linter and formatter
+lint = ["ruff>=0.3.2"]
