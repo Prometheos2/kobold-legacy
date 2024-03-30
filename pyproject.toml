@@ -26,6 +26,8 @@ install = ["--no-self"]
 update = ["--no-self"]
 sync = ["--no-self"]
 remove = ["--no-self"]
+# dev dependencies don't matter for the end-user
+lock = ["--prod"]
 
 [tool.pdm.dev-dependencies]
 # Ruff linter and formatter
