@@ -2,5 +2,5 @@
 :start
 cls
 echo Booting up
-kobold.py
+uv run kobold.py --no-dev
 goto :start
