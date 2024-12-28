@@ -10,7 +10,6 @@ import traceback
 import discord
 from dotenv import load_dotenv
 
-BOT_NAME = 'Lulurnbus#1506'
 STATS = ["str", "dex", "con", "int", "wis", "cha"]
 STAT_COLOR = {"str": "red", "dex": "white", "con": "black",
               "int": "blue", "wis": "green", "cha": "yellow"}
@@ -11955,6 +11954,7 @@ console_crosspost = True
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILDN = os.getenv('DISCORD_GUILD')
+BOT_NAME = os.getenv('BOT_NAME')
 guild = None
 
 intents = discord.Intents.all()
