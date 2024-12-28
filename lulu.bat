@@ -2,5 +2,5 @@
 :start
 cls
 echo Booting up
-kobold.py
+pdm run kobold.py
 goto :start
