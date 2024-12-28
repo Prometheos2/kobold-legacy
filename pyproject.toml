@@ -13,6 +13,16 @@ requires-python = ">=3.8, <=3.12"
 readme = "README.md"
 license = { text = "GNU" }
 
+# [tool.pyright]
+# autoImportCompletions = true
+# exclude = ["**/Python3*/Lib"]
+# fixAll = ["source.unusedImports", "source.convertImportFormat"]
+# inlayHints.functionReturnTypes = true
+# inlayHints.pytestParameters = true
+# inlayHints.variableTypes = true
+# persistAllIndices = true
+# remapDiagnostics = true
+
 # Exports requirements.txt files so that GitHub can scan dependencies.
 [[tool.pdm.autoexport]]
 filename = "requirements/requirements.txt"
