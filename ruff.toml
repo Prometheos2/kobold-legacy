@@ -1,0 +1,8 @@
+[lint]
+select = [
+	"FA",  # flake8-future-annotations (FA)
+	"PYI", # flake8-pyi (PYI)
+	"TC",  # flake8-type-checking (TC)
+	"RUF", # Ruff-specific rules (RUF)
+]
+ignore = []

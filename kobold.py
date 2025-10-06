@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import math
@@ -8,9 +10,13 @@ import re
 import shelve
 import time
 import traceback
+from typing import Literal, Sequence, Any
 
 import discord
 from dotenv import load_dotenv
+
+Building = dict[str, str | int]
+Research = dict[str, str | int]
 
 STATS = ["str", "dex", "con", "int", "wis", "cha"]
 STAT_COLOR = {"str": "red", "dex": "white", "con": "black",
@@ -31,7 +37,7 @@ ROLENAMES = {"brown": "Mudscale", "red": "Bloodscale", "yellow": "Goldscale", "g
 # ADVANCE_TOTALS=[4,8,12,16,20,24]
 
 
-def get_q_desc(q):
+def get_q_desc(q: int) -> str:
     qs = ["Abysmal", "Awful", "Crude", "Poor", "Normal",
           "Decent", "Good", "Excellent", "Masterwork", "Legendary"]
     q += 4
@@ -42,7 +48,7 @@ def get_q_desc(q):
     return qs[q]
 
 
-def kobold_name():
+def kobold_name() -> str:
     vowels = ['a', 'i', 'o', 'u', 'e']
     penvowels = ['a', 'o', 'u', 'ay', 'ee', 'i']
     frontcluster = ['b', 'br', 'bl', 'd', 'dr', 'dl', 'st', 'str', 'stl', 'shl', 'k', 'p',
@@ -80,7 +86,7 @@ def kobold_name():
     return firstname.capitalize()
 
 
-def tribe_name():
+def tribe_name() -> str:
     try:
         f = open('data/tribe_names.txt')
     except:
@@ -88,24 +94,24 @@ def tribe_name():
         return "Erroneously-named Tribe"
     temp_names = []
     for line in f:
-        nam = line.strip('\n')
+        nam: str = line.strip('\n')
         nam = nam.capitalize()
         temp_names.append(nam)
-    n = choice(temp_names)+" "+choice(temp_names)
+    n: str = choice(temp_names)+" "+choice(temp_names)
     f.close()
     return n
 
 # def alpha_str(str):
 
 
-def choice(ch):
+def choice(ch: Sequence):
     if len(ch) == 0:
         return None
     else:
         return random.choice(ch)
 
 
-def chance(ch):
+def chance(ch: int) -> bool:
     if ch <= 0:
         return False
     c = random.randint(1, 100)
@@ -116,7 +122,7 @@ def chance(ch):
         return False
 
 
-def get_json(fname):
+def get_json(fname: str) -> None | dict :
     try:
         f = open(fname)
         stuff = json.load(f)
@@ -130,7 +136,7 @@ def get_json(fname):
     return stuff
 
 
-def has_item(self, name, q=1):
+def has_item(self: "Kobold | Tile | Tribe", name: str, q=1) -> "Item | None":
     #console_print("has item for "+name)
     if name[0] == "*":
         cat = name.replace("*", "")
@@ -146,7 +152,7 @@ def has_item(self, name, q=1):
     return None
 
 
-def consume_item(self, name, q=1):
+def consume_item(self: "Kobold | Tile | Tribe", name: str, q=1):
     while q > 0:
         i = self.has_item(name)
         qq = q
@@ -156,7 +162,7 @@ def consume_item(self, name, q=1):
             i.destroy("Consumed")
 
 
-def check_req(self, req, k=None):
+def check_req(self: "Tile | Tribe | None", req, k: "Kobold" = None) -> str:
     good = "good"
     if k:
         place = k.get_place()
@@ -251,13 +257,13 @@ def check_req(self, req, k=None):
     return good
 
 
-def get_tri_distance(x1, y1, x2, y2):
+def get_tri_distance(x1: float, y1: float, x2: float, y2: float) -> float:
     xdist = abs(x1-x2)
     ydist = abs(y1-y2)
     return (min(xdist, ydist)*1.4)+abs(xdist-ydist)
 
-
-def get_dir(ct, k):
+# TODO: type
+def get_dir(ct, k: "Kobold") -> Literal['west', 'east', 'north', 'south', 'same']:
     if abs(ct.x-k.x) > abs(ct.y-k.y):
         if ct.x < k.x:
             return "west"
@@ -274,21 +280,21 @@ def get_dir(ct, k):
 
 class World:
     def __init__(self):
-        self.tribes = []
-        self.map = {}
-        self.kobold_list = []
+        self.tribes: list["Tribe"] = []
+        self.map: dict[str, "Tile"] = {}
+        self.kobold_list: list["Kobold"] = []
         self.kid = 0
         self.tid = 0
         self.pid = 0
         self.did = 0
         self.month = 1
-        self.encounters = []
-        self.dungeons = []
+        self.encounters: list["Encounter"] = []
+        self.dungeons: list["Dungeon"] = []
         t = time.gmtime()
         self.next_mc_time = time.time(
         )-(t[5]+(t[4]*60)+((t[3] % 24)*3600))+86400
 
-    def get_tile(self, x, y, z, gen=True):
+    def get_tile(self, x: int, y: int, z: int, gen=True) -> "Tile | None":
         c = ",".join([str(x), str(y), str(z)])
         if c in self.map:
             return self.map[c]
@@ -297,7 +303,7 @@ class World:
             return self.map[c]
         return None
 
-    def find_distant_tile(self, dist=10, z=1):
+    def find_distant_tile(self, dist=10, z=1) -> "Tile":
         edges = {"lowx": 0, "lowy": 0, "highx": 0, "highy": 0}
         for t in self.tribes:
             if t.x < edges["lowx"]:
@@ -339,7 +345,7 @@ class World:
             self.map[maploc] = Tile(self, x, y, z)
         return self.map[maploc]
 
-    def find_tile_feature(self, dist, place, thing, feature, gen=False):
+    def find_tile_feature(self, dist: int, place: "Tribe | Kobold | Tile", thing: str, feature: str, gen=False) -> "Tile | None":
         closest = dist
         ct = None
         coords = self.scan(place, dist, gen)
@@ -371,7 +377,7 @@ class World:
             console_print("No "+str(thing)+" found within "+str(dist)+" tiles")
         return ct
 
-    def scan(self, origin, dist, gen):
+    def scan(self, origin: "Tribe | Kobold | Tile", dist: int, gen: bool) -> list:
         global console_crosspost
         console_print("Scanning from "+str((origin.x, origin.y)) +
                       " with distance "+str(dist))
@@ -736,13 +742,13 @@ class World:
 
 
 class Tile:
-    def __init__(self, world, x, y, z, dungeon=None):
+    def __init__(self, world: World, x: int, y: int, z: int, dungeon: "Dungeon" = None):
         self.x = x
         self.y = y
         self.z = z
         self.world = world
         self.mineprog = {"n": 0, "e": 0, "w": 0, "s": 0}
-        self.items = []
+        self.items: list["Item"] = []
         self.resources = {"n": None, "e": None, "w": None, "s": None}
         self.mined = {"n": 0, "e": 0, "w": 0, "s": 0}
         if z > 0:
@@ -849,7 +855,7 @@ class Tile:
                 return t
         return None
 
-    def cave_in(self, me, dir=None):
+    def cave_in(self, me: "Kobold", dir: str | None = None):
         if dir and self.blocked[dir]:
             return
         if dir:
@@ -1035,6 +1041,7 @@ class Tile:
                     game_print("The Farm Fencing was destroyed!", chan)
                 t.special.remove("Farm Fencing")
 
+	# TODO
     def spawn_encounter(self, force=None, n=0):
         for e in self.world.encounters:
             if e.place == self:
@@ -1077,7 +1084,7 @@ class Tile:
                 partieshere.append(k.party)
         return partieshere
 
-    def get_border(self, d):
+    def get_border(self, d: Literal["e", "w", "s", "n"]):
         borders = {"e": (self.x+1, self.y, self.z), "w": (self.x-1, self.y, self.z),
                    "s": (self.x, self.y+1, self.z), "n": (self.x, self.y-1, self.z)}
         t = self.world.get_tile(borders[d][0], borders[d][1], borders[d][2])
@@ -1092,7 +1099,7 @@ class Tile:
                 q[i.name] += i.num
         return q
 
-    def get_available_builds(self, k=None):
+    def get_available_builds(self, k: "Kobold" | None = None) -> list:
         ar = []
         for r in building_data:
             good = True
@@ -1125,7 +1132,7 @@ class Tile:
                 ar.append(r["name"])
         return ar
 
-    def do_building(self, k, res):
+    def do_building(self, k: "Kobold", res: Building):
         prog = (k.smod("str")+(k.skmod("construction")*3))+10
         prog += k.equip_bonus("construction")
         r = res["name"]
@@ -1154,7 +1161,7 @@ class Tile:
         k.gain_xp("construction", exp)
         k.gain_fam(res.get("req", []), prog)
 
-    def finish_building(self, res, k):
+    def finish_building(self, res: Building, k: "Kobold"):
         self.special.append(res["name"])
         self.building_prog[res["name"]] = 0
         t = self.get_tribe()
@@ -1200,13 +1207,13 @@ class Tile:
             spawn_item("Stone Chunk", self, 10)
             self.minerals()
 
-    def unfinish_building(self, res):
+    def unfinish_building(self, res: Building):
         self.special.remove(res["name"])
 
-    def has_item(self, name, q=1):
+    def has_item(self, name: str, q=1):
         return has_item(self, name, q)
 
-    def consume_item(self, name, q=1):
+    def consume_item(self, name: str, q=1):
         return consume_item(self, name, q)
 
     def item_quantities(self):
@@ -1226,7 +1233,7 @@ class Tile:
             if k.get_place() == self:
                 return k.get_chan()
 
-    def examine(self, me):
+    def examine(self, me: "Kobold"):
         dgn = me.dungeon
         if dgn:
             title = dungeon_data[dgn.d]["name"]+", level "+str(self.z)
@@ -1323,19 +1330,19 @@ class Tile:
 
 
 class Dungeon:
-    def __init__(self, type, world, x, y, z):
+    def __init__(self, type: str, world: World, x: int, y: int, z: int):
         self.world = world
         self.x = x
         self.y = y
         self.z = z
         self.id = self.world.did
         self.world.did += 1
-        self.map = {}
+        self.map: dict[str, Tile] = {}
         self.d = type
         world.dungeons.append(self)
         self.generate()
 
-    def get_tile(self, x, y, z, gen=True):
+    def get_tile(self, x: int, y: int, z: int, gen=True) -> None | Tile:
         if x < 0:
             return None
         elif x > dungeon_data[self.d]["dimensions"][0]:
@@ -1455,7 +1462,7 @@ class Dungeon:
 
 
 class Tribe:
-    def __init__(self, world, x=None, y=None, z=1):
+    def __init__(self, world: World, x: int | None = None, y: int | None = None, z=1):
         self.name = tribe_name()
         self.world = world
         self.space = 15
@@ -1463,8 +1470,8 @@ class Tribe:
         self.heat_faction = {"Goblin": 1}
         self.shc_faction = {"Goblin": 1}
         self.watchmen = []
-        self.chieftain = None
-        self.overseer = None
+        self.chieftain: "Kobold" = None
+        self.overseer: "Kobold" = None
         self.fo = []
         self.z = z
         self.water = 50
@@ -1497,8 +1504,8 @@ class Tribe:
             p.blocked[d] = False
             op = p.get_border(d)
             op.blocked[OPP_DIR[d]] = False
-        self.kobolds = []
-        self.items = []
+        self.kobolds: list["Kobold"] = []
+        self.items: list["Item"] = []
         self.graveyard = {}
         self.research = []
         self.buildings = []
@@ -1567,7 +1574,7 @@ class Tribe:
                     d += res["defense"]
         return d
 
-    def building_damage(self, build, dmg):
+    def building_damage(self, build, dmg: float):
         if build not in self.building_health:
             self.building_health[build] = 100
         if self.building_health[build]-dmg < 0:
@@ -1607,11 +1614,11 @@ class Tribe:
     def get_chan(self):
         return "tribe-"+str(self.id)+"-log"
 
-    def add_bold(self, k):
+    def add_bold(self, k: "Kobold"):
         if isinstance(k, Kobold) and k not in self.kobolds:
             self.kobolds.append(k)
 
-    def examine(self, me):
+    def examine(self, me: "Kobold"):
         title = self.name+", Month "+str(self.month)
         msg = "Time until month change: "
         sec = me.world.next_mc_time-time.time()
@@ -1697,7 +1704,7 @@ class Tribe:
         action_queue.append(
             ["delchan", "tribe-"+str(self.id)+"-chat", time.time()+600])
 
-    def get_available_research(self, k=None):
+    def get_available_research(self, k: "Kobold" = None):
         ar = []
         for r in research_data:
             good = "good"
@@ -1711,7 +1718,7 @@ class Tribe:
                 ar.append(r["name"])
         return ar
 
-    def get_available_builds(self, k=None):
+    def get_available_builds(self, k: "Kobold" = None):
         ar = []
         for r in building_data:
             good = True
@@ -1741,7 +1748,7 @@ class Tribe:
                 ar.append(r["name"])
         return ar
 
-    def do_research(self, k, res):
+    def do_research(self, k: "Kobold", res: Research):
         base = (k.smod("int")+(k.skmod("research")*3))+10
         if k.tribe.has_building("Research Lab"):
             prog = math.floor(base*1.75)
@@ -1779,7 +1786,7 @@ class Tribe:
         k.gain_xp("research", exp)
         k.get_familiar(r, exp)
 
-    def do_building(self, k, res):
+    def do_building(self, k: "Kobold", res: Building):
         prog = (k.smod("str")+(k.skmod("construction")*3))+10
         prog += k.equip_bonus("construction")
         r = res["name"]
@@ -1808,7 +1815,7 @@ class Tribe:
         k.gain_xp("construction", exp)
         k.gain_fam(res.get("req", []), prog)
 
-    def finish_research(self, res):
+    def finish_research(self, res: Research):
         self.research.append(res["name"])
         self.justbuilt = res["name"]
         if res["name"] == "Cultural Expansion":
@@ -1818,7 +1825,7 @@ class Tribe:
                         1, self.heat_faction[f]-(5+self.research.count(res["name"])))
         del self.research_prog[res["name"]]
 
-    def finish_building(self, res):
+    def finish_building(self, res: Research):
         self.buildings.append(res["name"])
         self.justbuilt = res["name"]
         self.building_prog[res["name"]] = 0
@@ -1850,7 +1857,7 @@ class Tribe:
             t = self.world.get_tile(self.x, self.y, self.z)
             t.farm_cap = 200
 
-    def unfinish_building(self, res):
+    def unfinish_building(self, res: Research):
         if res["name"] in self.buildings:
             self.buildings.remove(res["name"])
         if res["name"] in self.building_health:
@@ -1970,10 +1977,10 @@ class Tribe:
                     if t.overseer == k:
                         t.overseer = None
 
-    def has_item(self, name, q=1):
+    def has_item(self, name: str, q=1):
         return has_item(self, name, q)
 
-    def consume_item(self, name, q=1):
+    def consume_item(self, name: str, q=1):
         return consume_item(self, name, q)
 
     def item_quantities(self):
@@ -1985,7 +1992,7 @@ class Tribe:
                 q[i.name] += i.num
         return q
 
-    def gain_heat(self, h, faction=None):
+    def gain_heat(self, h: float, faction: str | None = None):
         if not faction:
             fs = ["Goblin", "Human", "Elf", "Dwarf"]
         else:
@@ -2009,7 +2016,7 @@ class Tribe:
             self.heat_faction[f] += h/5
             #console_print("Adding capped heat now "+str(self.heat_faction[faction]))
 
-    def violate_truce(self, k, f):
+    def violate_truce(self, k: "Kobold", f: str):
         k.p("This violates the tribe's truce with the "+f +
             " faction. This betrayal will not easily be forgotten.")
         self.shc_faction[f] = abs(self.shc_faction[f])
@@ -2139,7 +2146,7 @@ class Tribe:
 
 
 class Kobold:
-    def __init__(self, tribe=None):
+    def __init__(self, tribe: Tribe | None = None):
         self.name = kobold_name()
         self.nick = None
         self.orders = True
@@ -2230,7 +2237,7 @@ class Kobold:
             return 0
 
     @property
-    def max_ap(self):
+    def max_ap(self) -> int:
         ap = min(self.age*2, 10)
         for t in self.traits:
             if trait_data[t].get("max_ap", 0) != 0:
@@ -2312,7 +2319,7 @@ class Kobold:
                 i.append(self.worns[w])
         return i
 
-    def familiar(self, r):
+    def familiar(self, r: str):
         res = find_research(r)
         if r in self.familiarity:
             fam = math.floor(self.familiarity[r]/res["diff"])
@@ -2320,7 +2327,7 @@ class Kobold:
             return fam
         return 0
 
-    def get_familiar(self, r, n):
+    def get_familiar(self, r: str, n: int):
         if r not in self.familiarity:
             self.familiarity[r] = 0
         oldfam = self.familiar(r)
@@ -2336,7 +2343,7 @@ class Kobold:
             else:
                 self.p("[n] has become familiar with "+r+"!")
 
-    def ap_gain(self, n, pr=True):
+    def ap_gain(self, n: str, pr=True):
         self.ap += n
         if self.ap > self.max_ap:
             self.ap = self.max_ap
@@ -9592,7 +9599,7 @@ def cmd_chop(words, k, target):
     return True
 
 
-async def cmd_spells(words, user, chan, w):
+async def cmd_spells(words, user, chan, w: World):
     pages = {}
     maxlevel = 0
     if len(words) > 1:
@@ -9623,7 +9630,7 @@ async def cmd_spells(words, user, chan, w):
     return True
 
 
-async def cmd_info(words, user, chan, w):
+async def cmd_info(words, user, chan, w: World):
     info = []
     words[1] = words[1].lower()
     if len(words[1]) < 3 and words[1] not in ["cp", "ce", "me", "sp"]:
@@ -9743,7 +9750,7 @@ def cmd_quit(words, me, p, force=False):
     return True
 
 
-async def cmd_seltest(words, user, chan, w):
+async def cmd_seltest(words, user, chan, w: World):
     k = get_newbold(user, chan, w, test=True)
     if k:
         await chan.send("selected "+k.name)
@@ -9800,7 +9807,7 @@ def get_newbold(user, chan, w, test=False, nt=False):
     return choice(nameless)
 
 
-async def cmd_refund(words, user, chan, w):
+async def cmd_refund(words, user, chan, w: World):
     m = discord.utils.get(guild.members, nick=words[1])
     if m:
         sp = get_pdata(m.id, "sp", 10)
@@ -9811,7 +9818,7 @@ async def cmd_refund(words, user, chan, w):
     return False
 
 
-async def cmd_sp(words, user, chan, w):
+async def cmd_sp(words, user, chan, w: World):
     sp = get_pdata(user.id, "sp", 10)
     spe = get_pdata(user.id, "sp_earned", 0)
     await chan.send("You currently have "+str(sp)+" Soul Points. You have earned "+str(spe)+" Soul Points to date.")
@@ -9833,7 +9840,7 @@ async def show_selection(udm, sel, first=None):
     await embed_group(udm, embeds)
 
 
-async def cmd_reroll(words, user, chan, w):
+async def cmd_reroll(words, user, chan, w: World):
     if not user.dm_channel:
         udm = await user.create_dm()
     else:
@@ -9854,7 +9861,7 @@ async def cmd_reroll(words, user, chan, w):
     return True
 
 
-async def cmd_newtribe(words, user, chan, w):
+async def cmd_newtribe(words, user, chan, w: World):
     if not user.dm_channel:
         udm = await user.create_dm()
     else:
@@ -9879,7 +9886,7 @@ async def cmd_newtribe(words, user, chan, w):
     return True
 
 
-async def cmd_join(words, user, chan, w):
+async def cmd_join(words, user, chan, w: World):
     if not user.dm_channel:
         udm = await user.create_dm()
     else:
@@ -10234,7 +10241,7 @@ def find_creature(name, lax=True):
     return None
 
 
-def find_research(name, lax=True):
+def find_research(name: str, lax=True) -> Research | None:
     for r in research_data:
         if r["name"] == name:
             return r
@@ -10243,7 +10250,7 @@ def find_research(name, lax=True):
     return None
 
 
-def find_building(name, lax=True):
+def find_building(name, lax=True) -> Building | None:
     for r in building_data:
         if r["name"] == name:
             return r
@@ -10252,7 +10259,7 @@ def find_building(name, lax=True):
     return None
 
 
-async def cmd_spawn(words, user, chan, w):
+async def cmd_spawn(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10265,7 +10272,7 @@ async def cmd_spawn(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_unlockall(words, user, chan, w):
+async def cmd_unlockall(words, user, chan, w: World):
     for t in w.tribes:
         for r in research_data:
             if r['name'] not in t.research:
@@ -10276,7 +10283,7 @@ async def cmd_unlockall(words, user, chan, w):
     await chan.send("Research and buildings unlocked")
 
 
-async def cmd_spencounter(words, user, chan, w):
+async def cmd_spencounter(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10291,7 +10298,7 @@ async def cmd_spencounter(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_tribefix(words, user, chan, w):
+async def cmd_tribefix(words, user, chan, w: World) -> None | Literal[False]:
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10313,14 +10320,14 @@ async def cmd_tribefix(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_partyfix(words, user, chan, w):
+async def cmd_partyfix(words, user, chan, w: World):
     for k in w.kobold_list:
         if k.nick and not k.party and not isinstance(k.get_place(), Tribe):
             Party(k)
             console_print("Fixed "+k.nick)
 
 
-async def cmd_givespell(words, user, chan, w):
+async def cmd_givespell(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10336,7 +10343,7 @@ async def cmd_givespell(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_familiarize(words, user, chan, w):
+async def cmd_familiarize(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10349,7 +10356,7 @@ async def cmd_familiarize(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_kvar(words, user, chan, w):
+async def cmd_kvar(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10377,7 +10384,7 @@ async def cmd_kvar(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_setheat(words, user, chan, w):
+async def cmd_setheat(words, user, chan, w: World) -> None | Literal[False]:
     tribe = None
     for t in w.tribes:
         if t.id == int(words[1]):
@@ -10394,7 +10401,7 @@ async def cmd_setheat(words, user, chan, w):
         await chan.send("Tribe "+words[1]+" not found")
 
 
-async def cmd_clone(words, user, chan, w):
+async def cmd_clone(words, user, chan, w: World):
     global sandbox
     file = shelve.open("klsave", 'r')
     sandbox = file['world']
@@ -10410,7 +10417,7 @@ async def cmd_clone(words, user, chan, w):
     await chan.send("Main world cloned to sandbox.")
 
 
-async def cmd_tvar(words, user, chan, w):
+async def cmd_tvar(words, user, chan, w: World):
     tribe = None
     for t in w.tribes:
         if t.id == int(words[1]):
@@ -10431,7 +10438,7 @@ async def cmd_tvar(words, user, chan, w):
         await chan.send("Tribe "+words[1]+" not found")
 
 
-async def cmd_trait(words, user, chan, w):
+async def cmd_trait(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10447,7 +10454,7 @@ async def cmd_trait(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_reboot(words, user, chan, w):
+async def cmd_reboot(words, user, chan, w: World):
     try:
         save_game()
         await chan.send("Game saved. Logging out.")
@@ -10458,7 +10465,7 @@ async def cmd_reboot(words, user, chan, w):
         await log_exception()
 
 
-async def cmd_repopulate(words, user, chan, w):
+async def cmd_repopulate(words, user, chan, w: World):
     nests = 0
     for m in w.map:
         if len(w.map[m].special) == 0 and chance(5):
@@ -10468,7 +10475,7 @@ async def cmd_repopulate(words, user, chan, w):
     await chan.send("Repopulated. btw, there are "+str(nests)+" ant nests in generated tiles")
 
 
-async def cmd_landmark(words, user, chan, w):
+async def cmd_landmark(words, user, chan, w: World):
     if words[1] == "anywhere":
         ants = choice(list(w.map.keys()))
         w.map[ants].special.append(words[2])
@@ -10493,7 +10500,7 @@ async def cmd_landmark(words, user, chan, w):
             await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_findbold(words, user, chan, w):
+async def cmd_findbold(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10504,7 +10511,7 @@ async def cmd_findbold(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_spawne(words, user, chan, w):
+async def cmd_spawne(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10517,7 +10524,7 @@ async def cmd_spawne(words, user, chan, w):
         await chan.send("Kobold "+words[1]+" not found")
 
 
-async def cmd_makechief(words, user, chan, w):
+async def cmd_makechief(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10529,7 +10536,7 @@ async def cmd_makechief(words, user, chan, w):
         await chan.send("Kobold not found")
 
 
-async def cmd_ageup(words, user, chan, w):
+async def cmd_ageup(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10543,7 +10550,7 @@ async def cmd_ageup(words, user, chan, w):
         await chan.send("Kobold not found")
 
 
-async def cmd_forcetunnel(words, user, chan, w):
+async def cmd_forcetunnel(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10557,7 +10564,7 @@ async def cmd_forcetunnel(words, user, chan, w):
         await chan.send("Kobold not found")
 
 
-async def cmd_forcehatch(words, user, chan, w):
+async def cmd_forcehatch(words, user, chan, w: World):
     for k in w.kobold_list:
         for i in k.items:
             if i.type == "egg":
@@ -10572,7 +10579,7 @@ async def cmd_forcehatch(words, user, chan, w):
                 i.hatch()
 
 
-async def cmd_forceegg(words, user, chan, w):
+async def cmd_forceegg(words, user, chan, w: World) -> None | Literal[True]:
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10590,7 +10597,7 @@ async def cmd_forceegg(words, user, chan, w):
     await chan.send("One or both kobolds not found")
 
 
-async def cmd_forcebreed(words, user, chan, w):
+async def cmd_forcebreed(words, user, chan, w: World):
     try:
         k = find_kobold(words[1], w=w)
     except:
@@ -10606,19 +10613,19 @@ async def cmd_forcebreed(words, user, chan, w):
     await chan.send("One or both kobolds not found")
 
 
-async def cmd_backup(words, user, chan, w):
+async def cmd_backup(words, user, chan, w: World):
     save_game("backup/klsave")
     await chan.send("Backup saved.")
     return True
 
 
-async def cmd_loadbackup(words, user, chan, w):
+async def cmd_loadbackup(words, user, chan, w: World):
     load_game("backup/klsave")
     await chan.send("Backup loaded.")
     return True
 
 
-async def cmd_pdbackup(words, user, chan, w):
+async def cmd_pdbackup(words, user, chan, w: World):
     global playerdata
     file = shelve.open("backup/klsave", 'r')
     if 'playerdata' in file:
@@ -10627,18 +10634,18 @@ async def cmd_pdbackup(words, user, chan, w):
     return True
 
 
-async def cmd_mc(words, user, chan, w):
+async def cmd_mc(words, user, chan, w: World):
     await handle_final_orders(w)
     w.month_change()
     await chan.send("Month changed.")
 
 
-async def cmd_refresh(words, user, chan, w):
+async def cmd_refresh(words, user, chan, w: World):
     refresh_data()
     await chan.send("Data refreshed.")
 
 
-async def cmd_reset(words, user, chan, w):
+async def cmd_reset(words, user, chan, w: World):
     global world, sandbox, guild
     if w == sandbox:
         sandbox = World()
@@ -11112,7 +11119,7 @@ async def cmd_task(words, me, chan):
     await print_tasks(me.tribe, chan)
 
 
-async def cmd_routine(words, user, chan, w):
+async def cmd_routine(words, user, chan, w: World):
     pid = str(user.id)
     if words[1] == "new":
         playerdata[pid]["rediting"] = []
@@ -11271,7 +11278,7 @@ async def cmd_routine(words, user, chan, w):
         await chan.send("Routine closed.")
 
 
-async def cmd_wanderer(words, user, chan, w):
+async def cmd_wanderer(words, user, chan, w: World):
     pid = str(user.id)
     if words[1] == "list":
         wands = get_pdata(pid, "wanderers", [])
@@ -11670,12 +11677,12 @@ def refresh_data():
     spell_data = get_json('data/spells.json')
     liquid_data = get_json('data/liquids.json')
     landmark_data = get_json('data/landmarks.json')
-    trait_data = get_json('data/traits.json')
+    trait_data: dict[str, dict[str, Any]] = get_json('data/traits.json')
     skill_data = get_json('data/skills.json')
     dungeon_data = get_json('data/dungeons.json')
 
 
-async def handle_final_orders(w):
+async def handle_final_orders(w: World):
     for k in w.kobold_list:
         if len(k.fo) > 0:
             console_print("handling final orders for "+k.get_name())
@@ -11695,11 +11702,11 @@ async def handle_final_orders(w):
         k.fo = []
 
 
-async def cmd_task_test(words, user, chan, w):
+async def cmd_task_test(words, user, chan, w: World):
     await handle_tasks(w)
 
 
-async def handle_tasks(w):
+async def handle_tasks(w: World):
     for t in w.tribes:
         tile = w.get_tile(t.x, t.y, t.z)
         console_print("handling tasks for tribe "+t.name+" (ID "+str(t.id)+")")
@@ -11876,7 +11883,7 @@ intents = discord.Intents.all()
 clive = discord.Client(intents=intents)
 
 
-async def cmd_verify(words, member, chan, w):
+async def cmd_verify(words, member: discord.Member, chan, w: World):
     role = discord.utils.get(guild.roles, name="Verified")
     await member.add_roles(role)
     action_queue.append(["addrole", "Lost Soul", member.id])
@@ -11901,13 +11908,13 @@ async def on_ready():
 
 
 @clive.event
-async def on_member_join(member):
+async def on_member_join(member: discord.Member):
     newchan = discord.utils.get(member.guild.channels, name="verify")
     await newchan.send("<@!"+str(member.id)+"> Hey! Before you can begin your legacy, you need to let me know you're a real person by typing `!verify` in the chat here. If that doesn't work or something is wrong, please ping/DM the dev (orange name).")
 
 
 @clive.event
-async def on_member_remove(member):
+async def on_member_remove(member: discord.Member):
     for k in world.kobold_list:
         if k.d_user_id == member.id:
             cmd_quit([], k, None, force=True)
@@ -11916,7 +11923,7 @@ async def on_member_remove(member):
 
 
 class DummyMessage:
-    def __init__(self, channel, author, content, w=None, k=None):
+    def __init__(self, channel: discord.TextChannel, author: discord.User, content: str, w: World = None, k=None):
         self.channel = channel
         self.author = author
         self.content = content
@@ -11931,7 +11938,7 @@ class DummyMessage:
 
 
 @clive.event
-async def on_message(message):
+async def on_message(message: discord.Message):
     if message.author == clive.user:
         return
     test = message.content.replace("-", "!")
@@ -11981,7 +11988,7 @@ async def on_message(message):
                 break
 
 
-async def handle_message(message, num=1):
+async def handle_message(message: discord.Message, num=1) -> bool | None:
     chan = message.channel
     try:
         global world, sandbox
