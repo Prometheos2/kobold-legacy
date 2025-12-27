@@ -10,7 +10,7 @@ import re
 import shelve
 import time
 import traceback
-from typing import Literal, Sequence, Any
+from typing import Literal, Sequence, Any, TypeVar
 
 import discord
 from dotenv import load_dotenv
@@ -92,7 +92,7 @@ def tribe_name() -> str:
     except:
         console_print('ERROR: Cannot find tribe name list')
         return "Erroneously-named Tribe"
-    temp_names = []
+    temp_names: list[str] = []
     for line in f:
         nam: str = line.strip('\n')
         nam = nam.capitalize()
@@ -103,8 +103,9 @@ def tribe_name() -> str:
 
 # def alpha_str(str):
 
+T = TypeVar('T')
 
-def choice(ch: Sequence):
+def choice(ch: Sequence[T]) -> T | None:
     if len(ch) == 0:
         return None
     else:
@@ -162,7 +163,7 @@ def consume_item(self: "Kobold | Tile | Tribe", name: str, q=1):
             i.destroy("Consumed")
 
 
-def check_req(self: "Tile | Tribe | None", req, k: "Kobold" = None) -> str:
+def check_req(self:" Tile | Tribe | None", req, k: "Kobold" | None = None) -> str:
     good = "good"
     if k:
         place = k.get_place()
@@ -263,7 +264,7 @@ def get_tri_distance(x1: float, y1: float, x2: float, y2: float) -> float:
     return (min(xdist, ydist)*1.4)+abs(xdist-ydist)
 
 # TODO: type
-def get_dir(ct, k: "Kobold") -> Literal['west', 'east', 'north', 'south', 'same']:
+def get_dir(ct, k: "Kobold") -> Literal['west', 'east', 'north', 'south', 'same'] | None:
     if abs(ct.x-k.x) > abs(ct.y-k.y):
         if ct.x < k.x:
             return "west"
